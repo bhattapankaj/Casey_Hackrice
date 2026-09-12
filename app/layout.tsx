@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Jost, Playfair_Display, Public_Sans } from "next/font/google";
+import { SoundUnlock } from "@/components/SoundUnlock";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -40,6 +41,7 @@ export default function RootLayout({
       className={`${playfair.variable} ${jost.variable} ${publicSans.variable}`}
     >
       <body className="font-sans antialiased">
+        <SoundUnlock />
         {children}
       </body>
     </html>

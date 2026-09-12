@@ -11,6 +11,7 @@ import type { GameCase, Verdict } from "@/lib/cases";
 import { DEAL_DURATION, DEAL_STAGGER, EASE_DEAL, REDUCE_DURATION } from "@/lib/motion";
 import { seededRotation } from "@/lib/seededRotation";
 import { readSession } from "@/lib/session";
+import { play } from "@/lib/sound";
 
 type CardTableProps = {
   gameCase: GameCase;
@@ -24,10 +25,27 @@ export function CardTable({ gameCase }: CardTableProps) {
   const [showReceipt, setShowReceipt] = useState(false);
   const [announce, setAnnounce] = useState("");
   const [baseScore, setBaseScore] = useState(gameCase.startingScore);
+  const [dealKey, setDealKey] = useState(0);
 
   useEffect(() => {
     setBaseScore(readSession().score);
   }, []);
+
+  // One card sound per dealt card, in step with the deal animation.
+  useEffect(() => {
+    if (showReceipt) {
+      return;
+    }
+
+    const step = reduce ? 40 : DEAL_STAGGER * 1000;
+    const timers = gameCase.artifacts.map((_, index) =>
+      window.setTimeout(() => play("deal"), index * step),
+    );
+
+    return () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+    };
+  }, [dealKey, showReceipt, gameCase.artifacts, reduce]);
 
   const activeArtifact =
     gameCase.artifacts.find((artifact) => artifact.id === activeId) ?? null;
@@ -36,12 +54,14 @@ export function CardTable({ gameCase }: CardTableProps) {
   );
 
   const openArtifact = useCallback((id: string) => {
+    play("open");
     setOpenedIds((current) => (current.includes(id) ? current : [...current, id]));
     setActiveId(id);
   }, []);
 
   const closeArtifact = useCallback(() => {
     const returning = activeId;
+    play("close");
     setActiveId(null);
     window.setTimeout(() => {
       if (returning) {
@@ -56,6 +76,7 @@ export function CardTable({ gameCase }: CardTableProps) {
     }
     setActiveId(null);
     setVerdict(next);
+    play("pot");
     window.setTimeout(
       () => {
         setShowReceipt(true);
@@ -71,6 +92,7 @@ export function CardTable({ gameCase }: CardTableProps) {
     setShowReceipt(false);
     setAnnounce("");
     setBaseScore(readSession().score);
+    setDealKey((key) => key + 1);
   }, []);
 
   if (showReceipt && verdict) {
@@ -133,6 +155,15 @@ export function CardTable({ gameCase }: CardTableProps) {
                         duration: DEAL_DURATION,
                         delay: index * DEAL_STAGGER,
                         ease: EASE_DEAL,
+                      }
+                }
+                whileHover={
+                  reduce || isActive
+                    ? undefined
+                    : {
+                        rotate: 0,
+                        y: -10,
+                        transition: { duration: 0.15, ease: "easeOut" },
                       }
                 }
               >

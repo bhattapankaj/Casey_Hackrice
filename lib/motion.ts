@@ -9,4 +9,6 @@ export const CHIP_DURATION = 0.32;
 export const CHIP_FADE = 0.2;
 export const RECEIPT_DURATION = 0.26;
 export const RECEIPT_STAGGER = 0.12;
+/** The showdown turn. Long enough to read as a card, short enough to stay in budget. */
+export const RECEIPT_FLIP = 0.42;
 export const REDUCE_DURATION = 0.1;

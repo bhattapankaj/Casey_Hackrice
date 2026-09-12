@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { ArtifactCard } from "@/components/ArtifactCard";
 import { Pip } from "@/components/Pip";
 import { BAND_PHRASE, type Band, type Channel } from "@/lib/channels";
@@ -30,10 +31,12 @@ export default function IsolationPage() {
       </header>
 
       <section className="flex flex-col gap-5 sm:flex-row sm:items-center">
-        <img
+        <Image
           src="/casey-card.png"
           alt="Casey logo playing card with a red telephone pip"
-          className="w-[140px] rotate-[8deg]"
+          width={140}
+          height={140}
+          className="h-auto w-[140px] rotate-[8deg]"
         />
         <p className="max-w-[28rem] text-[15px] leading-relaxed text-cream/90">
           Logo reference. Cream face, gold hairline inset from the

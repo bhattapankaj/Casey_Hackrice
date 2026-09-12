@@ -20,6 +20,13 @@ body {
   background-color: var(--color-felt);
 }
 
+/* Cards deal in from off the right edge. Clip that axis rather than hiding it,
+   so the fixed verdict tray is not trapped in a new scroll container. */
+html,
+body {
+  overflow-x: clip;
+}
+
 body {
   background-image: radial-gradient(
     ellipse at center,

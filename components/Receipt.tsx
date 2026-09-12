@@ -8,9 +8,17 @@ import { ArtifactCard } from "@/components/ArtifactCard";
 import { SiteNav } from "@/components/SiteNav";
 import type { CaseArtifact, GameCase, Verdict } from "@/lib/cases";
 import { nextCaseId } from "@/lib/cases";
-import { EASE_DEAL, RECEIPT_DURATION, RECEIPT_STAGGER, REDUCE_DURATION } from "@/lib/motion";
+import {
+  EASE_DEAL,
+  EASE_OPEN,
+  RECEIPT_DURATION,
+  RECEIPT_FLIP,
+  RECEIPT_STAGGER,
+  REDUCE_DURATION,
+} from "@/lib/motion";
 import { buildReceipt } from "@/lib/scoring";
 import { applyCaseDelta } from "@/lib/session";
+import { play } from "@/lib/sound";
 
 type ReceiptProps = {
   gameCase: GameCase;
@@ -35,6 +43,21 @@ export function Receipt({
     applyCaseDelta(gameCase.id, model.delta);
   }, [gameCase.id, model.delta]);
 
+  // The showdown: one card turns over at a time, each sounding as it snaps face up.
+  // Keyed on the count, not the array, so a re-render cannot cancel the sequence.
+  const chainLength = opened.length;
+  useEffect(() => {
+    const step = reduce ? 40 : RECEIPT_STAGGER * 1000;
+    const snap = reduce ? 0 : (RECEIPT_FLIP * 1000) / 2;
+    const timers = Array.from({ length: chainLength }, (_, index) =>
+      window.setTimeout(() => play("reveal"), snap + index * step),
+    );
+
+    return () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+    };
+  }, [chainLength, reduce]);
+
   return (
     <>
     <SiteNav />
@@ -57,27 +80,59 @@ export function Receipt({
               ) : null}
               <motion.div
                 className="relative h-[144px] w-[108px]"
-                initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.92 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={
-                  reduce
-                    ? { duration: REDUCE_DURATION, ease: "easeOut" }
-                    : {
-                        duration: RECEIPT_DURATION,
-                        delay: index * RECEIPT_STAGGER,
-                        ease: EASE_DEAL,
-                      }
-                }
+                style={{ perspective: 900 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{
+                  duration: reduce ? REDUCE_DURATION : RECEIPT_DURATION,
+                  delay: reduce ? 0 : index * RECEIPT_STAGGER,
+                  ease: EASE_DEAL,
+                }}
               >
-                <div className="absolute top-0 left-0 origin-top-left scale-[0.6]">
-                  <ArtifactCard
-                    channel={artifact.channel}
-                    band={artifact.band}
-                    label={artifact.label}
-                    state="opened"
-                    interactive={false}
-                  />
-                </div>
+                <motion.div
+                  className="relative h-full w-full"
+                  style={{ transformStyle: "preserve-3d" }}
+                  initial={reduce ? false : { rotateY: 180 }}
+                  animate={{ rotateY: 0 }}
+                  transition={{
+                    duration: reduce ? 0 : RECEIPT_FLIP,
+                    delay: reduce ? 0 : index * RECEIPT_STAGGER,
+                    ease: EASE_OPEN,
+                  }}
+                >
+                  <div
+                    className="absolute inset-0"
+                    style={{ backfaceVisibility: "hidden" }}
+                  >
+                    <div className="origin-top-left scale-[0.6]">
+                      <ArtifactCard
+                        channel={artifact.channel}
+                        band={artifact.band}
+                        label={artifact.label}
+                        state="opened"
+                        interactive={false}
+                      />
+                    </div>
+                  </div>
+                  <div
+                    className="absolute inset-0"
+                    aria-hidden
+                    style={{
+                      backfaceVisibility: "hidden",
+                      transform: "rotateY(180deg)",
+                    }}
+                  >
+                    <div className="origin-top-left scale-[0.6]">
+                      <ArtifactCard
+                        channel={artifact.channel}
+                        band={artifact.band}
+                        label={artifact.label}
+                        state="facedown"
+                        interactive={false}
+                      />
+                    </div>
+                  </div>
+                </motion.div>
               </motion.div>
             </div>
           ))}
