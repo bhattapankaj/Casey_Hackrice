@@ -13,10 +13,18 @@ authentication, client-tool, privacy, and test contract.
 
 ## Current phase
 
-**Early implementation is underway.** The repository contains the Casey Next.js shell,
-visual tokens, and an `ArtifactCard`/`Pip` isolation view. The case engine, playable
-round, Receipt, tests, and ElevenLabs integration are not implemented yet. Do not present
-the component prototype as a working game.
+**The single-player loop is playable end to end.** Implemented: the card-table shell,
+three cases in `lib/cases.ts` with a deterministic artifact graph, evidence pinning, a
+two-step verdict with a confirmation for empty evidence, deterministic scoring in
+`lib/scoring.ts`, a Receipt that groups evidence by recorded source, a browser-local run
+score and board, synthesized table sound with a persisted mute, and the keyboard, focus,
+dialog, and reduced-motion contracts.
+
+**Not implemented: the ElevenLabs integration and the automated tests.** There is no
+`lib/voice/**`, no signed-URL route, and no model in the loop. The phone artifact plays an
+authored fictional transcript; if the player grants the microphone it drives a local level
+meter only, and no audio or transcript leaves the device. Describe it as a scripted
+simulation, never as a live AI caller.
 
 As implementation continues, protect this two-minute demo path above every optional
 feature:

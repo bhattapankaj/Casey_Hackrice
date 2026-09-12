@@ -81,7 +81,7 @@ export default function IsolationPage() {
               channel="email"
               band="in"
               label="Offer email"
-              state="available"
+              state="unopened"
             />
             <figcaption className="max-w-[180px] text-center text-[12px] leading-snug text-cream/80">
               Available, in band. Open the email.
@@ -92,7 +92,7 @@ export default function IsolationPage() {
               channel="phone"
               band="in"
               label="Callback number"
-              state="available"
+              state="unopened"
             />
             <figcaption className="max-w-[180px] text-center text-[12px] leading-snug text-cream/80">
               Available, in band. Call this number.
@@ -103,7 +103,7 @@ export default function IsolationPage() {
               channel="directory"
               band="out"
               label="Staff directory"
-              state="available"
+              state="unopened"
             />
             <figcaption className="max-w-[180px] text-center text-[12px] leading-snug text-cream/80">
               Available, out of band. Open the directory.
@@ -114,7 +114,7 @@ export default function IsolationPage() {
               channel="web"
               band="out"
               label="Department page"
-              state="opened"
+              state="viewed"
             />
             <figcaption className="max-w-[180px] text-center text-[12px] leading-snug text-cream/80">
               Opened, out of band. Open the page.

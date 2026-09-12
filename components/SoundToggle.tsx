@@ -28,7 +28,7 @@ export function SoundToggle() {
       }}
       aria-pressed={on}
       aria-label={on ? "Turn table sound off" : "Turn table sound on"}
-      className="inline-flex items-center gap-2 font-label text-[12px] tracking-[0.08em] text-cream/80 transition-colors duration-150 hover:text-cream"
+      className="inline-flex min-h-[44px] items-center gap-2 font-label text-[12px] tracking-[0.08em] text-cream/80 transition-colors duration-150 hover:text-cream"
     >
       {on ? (
         <Volume2 size={20} strokeWidth={1.75} aria-hidden />

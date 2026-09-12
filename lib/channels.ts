@@ -2,7 +2,13 @@ import { Building2, Globe, Mail, Phone, type LucideIcon } from "lucide-react";
 
 export type Channel = "email" | "phone" | "directory" | "web";
 export type Band = "in" | "out";
-export type CardState = "facedown" | "available" | "opened";
+export type CardState = "facedown" | "unopened" | "viewed";
+
+/** Band names the origin of a source, never whether it is trustworthy. */
+export const BAND_LABEL: Record<Band, string> = {
+  in: "Their channel",
+  out: "Independent",
+};
 
 export const CHANNEL_ICONS: Record<Channel, LucideIcon> = {
   email: Mail,

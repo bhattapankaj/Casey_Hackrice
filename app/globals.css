@@ -28,21 +28,37 @@ body {
 }
 
 body {
-  background-image: radial-gradient(
-    ellipse at center,
-    var(--color-felt) 0%,
-    var(--color-felt) 42%,
-    var(--color-felt-deep) 100%
-  );
+  /* Woven grain over the table vignette. Generated, so no texture file ships. */
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/></filter><rect width='160' height='160' filter='url(%23f)' opacity='0.05'/></svg>"),
+    radial-gradient(
+      ellipse at center,
+      var(--color-felt) 0%,
+      var(--color-felt) 42%,
+      var(--color-felt-deep) 100%
+    );
+  background-repeat: repeat, no-repeat;
+  background-size: 160px 160px, cover;
+  background-attachment: scroll, fixed;
   color: var(--color-cream);
   font-family: var(--font-sans);
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.5;
 }
 
+/* Focus rings read against whatever they sit on: cream on felt, ink on cream. */
+:root {
+  --ring: var(--color-cream);
+}
+
+.surface-cream {
+  --ring: var(--color-ink);
+}
+
 :focus-visible {
-  outline: 2px solid var(--color-gold);
+  outline: 2px solid var(--ring);
   outline-offset: 2px;
+  border-radius: 2px;
 }
 
 ::selection {
@@ -50,8 +66,10 @@ body {
   color: var(--color-ink);
 }
 
+/* Artifacts imitate everyday software, so they drop the table's type entirely. */
 .artifact {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ring: var(--color-ink);
 }
 
 .call-pulse {

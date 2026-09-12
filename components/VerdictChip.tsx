@@ -1,76 +1,140 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { Check, Search, X } from "lucide-react";
-import { CHIP_DURATION, CHIP_FADE, EASE_DEAL, REDUCE_DURATION } from "@/lib/motion";
+import { Check, CircleHelp, X } from "lucide-react";
+import { CHIP_DURATION, EASE_DEAL } from "@/lib/motion";
 import type { Verdict } from "@/lib/cases";
+
+export const VERDICT_ORDER: Verdict[] = ["scam", "legit", "more"];
+
+type ChipCopy = {
+  label: string;
+  action: string;
+  icon: typeof X;
+  /** Rim colour. Always paired with a distinct symbol and a visible label. */
+  accent: string;
+};
+
+export const CHIP_COPY: Record<Verdict, ChipCopy> = {
+  scam: {
+    label: "Scam",
+    action: "Select the verdict Scam",
+    icon: X,
+    accent: "var(--color-red)",
+  },
+  legit: {
+    label: "Legitimate",
+    action: "Select the verdict Legitimate",
+    icon: Check,
+    accent: "var(--color-felt-deep)",
+  },
+  more: {
+    label: "Insufficient evidence",
+    action: "Select the verdict Insufficient evidence",
+    icon: CircleHelp,
+    accent: "var(--color-ink)",
+  },
+};
+
+/** The chip face on its own, with no interaction. */
+export function ChipFace({
+  verdict,
+  size = 68,
+}: {
+  verdict: Verdict;
+  size?: number;
+}) {
+  const { icon: Icon, accent } = CHIP_COPY[verdict];
+  const rim = Math.round(size * 0.13);
+  // Edge spots blur into a starburst below roughly 48px, so small chips take a
+  // solid rim instead.
+  const spotted = size >= 48;
+
+  return (
+    <span
+      className="relative inline-block shrink-0 rounded-full bg-cream"
+      style={{
+        width: size,
+        height: size,
+        boxShadow:
+          "0 2px 6px rgba(37,33,33,0.28), inset 0 -1px 0 rgba(37,33,33,0.14)",
+      }}
+    >
+      {/* Segmented rim, the way a clay chip is edge-spotted. */}
+      <span
+        aria-hidden
+        className="absolute inset-0 rounded-full"
+        style={{
+          background: spotted
+            ? `repeating-conic-gradient(${accent} 0deg 17deg, transparent 17deg 45deg)`
+            : accent,
+        }}
+      />
+      {/* Inset centre. */}
+      <span
+        aria-hidden
+        className="absolute rounded-full bg-cream"
+        style={{
+          inset: rim,
+          boxShadow: "inset 0 0 0 1px rgba(37,33,33,0.14)",
+        }}
+      />
+      <span
+        aria-hidden
+        className="absolute inset-0 flex items-center justify-center"
+        style={{ color: accent }}
+      >
+        <Icon size={Math.round(size * 0.34)} strokeWidth={2.25} />
+      </span>
+    </span>
+  );
+}
 
 type VerdictChipProps = {
   verdict: Verdict;
   selected: Verdict | null;
+  committed: boolean;
   onSelect: (verdict: Verdict) => void;
+  /** Set when the chip is drawn inside the verdict spot rather than the rack. */
+  inSpot?: boolean;
 };
 
-const COPY: Record<
-  Verdict,
-  { label: string; action: string; icon: typeof X }
-> = {
-  scam: { label: "It is a scam", action: "Call it a scam", icon: X },
-  legit: { label: "Legitimate", action: "Call it legitimate", icon: Check },
-  more: {
-    label: "Need more evidence",
-    action: "Ask for more evidence",
-    icon: Search,
-  },
-};
-
-export function VerdictChip({ verdict, selected, onSelect }: VerdictChipProps) {
+export function VerdictChip({
+  verdict,
+  selected,
+  committed,
+  onSelect,
+  inSpot = false,
+}: VerdictChipProps) {
   const reduce = useReducedMotion();
-  const copy = COPY[verdict];
-  const Icon = copy.icon;
+  const copy = CHIP_COPY[verdict];
   const isSelected = selected === verdict;
-  const isDimmed = selected !== null && !isSelected;
 
   return (
     <motion.button
       type="button"
       onClick={() => onSelect(verdict)}
-      disabled={selected !== null}
+      disabled={committed}
       aria-pressed={isSelected}
       aria-label={copy.action}
-      className="flex flex-col items-center gap-2 disabled:cursor-default"
-      initial={false}
-      animate={
-        reduce
-          ? { opacity: isDimmed ? 0.4 : 1 }
-          : {
-              y: isSelected ? -120 : 0,
-              scale: isSelected ? 0.9 : 1,
-              opacity: isDimmed ? 0.4 : 1,
-            }
-      }
-      whileHover={
-        selected === null && !reduce ? { y: -4 } : undefined
-      }
-      whileTap={
-        selected === null && !reduce ? { y: 1 } : undefined
-      }
-      transition={
-        reduce
-          ? { duration: REDUCE_DURATION, ease: "easeOut" }
-          : isSelected
-            ? { duration: CHIP_DURATION, ease: EASE_DEAL }
-            : { duration: CHIP_FADE, ease: "easeOut" }
-      }
+      /* Framer's layout projection emits tabindex during SSR only, so state it
+         explicitly and keep server and client markup identical. */
+      tabIndex={0}
+      layoutId={`chip-${verdict}`}
+      className="flex min-h-[44px] cursor-pointer flex-col items-center gap-2 disabled:cursor-default"
+      transition={{
+        duration: reduce ? 0 : CHIP_DURATION,
+        ease: EASE_DEAL,
+      }}
+      whileHover={committed || reduce ? undefined : { y: -4 }}
+      whileTap={committed || reduce ? undefined : { y: 1 }}
     >
-      <span className="flex size-[82px] items-center justify-center">
-        <span className="flex size-[68px] items-center justify-center rounded-full bg-cream text-ink shadow-[0_2px_8px_rgba(37,33,33,0.18)] [outline:3px_solid_var(--color-cream)] [outline-offset:4px]">
-          <Icon size={22} strokeWidth={1.75} aria-hidden />
+      <ChipFace verdict={verdict} size={68} />
+      {inSpot ? null : (
+        <span className="max-w-[7.5rem] text-center font-label text-[12px] leading-snug tracking-[0.08em] text-cream">
+          {copy.label}
         </span>
-      </span>
-      <span className="max-w-[6.5rem] text-center font-label text-[12px] leading-snug tracking-[0.08em] text-cream min-[520px]:max-w-[7.5rem]">
-        {copy.label}
-      </span>
+      )}
     </motion.button>
   );
 }

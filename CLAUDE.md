@@ -10,5 +10,7 @@ Read project documentation in this order:
 3. [Judging strategy](docs/JUDGING.md)
 4. [ElevenLabs runbook](docs/ELEVENLABS.md)
 
-The repository is in early implementation: the visual component prototype exists, but
-the playable loop, deterministic engine, tests, fallback, and voice integration do not.
+The single-player loop is playable end to end across three cases, with deterministic
+scoring and a source-grouped Receipt. The ElevenLabs voice integration and the automated
+tests do not exist yet; the phone artifact is a scripted fictional transcript with a
+local-only microphone level meter.

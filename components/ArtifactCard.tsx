@@ -18,9 +18,13 @@ export type ArtifactCardProps = {
   band: Band;
   label: string;
   state: CardState;
+  /** Neutral fact shown once the card has been viewed. Never a verdict. */
+  preview?: string;
   onOpen?: () => void;
   layoutId?: string;
   interactive?: boolean;
+  /** Tailwind width classes. Height follows from the 3:4 ratio. */
+  width?: string;
   className?: string;
 };
 
@@ -41,19 +45,24 @@ export function ArtifactCard({
   band,
   label,
   state,
+  preview,
   onOpen,
   layoutId,
   interactive = true,
+  width = "w-[190px]",
   className,
 }: ArtifactCardProps) {
   const Icon = CHANNEL_ICONS[channel];
   const facedown = state === "facedown";
+  const viewed = state === "viewed";
   const action = CHANNEL_OPEN_LABEL[channel];
   const phrase = BAND_PHRASE[band];
+
   const classes = [
-    "relative aspect-[3/4] w-[180px] overflow-hidden rounded-[12px] bg-cream",
-    "shadow-[0_2px_8px_rgba(37,33,33,0.18)]",
-    "transition-[box-shadow] duration-150 ease-in-out",
+    "surface-cream relative aspect-[3/4] overflow-hidden rounded-[12px] bg-cream",
+    width,
+    "shadow-[0_2px_8px_rgba(37,33,33,0.22)]",
+    "transition-shadow duration-150 ease-in-out",
     className ?? "",
   ]
     .filter(Boolean)
@@ -82,16 +91,30 @@ export function ArtifactCard({
             </div>
           </div>
 
-          <div className="absolute inset-0 flex flex-col items-center justify-center px-8">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-4 text-center">
             <Icon
-              size={48}
+              size={26}
               strokeWidth={1.75}
               aria-hidden
-              className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${band === "in" ? "text-red" : "text-gold"} opacity-[0.12]`}
+              className={band === "in" ? "text-red" : "text-gold"}
             />
-            <span className="relative font-sans text-[15px] font-semibold leading-snug text-ink">
+            <span className="font-sans text-[16px] leading-snug font-semibold text-ink">
               {label}
             </span>
+
+            <span
+              className={`mt-0.5 font-label text-[11px] tracking-[0.08em] ${
+                viewed ? "text-ink/70" : "text-ink/50"
+              }`}
+            >
+              {viewed ? "Viewed" : "Unopened"}
+            </span>
+
+            {viewed && preview ? (
+              <span className="mt-1 line-clamp-3 text-[12px] leading-snug text-ink/70">
+                {preview}
+              </span>
+            ) : null}
           </div>
         </>
       )}
@@ -103,11 +126,7 @@ export function ArtifactCard({
       <motion.div
         layoutId={layoutId}
         className={classes}
-        aria-label={
-          facedown
-            ? "Facedown evidence card"
-            : `${label}, ${phrase}.`
-        }
+        aria-label={facedown ? "Facedown evidence card" : `${label}, ${phrase}.`}
       >
         {face}
       </motion.div>
@@ -118,10 +137,11 @@ export function ArtifactCard({
     <motion.button
       type="button"
       id={id}
+      tabIndex={0}
       layoutId={layoutId}
       onClick={onOpen}
-      aria-label={`${action}. ${phrase}.`}
-      className={`${classes} cursor-pointer text-center hover:shadow-[0_4px_10px_rgba(37,33,33,0.22)]`}
+      aria-label={`${action}. ${phrase}. ${viewed ? "Already viewed." : "Not yet opened."}`}
+      className={`${classes} cursor-pointer text-center hover:shadow-[0_6px_14px_rgba(37,33,33,0.28)]`}
     >
       {face}
     </motion.button>
