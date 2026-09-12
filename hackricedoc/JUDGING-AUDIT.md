@@ -1,0 +1,165 @@
+# Casey — HackRice 16 Judging Audit
+
+This is a deliberately strict design-stage review against the five criteria in the
+[HackRice 16 Hacker Handbook](<HackRice 16 Hacker Handbook (1).pdf>). Scores describe
+the concept as documented—not a working submission. No design can guarantee a 9+ judge
+score; Casey earns that range only by shipping and showing the evidence gates below.
+
+## Executive verdict
+
+**Go, with a narrowed thesis.** The strongest version of Casey is not a phishing quiz
+with a voice API attached. It is a short investigation game about **source independence**:
+the player constructs a Trust Chain while a live character tries to keep every
+confirmation inside one controlled network.
+
+The original design has a memorable visual metaphor and a strong educational reveal.
+Its largest weaknesses are weak proof of impact, a score that rewards opening everything,
+an optional-sounding voice layer, unsupported claims, and scope borrowed from sponsors
+not listed in this handbook.
+
+## Honest baseline
+
+| Handbook criterion | Design-stage score | Why it is not 9+ yet |
+|---|---:|---|
+| Technical Rigor | 6.5/10 | The architecture is plausible, but there is no running proof. Voice is mostly dialogue, scoring treats every opened card as evidence, and the database plan is unnecessary. |
+| Originality & Creativity | 8.3/10 | The card-table metaphor and source-provenance lesson are fresh. Without tighter mechanics, it can still read as “security training plus chatbot.” |
+| User Experience & Design | 7.6/10 | Visual direction is coherent, but onboarding, evidence selection, call states, consent, captions, fallback, and error recovery are under-specified. |
+| Practicality & Impact | 7.0/10 | The problem is real, yet the prior pitch uses unqualified statistics and invented future player counts. There is no transfer measure or authoring/scaling story. |
+| Relevance | 8.4/10 | It fits gamified learning and ElevenLabs, but a two-case quiz may not yet be “genuinely fun” or replayable, as the Games track requests. |
+
+## Design changes that move the ceiling
+
+1. **Opened is not proven.** Players intentionally pin up to three artifacts. This turns
+   browsing into a decision and makes the verdict defensible.
+2. **Model source roots, not just channels.** An email and a phone call can still trace
+   to one claimant. Independence is computed from authored provenance data.
+3. **Make voice change the board.** The ElevenLabs agent calls an allowlisted client tool
+   to deal face-down pressure cards. They flip after the verdict to explain urgency,
+   authority, or scarcity without spoiling the call.
+4. **Keep truth outside AI.** Voice can vary; case truth, unlocks, and score cannot.
+5. **Use three valid verdicts.** A legitimate case and an unresolved case prevent blind
+   skepticism from winning.
+6. **Measure learning without pretending.** Compare independent-verification behavior
+   between first and later cases; display only anonymous aggregates with sample size.
+7. **Design failure as a mode.** Mic denied, API down, or Wi-Fi lost switches to a clearly
+   labeled text/prerecorded call while preserving the investigation and Receipt.
+8. **Drop sponsor sprawl.** ElevenLabs is central. Notability is eligible only if the team
+   genuinely uses and documents it. The handbook does not list Tiger Data.
+
+## 9+ evidence gates
+
+### Technical Rigor — target 9.2
+
+The demo must prove all of the following:
+
+- Live ElevenLabs turn-taking works from the deployed app.
+- A validated client tool causes a visible pressure card to be dealt.
+- Per-case variables alter one agent without changing deterministic case truth.
+- API credentials remain server-side behind short-lived call authorization.
+- Scoring and case validation have meaningful unit tests, including malformed cases and
+  source-root edge cases.
+- The same case reaches the same Receipt for the same actions regardless of dialogue.
+- A network/microphone failure completes through fallback rather than an error screen.
+- A 20-second architecture explanation makes the AI/deterministic boundary obvious.
+
+**Do not add a database to look technical.** A small, deeply integrated system scores
+better than a broad set of simple, fragile integrations under the handbook wording.
+
+### Originality & Creativity — target 9.3
+
+- Lead with: “Most training asks whether a message looks suspicious. Casey asks whether
+  your proof is actually independent.”
+- Show the same-source reveal visually: email → supplied phone number → same claimant.
+- Let the caller's tactics create pressure cards, then flip them in the Receipt.
+- Demonstrate that voice responses vary while the authored evidence graph stays fair.
+- Avoid marketing Casey as a generic “AI scam detector”; that category is crowded and it
+  is not what this product does.
+
+### User Experience & Design — target 9.3
+
+- Five first-time tests; at least 4/5 can state the goal without verbal coaching.
+- Median Case 01 completion under two minutes.
+- A single primary action per state; no unexplained icon-only controls.
+- Clear states for mic permission, connecting, listening, speaking, reconnecting,
+  fallback, and ended.
+- Pin/unpin is obvious, the three-pin limit is visible, and verdict confirmation prevents
+  accidental submission.
+- 390 px layout, keyboard-only completion, visible focus, reduced motion, captions/text
+  path, and words/icons in addition to color.
+- Deal animation occurs once; motion thereafter responds to player or caller action.
+- The Receipt is the visual climax, not a generic score modal.
+
+### Practicality & Impact — target 9.1
+
+- Use one sourced problem statistic: FTC-reported job-scam losses rose from $90 million
+  in 2020 to $501 million in 2024
+  ([FTC](https://www.ftc.gov/news-events/news/press-releases/2025/03/new-ftc-data-show-big-jump-reported-losses-fraud-125-billion-2024)).
+- State the behavior Casey trains: leave the claimant's channel and verify via a source
+  the player found independently.
+- Include a legitimate case so success means calibrated trust, not paranoia.
+- Record playtest sample size and whether players use independent evidence in later
+  cases. Never claim causation from a weekend sample.
+- Show scale through authored case packs for universities, employers, and financial
+  institutions—not by claiming production readiness.
+- End the Receipt with one action players can perform in the real world.
+
+### Relevance — target 9.5
+
+- Enter **Games & Gamification only**, matching the handbook's one-track rule.
+- The loop must contain challenge, agency, feedback, scoring, mastery, and replay—not
+  merely educational content with points.
+- Submit to the ElevenLabs challenge because live adaptive voice and client tools are
+  essential to the experience.
+- Use casino/card language and visual design as a coherent interaction metaphor. Confirm
+  the official event theme before claiming theme-prize eligibility; the handbook only
+  guarantees a surprise for theme-related submissions.
+- A second case is more valuable to track relevance than a leaderboard because it proves
+  mastery and counters the “always pick scam” strategy.
+
+## Judge-facing proof matrix
+
+| What the judge sees | Criteria supported |
+|---|---|
+| Live caller adapts and deals a pressure card | Technical Rigor, Originality, ElevenLabs relevance |
+| Player chooses between supplied and independent routes | Originality, Games relevance, Impact |
+| Trust Chain maps multiple channels to one source root | Originality, UX, Impact |
+| Deterministic Receipt and score breakdown | Technical Rigor, UX |
+| Legitimate second case or its authored/tested fixture | Relevance, Impact, replay value |
+| Mic/network fallback completes the same loop | Technical Rigor, UX, Practicality |
+| Five-person comprehension results with sample size | UX, Impact |
+
+## Feature priority by score gain
+
+| Priority | Feature | Expected score gain | Effort/risk |
+|---:|---|---|---|
+| 1 | Pin evidence + source-root Trust Chain | Very high across four criteria | Medium / low |
+| 2 | Deterministic Receipt | Very high across four criteria | Medium / low |
+| 3 | Live caller + pressure-card client tool | Very high for rigor/originality | High / high |
+| 4 | Complete fallback mode | High for rigor/UX | Medium / low |
+| 5 | Legitimate Case 02 | High for game depth/impact | Medium / low |
+| 6 | Five-person test and iteration | High for UX/impact credibility | Low / low |
+| 7 | Anonymous aggregate telemetry | Medium for impact | Medium / medium |
+| 8 | Leaderboard | Low-to-medium for replay | Medium / medium |
+| 9 | Any extra sponsor API | Negative until core is finished | High / high |
+
+## Red-team objections
+
+| Likely objection | Strong answer requires |
+|---|---|
+| “Isn't this just security training?” | Let the judge construct a proof under pressure; show the source graph, not a lesson slide. |
+| “Why does this need AI?” | Replay the same case with a different conversational path and identical deterministic truth; show pressure-card integration. |
+| “Why is it a game?” | Point to constrained choices, evidence construction, score tradeoffs, feedback, multiple truth states, and replay. |
+| “Could it teach scammers?” | Show fictional bounded beats, no real targets/data, no operational fraud instructions, and deterministic educational content. |
+| “Does it work without Wi-Fi?” | Trigger fallback and finish the same Receipt in front of them. |
+| “Did it improve behavior?” | Give measured playtest behavior with sample size and say plainly that a hackathon test demonstrates comprehension, not long-term efficacy. |
+
+## Submission guardrails
+
+- The handbook requires a 3–4 minute video and allows at most one track.
+- Live judging is 2 minutes of demo plus 1 minute of Q&A, repeated 3–4 times.
+- Do not repeat the old fictional line “127 people played; 61% got fooled” unless those
+  values are actually measured and the sample definition is stated.
+- Do not claim Tiger Data, a domain prize, Lilie Lab eligibility, Notability use, or any
+  other challenge until it is confirmed and genuinely used.
+- Take screenshots and record the resilient demo before feature freeze.
+
