@@ -3,8 +3,8 @@
 Last verified against official ElevenLabs documentation: September 12, 2026.
 
 This document prepares one protected ElevenLabs agent for Casey. It is a setup contract,
-not proof that the integration is working. Do the dashboard steps first; implement the
-app-side examples only after the Casey coding phase begins.
+not proof that the integration is working. Do the dashboard steps first, and implement
+the app-side examples only when voice is the next approved build slice.
 
 ## Outcome
 
@@ -34,14 +34,15 @@ Use this order when you are ready to configure the account:
 9. Minimize transcript/audio retention and record the actual setting.
 10. Run the manual dashboard test before beginning app integration.
 
-## Creator pack guidance
+## Usage-budget guidance
 
-The Creator pack is sufficient; do not upgrade for Casey.
+Use the existing Creator/promotional allocation first. Do not purchase an upgrade
+without the account owner’s approval and a dashboard usage check.
 
-ElevenLabs' current public help page lists 250 included voice-only ElevenAgents minutes
-for Creator, with setup and prompt-test calls billed at half cost and LLM cost passed
-through separately. HackRice's promotional allocation may display a different credit
-number. **The ElevenLabs Billing/Usage screen is authoritative for this account.**
+ElevenLabs’ public help page describes duration-based voice-call billing and separate LLM
+costs but no longer guarantees a fixed Creator minute allowance. HackRice’s promotional
+allocation may also differ from the public plan. **The ElevenLabs Billing/Usage screen is
+authoritative for this account.**
 
 Use these controls:
 
@@ -70,7 +71,7 @@ Casey browser
   │    └─ Casey server validates caseId
   │         └─ ElevenLabs token API + secret API key
   ├─ starts protected WebRTC session with returned token
-  ├─ sends server-authored dynamic variables
+  ├─ sends case variables selected from the server allowlist
   └─ handles dealPressureCard through an allowlisted client function
 
 ElevenLabs agent
@@ -83,6 +84,11 @@ ElevenLabs agent
 Use a conversation token instead of a browser-visible API key. The current React SDK
 defaults voice sessions to WebRTC, and ElevenLabs exposes
 `GET /v1/convai/conversation/token` for this purpose.
+
+The token authenticates access to the protected agent, but browser-passed dynamic
+variables remain inspectable and potentially modifiable by the player. Never use them as
+secrets or authorization. Keep safety boundaries in the static agent configuration and
+keep truth, evidence, unlocks, and scoring in Casey’s deterministic engine.
 
 ## Part A — configure the ElevenLabs account
 
@@ -435,12 +441,12 @@ terms support that statement.
 
 ## Part F — Casey application contract
 
-These examples are implementation templates for the future coding phase. Re-check them
+These examples are implementation templates. Re-check them
 against the exact installed `@elevenlabs/react` version and TypeScript types.
 
 ### Environment variables
 
-Future `.env.example`:
+Add these names to `.env.example` when voice integration begins:
 
 ```dotenv
 ELEVENLABS_API_KEY=
@@ -508,7 +514,6 @@ export async function POST(request: Request) {
 
   return NextResponse.json(
     {
-      agentId,
       conversationToken: data.token,
       conversationId: data.conversation_id,
       // Load this from Casey's static server-side case allowlist.
@@ -540,7 +545,7 @@ The current token endpoint returns both `token` and `conversation_id`. See
 
 ### React provider and client tool
 
-Install only when coding begins:
+Install when implementing the voice slice:
 
 ```bash
 npm install @elevenlabs/react
@@ -608,16 +613,10 @@ function CaseyCallPanel() {
       return;
     }
 
-    const {
-      agentId,
-      conversationToken,
-      dynamicVariables,
-    } = await response.json();
+    const { conversationToken, dynamicVariables } = await response.json();
 
     await conversation.startSession({
-      agentId,
       conversationToken,
-      connectionType: 'webrtc',
       dynamicVariables,
     });
   }

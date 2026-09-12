@@ -1,9 +1,11 @@
 # Casey — HackRice 16 Judging Audit
 
-This is a deliberately strict design-stage review against the five criteria in the
-[HackRice 16 Hacker Handbook](<HackRice 16 Hacker Handbook (1).pdf>). Scores describe
-the concept as documented—not a working submission. No design can guarantee a 9+ judge
-score; Casey earns that range only by shipping and showing the evidence gates below.
+This is a deliberately strict review against the five criteria recorded from the team’s
+HackRice 16 handbook. The [official event site](https://hackrice.com/) confirms the
+September 11–13, 2026 event, casino/card theme, and Games & Gamification track. Scores
+describe the documented concept plus the current component prototype—not a working
+submission. No design can guarantee a 9+ judge score; Casey earns that range only by
+shipping and showing the evidence gates below.
 
 ## Executive verdict
 
@@ -12,16 +14,17 @@ with a voice API attached. It is a short investigation game about **source indep
 the player constructs a Trust Chain while a live character tries to keep every
 confirmation inside one controlled network.
 
-The original design has a memorable visual metaphor and a strong educational reveal.
-Its largest weaknesses are weak proof of impact, a score that rewards opening everything,
+The first draft had a memorable visual metaphor and a strong educational reveal. Its
+largest weaknesses were weak proof of impact, a score that rewarded opening everything,
 an optional-sounding voice layer, unsupported claims, and scope borrowed from sponsors
-not listed in this handbook.
+not listed in the handbook. The canonical build design corrects those product issues;
+implementation evidence is still required.
 
 ## Honest baseline
 
 | Handbook criterion | Design-stage score | Why it is not 9+ yet |
 |---|---:|---|
-| Technical Rigor | 6.5/10 | The architecture is plausible, but there is no running proof. Voice is mostly dialogue, scoring treats every opened card as evidence, and the database plan is unnecessary. |
+| Technical Rigor | 6.5/10 | The visual shell runs, but there is no playable engine, deterministic Receipt, voice integration, or automated proof yet. |
 | Originality & Creativity | 8.3/10 | The card-table metaphor and source-provenance lesson are fresh. Without tighter mechanics, it can still read as “security training plus chatbot.” |
 | User Experience & Design | 7.6/10 | Visual direction is coherent, but onboarding, evidence selection, call states, consent, captions, fallback, and error recovery are under-specified. |
 | Practicality & Impact | 7.0/10 | The problem is real, yet the prior pitch uses unqualified statistics and invented future player counts. There is no transfer measure or authoring/scaling story. |
@@ -162,4 +165,3 @@ better than a broad set of simple, fragile integrations under the handbook wordi
 - Do not claim Tiger Data, a domain prize, Lilie Lab eligibility, Notability use, or any
   other challenge until it is confirmed and genuinely used.
 - Take screenshots and record the resilient demo before feature freeze.
-

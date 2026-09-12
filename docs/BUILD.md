@@ -4,7 +4,7 @@
 
 HackRice 16 · Games & Gamification · ElevenLabs challenge
 
-Design version: 2.0 · Canonical scope: [PROJECT.md](PROJECT.md)
+Canonical scope: [PROJECT.md](PROJECT.md)
 
 > Casey is a voice-first investigation game where a persuasive caller wants the
 > player to trust an offer. The player wins by building a defensible Trust Chain—not
@@ -47,9 +47,10 @@ simulation platform. Those descriptions erase the original mechanic.
 
 ## 2. Competition strategy
 
-The [HackRice 16 handbook](<HackRice 16 Hacker Handbook (1).pdf>) names five judging
-criteria: Technical Rigor, Originality & Creativity, User Experience & Design,
-Practicality & Impact, and Relevance.
+The team’s HackRice 16 handbook names five judging criteria: Technical Rigor,
+Originality & Creativity, User Experience & Design, Practicality & Impact, and
+Relevance. The [official event site](https://hackrice.com/) confirms the event dates,
+casino/card theme, and Games & Gamification track.
 
 - Enter **Games & Gamification only**; the handbook permits at most one track.
 - Submit to **Best Project Built with ElevenLabs**.
@@ -62,7 +63,7 @@ Practicality & Impact, and Relevance.
 - The required Devpost video is 3–4 minutes. Live judging is 2 minutes of demo plus
   1 minute of Q&A, repeated 3–4 times.
 
-Detailed scoring strategy: [JUDGING-AUDIT.md](JUDGING-AUDIT.md).
+Detailed scoring strategy: [JUDGING.md](JUDGING.md).
 
 ## 3. Game loop
 
@@ -321,31 +322,30 @@ The whole game is viewed from above on a casino-style felt table. Artifacts are 
 cards. Source roots are represented by small labeled seals, so channel and ownership are
 visually distinct.
 
+The current prototype and supplied brand art establish these canonical tokens:
+
 ```css
---felt:        #1F513F;
---felt-edge:   #173C31;
---card:        #FFF8E7;
---ink:         #171512;
---danger:      #9F2D28;
---gold:        #E0B83F;
+--felt:      #356A50;
+--felt-deep: #2A5440;
+--cream:     #F5EFE0;
+--cream-dim: #E8E0CE;
+--ink:       #252121;
+--danger:    #B9342B;
+--gold:      #CF9C2D;
 ```
 
-Checked color pairs:
-
-- card on felt: 8.60:1
-- gold on felt: 4.81:1
-- ink on card: 17.21:1
-- danger on card: 6.89:1
-- card on danger: 6.89:1
-
-These values are starting tokens, not permission to skip testing actual component states.
+These values match `app/globals.css`. Test the actual component combinations for WCAG
+contrast; a palette token is not permission to use every foreground/background pairing.
 
 ### Type
 
-- Display: **Bodoni Moda**, self-hosted if used.
-- UI/body: **Public Sans**, self-hosted if used.
+- Display: **Playfair Display**, currently loaded through `next/font`.
+- UI/body: **Public Sans**, currently loaded through `next/font`.
+- Compact labels: **Jost**, used sparingly for short metadata—not paragraph copy.
 - System fallbacks must preserve legibility if font loading fails.
 - Sentence case for controls; reserve uppercase for short decorative card indices.
+- The illustrated Casey wordmark is an image asset, not a UI font; provide meaningful
+  adjacent text or alt text wherever it appears.
 
 ### Meaning system
 
@@ -496,8 +496,20 @@ tests/
   e2e/
 ```
 
-The existing root repository contains ECC-H harness source. Resolve that layout before
-scaffolding; do not pretend the current package is the Casey runtime.
+### Current implementation snapshot
+
+- The root package is the Casey Next.js application.
+- `app/page.tsx` is an `ArtifactCard`/`Pip` isolation review, not the landing screen.
+- The CSS palette, typography, logo assets, channel primitives, and artifact-card shell
+  exist.
+- The current `Band`-colored channel pip is prototype shorthand. Before game use, split
+  channel identity from `sourceClass`/`sourceRoot` so a new medium never implies an
+  independent source.
+- Case fixtures, the pure engine, Trust Chain, Receipt, voice route, fallback, and tests
+  do not exist yet.
+
+Build forward from this prototype; do not re-scaffold the app or describe the isolation
+page as a playable round.
 
 ### System boundary
 
@@ -527,12 +539,14 @@ Required flow:
 3. Browser calls `/api/voice-session`.
 4. Server uses `ELEVENLABS_API_KEY` and an allowlisted agent ID to obtain short-lived
    provider authorization.
-5. Browser starts the session with only static, server-approved case variables.
+5. Browser starts the session with case variables selected from a server allowlist.
 6. Agent may call `dealPressureCard`; client validates the enum and de-duplicates it.
 7. UI displays connection/speaking/listening state and keeps an end-call escape.
 8. On error or timeout, end the live session and switch to labeled fallback mode.
 
 Do not forward arbitrary browser prompt text or case JSON into an agent override.
+Browser-passed variables are inspectable and modifiable, so they are context—not secrets,
+authorization, or trusted game state.
 
 Official references:
 
@@ -542,7 +556,7 @@ Official references:
 - [Client tools](https://elevenlabs.io/docs/eleven-agents/customization/tools/client-tools)
 
 Step-by-step Casey configuration:
-[ElevenLabs Creator setup runbook](ELEVENLABS-SETUP.md).
+[ElevenLabs Creator setup runbook](ELEVENLABS.md).
 
 ### Agent prompt contract
 
@@ -626,7 +640,7 @@ Test Case 01 with people who did not help design it. Do not coach during play. R
 - understood objective after onboarding: yes/no;
 - completion time;
 - used an independent route before verdict: yes/no;
-- could explain same channel vs independent source afterward: yes/no;
+- could explain new channel vs independent source afterward: yes/no;
 - one moment of confusion;
 - one spontaneous fun/replay comment, if any.
 
@@ -647,11 +661,12 @@ case file plus bounded caller configuration—not a free-form model that invents
 
 ## 11. Build order
 
-Do not start this section until the user explicitly begins implementation.
+Work through these gates in order. The visual prototype is a starting point, not a
+completed gate.
 
 ### Gate A — deterministic vertical slice
 
-- Reconcile repository/app layout and scaffold the pinned stack.
+- Keep the existing Next.js scaffold and align new modules to the target layout above.
 - Define and validate one Case 01 fixture.
 - Implement reducer, pin limit, score, and Receipt explanation keys with tests.
 - Render an unstyled path from Deal to Receipt.

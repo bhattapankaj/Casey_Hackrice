@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Casey
 
-## Getting Started
+**Take the call. Build the proof.**
 
-First, run the development server:
+![Casey wordmark and playing-card mark](public/casey-banner.png)
+
+Casey is a voice-first social-engineering investigation game for HackRice 16. A
+persuasive caller wants the player to trust an offer. The player investigates the claim,
+pins up to three artifacts into a **Trust Chain**, and commits to **Scam**,
+**Legitimate**, or **Not enough evidence**.
+
+The central mechanic is provenance. Calling a number supplied by a suspicious email may
+feel like a second confirmation, but both claims still share one source. Casey makes that
+hidden dependency visible in a post-round **Receipt** and rewards verification through a
+source the claimant does not control.
+
+## Why this is a game
+
+- An adaptive fictional caller applies bounded social pressure.
+- Investigation choices reveal different evidence and source paths.
+- Three evidence slots force players to select proof instead of opening everything.
+- Caller actions deal face-down pressure cards that flip during the Receipt.
+- Deterministic scoring rewards accuracy, independent proof, evidence quality, and
+  composure—never speed.
+- Scam, legitimate, and unresolved cases prevent “always choose scam” from winning.
+
+## Current status
+
+Casey is in early implementation. The repository currently contains the Next.js visual
+shell, brand tokens and assets, channel primitives, and an `ArtifactCard`/`Pip` isolation
+view. The playable case engine, Trust Chain, Receipt, fallback path, automated tests, and
+ElevenLabs integration are still to be built.
+
+The must-demo target is one polished two-minute case with a resilient no-microphone path.
+A second case comes only after that vertical slice is complete.
+
+## Run locally
 
 ```bash
+npm ci
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). Current checks are:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run lint
+npm run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Dedicated unit, typecheck, and browser-test scripts have not been added yet.
 
-## Learn More
+## Documentation
 
-To learn more about Next.js, take a look at the following resources:
+- [Product contract](docs/PROJECT.md) — canonical scope and product behavior
+- [Build design](docs/BUILD.md) — game loop, cases, scoring, UX, architecture, and demo
+- [Judging strategy](docs/JUDGING.md) — evidence gates and submission guardrails
+- [ElevenLabs runbook](docs/ELEVENLABS.md) — agent, authentication, privacy, fallback,
+  and integration contract
+- [Repository guidance](AGENTS.md) — implementation invariants and working rules
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## HackRice target
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Track:** Games & Gamification
+- **Challenge:** Best Project Built with ElevenLabs
+- **Experience:** onboarding in 15 seconds; one complete round in two minutes
+- **Teaching goal:** leave the claimant’s path and verify through an independently found
+  source
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The [official HackRice 16 site](https://hackrice.com/) confirms the September 11–13,
+2026 event and casino/card theme. The FTC reported that losses to job and
+employment-agency scams rose from $90 million in 2020 to $501 million in 2024
+([FTC source](https://www.ftc.gov/news-events/news/press-releases/2025/03/new-ftc-data-show-big-jump-reported-losses-fraud-125-billion-2024)).

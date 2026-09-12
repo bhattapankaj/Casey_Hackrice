@@ -5,7 +5,7 @@
 
 ## Status
 
-- **Phase:** design lock; implementation has not been authorized yet
+- **Phase:** early implementation; visual shell exists, core game loop is not complete
 - **Event:** HackRice 16
 - **Deadline:** Sunday, September 13, 2026 at 9:00 AM CT
 - **Judging:** 3 minutes total—2-minute demo, 1-minute Q&A; repeated 3–4 times
@@ -41,7 +41,7 @@ to $501 million in 2024 ([FTC](https://www.ftc.gov/news-events/news/press-releas
 Build the most memorable two-minute experience in the Games & Gamification field and a
 credible ElevenLabs challenge entry. “9+/10” is an internal evidence bar, not a promised
 judge score. We earn it only if the live build satisfies every acceptance gate in
-[the judging audit](JUDGING-AUDIT.md).
+[the judging audit](JUDGING.md).
 
 ### Success signals
 
@@ -169,14 +169,14 @@ Official ElevenLabs references: [React SDK](https://elevenlabs.io/docs/eleven-ag
 [agent authentication](https://elevenlabs.io/docs/eleven-agents/customization/authentication),
 and [dynamic variables](https://elevenlabs.io/docs/eleven-agents/customization/personalization/dynamic-variables).
 Casey-specific configuration steps live in the
-[ElevenLabs Creator setup runbook](ELEVENLABS-SETUP.md).
+[ElevenLabs Creator setup runbook](ELEVENLABS.md).
 
 ## Constraints
 
 - Follow the HackRice handbook, especially the one-track limit, mandatory video,
   submission deadline, and 2-minute live-demo format.
-- Product code must be authored during the official hacking period. Existing harness
-  files are tooling and must not be represented as Casey features.
+- Product code must be authored during the official hacking period. Only implemented,
+  verified behavior may be represented as a Casey feature.
 - Fictional organizations and identities only; no real-person voice imitation.
 - Explain microphone use before requesting permission. Never ask for real personal data.
 - Truth and score are never model-generated.
@@ -185,18 +185,17 @@ Casey-specific configuration steps live in the
 
 ## Commands
 
-Casey application commands do not exist yet. Define and verify them during scaffolding;
-do not reuse the current harness `package.json` as if it were the app.
-
-Expected future gates: format, lint, typecheck, unit tests, production build, and one
-demo-path browser test.
+Current commands are `npm run dev`, `npm run lint`, and `npm run build`. The repository
+does not yet define dedicated typecheck, unit-test, or browser-test scripts; add those
+with the engine and end-to-end slices instead of claiming those gates already pass.
 
 ## Glossary
 
 - **Claimant:** the person or organization making the original claim.
 - **Channel:** email, phone, directory, or web—the medium carrying an artifact.
 - **Source root:** the underlying party that ultimately controls an artifact.
-- **Same-channel / in-band:** evidence supplied by or rooted in the claimant's path.
+- **Claimant-rooted / in-band:** evidence supplied by or controlled by the claimant,
+  even when it arrives through a different channel.
 - **Independent / out-of-band:** evidence reached through a separately discovered,
   trusted source root.
 - **Trust Chain:** the player's ordered set of up to three pinned artifacts.
