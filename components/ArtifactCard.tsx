@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { Pip } from "@/components/Pip";
 import {
   BAND_PHRASE,
@@ -12,11 +13,14 @@ import {
 } from "@/lib/channels";
 
 export type ArtifactCardProps = {
+  id?: string;
   channel: Channel;
   band: Band;
   label: string;
   state: CardState;
   onOpen?: () => void;
+  layoutId?: string;
+  interactive?: boolean;
   className?: string;
 };
 
@@ -32,11 +36,14 @@ function CornerIndex({ channel, band }: { channel: Channel; band: Band }) {
 }
 
 export function ArtifactCard({
+  id,
   channel,
   band,
   label,
   state,
   onOpen,
+  layoutId,
+  interactive = true,
   className,
 }: ArtifactCardProps) {
   const Icon = CHANNEL_ICONS[channel];
@@ -46,8 +53,7 @@ export function ArtifactCard({
   const classes = [
     "relative aspect-[3/4] w-[180px] overflow-hidden rounded-[12px] bg-cream",
     "shadow-[0_2px_8px_rgba(37,33,33,0.18)]",
-    "transition-[box-shadow,transform] duration-150 ease-in-out",
-    facedown ? "" : "hover:-translate-y-px hover:shadow-[0_4px_10px_rgba(37,33,33,0.22)]",
+    "transition-[box-shadow] duration-150 ease-in-out",
     className ?? "",
   ]
     .filter(Boolean)
@@ -92,22 +98,32 @@ export function ArtifactCard({
     </>
   );
 
-  if (facedown) {
+  if (facedown || !interactive) {
     return (
-      <div className={classes} aria-label="Facedown evidence card">
+      <motion.div
+        layoutId={layoutId}
+        className={classes}
+        aria-label={
+          facedown
+            ? "Facedown evidence card"
+            : `${label}, ${phrase}.`
+        }
+      >
         {face}
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <button
+    <motion.button
       type="button"
+      id={id}
+      layoutId={layoutId}
       onClick={onOpen}
       aria-label={`${action}. ${phrase}.`}
-      className={`${classes} cursor-pointer text-center`}
+      className={`${classes} cursor-pointer text-center hover:shadow-[0_4px_10px_rgba(37,33,33,0.22)]`}
     >
       {face}
-    </button>
+    </motion.button>
   );
 }

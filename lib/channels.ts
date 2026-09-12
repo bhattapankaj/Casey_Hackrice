@@ -25,6 +25,13 @@ export const CHANNEL_OPEN_LABEL: Record<Channel, string> = {
   web: "Open the page",
 };
 
+export const CHANNEL_CLOSE_LABEL: Record<Channel, string> = {
+  email: "Close the email",
+  phone: "Close the call",
+  directory: "Close the directory",
+  web: "Close the page",
+};
+
 export const BAND_PHRASE: Record<Band, string> = {
   in: "from the original message",
   out: "found independently",

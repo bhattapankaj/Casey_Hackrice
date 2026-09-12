@@ -17,7 +17,6 @@
 html,
 body {
   min-height: 100%;
-  overflow-x: hidden;
   background-color: var(--color-felt);
 }
 
@@ -42,4 +41,28 @@ body {
 ::selection {
   background: var(--color-cream-dim);
   color: var(--color-ink);
+}
+
+.artifact {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.call-pulse {
+  animation: call-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes call-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .call-pulse {
+    animation: none;
+  }
 }
