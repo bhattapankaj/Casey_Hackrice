@@ -234,7 +234,7 @@ Offer: {{ offer_summary }}
 Create a short, believable conversation that gives the player practice resisting social
 pressure and verifying a claim independently. You may persuade the player to keep
 considering the fictional offer. You are not trying to obtain money, data, or a real
-commitment.
+commitment.-
 
 # Allowed facts
 
