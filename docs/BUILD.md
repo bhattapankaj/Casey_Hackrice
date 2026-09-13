@@ -1,6 +1,6 @@
 # Casey — Game, Experience, and Build Design
 
-**Take the call. Build the proof.**
+**Take the call. Verify everything.**
 
 HackRice 16 · Games & Gamification · ElevenLabs, Gemini, and Tiger Data challenges
 
@@ -62,9 +62,10 @@ casino/card theme, and Games & Gamification track.
   playtest notes, or wireframes and can show that process.
 - Lilie Lab is Rice-only. Do not claim eligibility unless every relevant rule is met.
 - [MLH's current HackRice prize page](https://www.mlh.com/events/hackrice-71/prizes)
-  confirms **Best Use of Tiger Data**. Pursue it only through privacy-minimized outcome
-  analytics that show whether players used and pinned independent evidence; a configured
-  account or empty database is not a prize claim.
+  confirms **Best Use of Tiger Data**. Casey's verified local integration uses Tiger for
+  a server-rescored shared leaderboard. Privacy-minimized outcome analytics remain a
+  prepared next layer; do not present them as live until ingestion and aggregate queries
+  are demonstrated.
 - The required Devpost video is 3–4 minutes. Live judging is 2 minutes of demo plus
   1 minute of Q&A, repeated 3–4 times.
 
@@ -555,9 +556,10 @@ tests/
 
 ### Current implementation snapshot
 
-- The root package is the Casey Next.js application and Case 01 is playable end to end.
-- `lib/cases/**` owns the validated Meridian graph; `lib/engine/**` owns reducer, score,
-  selectors, and Receipt generation.
+- The root package is the Casey Next.js application. Three authored cases are playable:
+  Meridian job scam, Harborline bank impersonation, and a legitimate campus desk shift.
+- `lib/cases/**` owns the validated graphs; `lib/engine/**` owns reducer, score, selectors,
+  and Receipt generation.
 - Channel and source provenance are separate. UI bands are derived only at the
   presentation boundary.
 - The table pins at most three artifacts, uses the authored text fallback, and renders a
@@ -566,8 +568,11 @@ tests/
   validated client-tool payloads, timeouts, safe errors, and fallback transitions.
 - `lib/engine/moriarty.ts` deterministically selects the post-Receipt challenge and
   validates the defense. `/api/gemini/challenge` supplies only bounded character copy.
-- Unit, route, type, build, lint, and fallback browser checks exist. A real protected
-  ElevenLabs agent, deployed HTTPS test, and human playtest remain manual release gates.
+- Unit, route, type, build, lint, and fallback browser checks exist. Local real-provider
+  smoke tests passed for protected ElevenLabs WebRTC and Gemini structured output, and
+  the Tiger outcome/leaderboard schema is reachable. Deployed HTTPS provider tests, the
+  live pressure-tool callback, retention verification, and human playtest remain manual
+  release gates.
 
 ### System boundary
 
@@ -761,6 +766,12 @@ case file plus bounded caller configuration—not a free-form model that invents
 Work through these gates in order. The visual prototype is a starting point, not a
 completed gate.
 
+**Status on September 13, 2026:** Gates A and B are implemented and automated. Gate C
+has a successful local real-agent session, but deployed HTTPS, live pressure-tool, and
+retention checks remain. Gate D has three cases, Gemini, and the Tiger board implemented;
+the unresolved truth state, anonymous outcome ingestion, deployed provider checks, and
+five-person test remain.
+
 ### Gate A — deterministic vertical slice
 
 - Keep the existing Next.js scaffold and align new modules to the target layout above.
@@ -791,7 +802,9 @@ completed gate.
 ### Gate D — depth and proof
 
 - Run five-person test and fix the highest-friction issue.
-- Add Case 02 if all prior exits are green.
+- Maintain the implemented bank-scam Case 02 and legitimate Case 03 without weakening
+  the Case 01 demo path.
+- Add an unresolved case only if the provider and playtest release gates are already green.
 - Add anonymous aggregates/leaderboard only if it cannot threaten the demo.
 - Activate the prepared Tiger Data hypertable only after its privacy boundary, migration,
   and failure-isolation tests are green.
@@ -835,8 +848,8 @@ one claimant root, then flips pressure cards.
 
 **1:45–2:00 — Close**
 
-“Casey doesn't train paranoia. The next case is legitimate. It trains one habit: leave
-the claimant's channel and build proof they don't control.”
+“Casey doesn't train paranoia. One of its later cases is legitimate. It trains one
+habit: leave the claimant's channel and build proof they don't control.”
 
 ### Q&A — 1 minute
 
@@ -864,6 +877,9 @@ Follow the handbook's recommended structure:
 
 Never use future-tense usage metrics as if they already happened.
 
+Full shot list, spoken script, failure paths, and judge answers:
+[HackRice presentation playbook](HACKRICE_PRESENTATION.md).
+
 ## 13. Release checklist
 
 ### Product
@@ -873,7 +889,7 @@ Never use future-tense usage metrics as if they already happened.
 - [ ] Same-channel artifacts visibly collapse to one source.
 - [ ] All verdict labels are plain language.
 - [ ] Receipt explains the result and one real-world action.
-- [ ] Case 02 exists only if Case 01 is polished and resilient.
+- [ ] Extra cases remain playable without weakening Case 01's polished demo path.
 
 ### Technical
 
@@ -908,8 +924,9 @@ Never use future-tense usage metrics as if they already happened.
 - [ ] One track selected: Games & Gamification.
 - [ ] ElevenLabs challenge use is accurately described.
 - [ ] Any other challenge claim is verified and evidenced.
-- [ ] Tiger Data is claimed only after a real deployed insert, aggregate query, and
-  privacy-safe dashboard are demonstrated.
+- [ ] Tiger Data is described as the server-rescored shared board verified through the
+  local integration; deployed board and aggregate outcome analytics are claimed only
+  after their separate live checks pass.
 - [ ] 3–4 minute video uploaded before Sunday 9:00 AM CT.
 - [ ] Backup video, screenshots, and live fallback are ready.
 - [ ] Two-minute demo and one-minute Q&A are rehearsed.
@@ -922,11 +939,12 @@ does not deepen the core mechanic.
 
 If time is short, cut in this order:
 
-1. leaderboard and remote telemetry;
-2. Case 03;
-3. Case 02 presentation polish, keeping its fixture/test if possible;
+1. anonymous outcome telemetry and analytics presentation;
+2. leaderboard presentation, keeping local game progress intact;
+3. bank Case 02 presentation polish, keeping its fixture/test if possible;
 4. nonessential animation and audio;
 5. landing-page decoration.
 
 Never cut the deterministic Receipt, the Trust Chain, fallback play, consent, or the
-ability to complete Case 01.
+ability to complete Case 01. Preserve legitimate Case 03 unless it threatens the core
+demo's reliability because it proves that “always choose Scam” is not the strategy.

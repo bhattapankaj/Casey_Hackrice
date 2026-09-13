@@ -3,10 +3,12 @@
 This is a deliberately strict review against the five criteria recorded from the team’s
 HackRice 16 handbook. The [official event site](https://hackrice.com/) confirms the
 September 11–13, 2026 event, casino/card theme, and Games & Gamification track. The
-deterministic Case 01 and fallback demo path are now implemented and automated; live
-provider behavior and human comprehension are not yet verified. No design can guarantee
-a 9+ judge score; Casey earns that range only by shipping and showing the evidence gates
-below.
+three authored cases and the deterministic fallback demo path are implemented and
+automated. Local real-provider smoke tests exist for ElevenLabs and Gemini, and the Tiger
+schema/shared-board path is locally verified; deployed provider behavior, the live
+pressure-tool callback, retention settings, and human comprehension are not yet verified.
+No design can guarantee a 9+ judge score; Casey earns that range only by shipping and
+showing the evidence gates below.
 
 ## Executive verdict
 
@@ -25,9 +27,9 @@ implementation evidence is still required.
 
 | Handbook criterion | Implemented evidence | Remaining proof gap |
 |---|---|---|
-| Technical Rigor | Validated case graph, pure reducer, deterministic Receipt, secure token route, and automated fallback path | Real protected-agent call on the deployed HTTPS origin |
-| Originality & Creativity | Source-root collapse and pressure-card mechanic are implemented | Observe whether first-time players notice the source distinction without coaching |
-| User Experience & Design | Consent, fallback, pin limit, verdict confirmation, Receipt, keyboard dialog behavior, and reduced motion are present | Manual 390 px/device pass and five rapid playtests |
+| Technical Rigor | Three validated case graphs, pure reducer, deterministic Receipt, protected token route, Gemini boundary, server-rescored Tiger board, and automated fallback path | Deployed provider paths and real pressure-tool callback |
+| Originality & Creativity | Source-root collapse, pressure-card mechanic, and Moriarty cross-examination are implemented | Observe whether first-time players notice the source distinction without coaching |
+| User Experience & Design | Consent, fallback, pin limit, verdict confirmation, Receipt, keyboard behavior, reduced motion, and automated 390 px checks are present | Manual real-device pass and five rapid playtests |
 | Practicality & Impact | The lesson and FTC-backed real-world action are explicit | Measured comprehension and completion results with the actual sample size |
 | Relevance | The card-table game loop and ElevenLabs client-tool boundary are implemented | Demonstrate reliable live voice during judging and avoid unsupported outcome claims |
 
@@ -41,15 +43,17 @@ implementation evidence is still required.
    to deal face-down pressure cards. They flip after the verdict to explain urgency,
    authority, or scarcity without spoiling the call.
 4. **Keep truth outside AI.** Voice can vary; case truth, unlocks, and score cannot.
-5. **Use three valid verdicts.** A legitimate case and an unresolved case prevent blind
-   skepticism from winning.
+5. **Use calibrated truth states.** The legitimate Case 03 prevents blind skepticism
+   from winning. An unresolved case is still required before claiming that all three
+   verdicts are represented.
 6. **Measure learning without pretending.** Compare independent-verification behavior
    between first and later cases; display only anonymous aggregates with sample size.
 7. **Design failure as a mode.** Mic denied, API down, or Wi-Fi lost switches to a clearly
    labeled text/prerecorded call while preserving the investigation and Receipt.
 8. **Keep sponsor use coherent.** ElevenLabs is central.
    [MLH's current prize page](https://www.mlh.com/events/hackrice-71/prizes) confirms
-   Tiger Data; use it only to measure the core independent-verification behavior.
+   Tiger Data; Casey currently uses it for a server-rescored shared board. Outcome
+   analytics should be claimed only after the prepared ingestion path is live.
    Notability counts only if the team genuinely uses and documents it.
 
 ## 9+ evidence gates
@@ -68,9 +72,10 @@ The demo must prove all of the following:
 - A network/microphone failure completes through fallback rather than an error screen.
 - A 20-second architecture explanation makes the AI/deterministic boundary obvious.
 
-**Do not add a database merely to look technical.** Tiger Data earns its place only when
-its hypertable and aggregate make privacy-minimized learning behavior visible without
-becoming a dependency of the round.
+**Do not add a database merely to look technical.** Casey's current Tiger value is a
+shared tournament board whose scores are reconstructed by the server. The sponsor-story
+ceiling increases only when the prepared hypertable and aggregate can show
+privacy-minimized behavior without becoming a dependency of the round.
 
 ### Originality & Creativity — target 9.3
 
@@ -117,11 +122,11 @@ becoming a dependency of the round.
   merely educational content with points.
 - Submit to the ElevenLabs challenge because live adaptive voice and client tools are
   essential to the experience.
-- Use casino/card language and visual design as a coherent interaction metaphor. Confirm
-  the official event theme before claiming theme-prize eligibility; the handbook only
-  guarantees a surprise for theme-related submissions.
-- A second case is more valuable to track relevance than a leaderboard because it proves
-  mastery and counters the “always pick scam” strategy.
+- Use casino/card language and visual design as a coherent interaction metaphor. The
+  official event site confirms the casino/card theme; do not claim a separate theme
+  prize unless current attendee materials explicitly list one.
+- The legitimate case is stronger relevance evidence than a leaderboard alone because
+  it proves calibrated mastery and counters the “always pick scam” strategy.
 
 ## Judge-facing proof matrix
 
@@ -131,7 +136,7 @@ becoming a dependency of the round.
 | Player chooses between supplied and independent routes | Originality, Games relevance, Impact |
 | Trust Chain maps multiple channels to one source root | Originality, UX, Impact |
 | Deterministic Receipt and score breakdown | Technical Rigor, UX |
-| Legitimate second case or its authored/tested fixture | Relevance, Impact, replay value |
+| Legitimate Case 03 visible in the catalog | Relevance, Impact, replay value |
 | Mic/network fallback completes the same loop | Technical Rigor, UX, Practicality |
 | Five-person comprehension results with sample size | UX, Impact |
 
@@ -143,10 +148,10 @@ becoming a dependency of the round.
 | 2 | Deterministic Receipt | Very high across four criteria | Medium / low |
 | 3 | Live caller + pressure-card client tool | Very high for rigor/originality | High / high |
 | 4 | Complete fallback mode | High for rigor/UX | Medium / low |
-| 5 | Legitimate Case 02 | High for game depth/impact | Medium / low |
+| 5 | Maintain legitimate Case 03 | High for game depth/impact | Implemented / low risk |
 | 6 | Five-person test and iteration | High for UX/impact credibility | Low / low |
 | 7 | Tiger Data anonymous outcome aggregate | Medium-high for impact/rigor and sponsor evidence | Medium / medium |
-| 8 | Leaderboard | Low-to-medium for replay | Medium / medium |
+| 8 | Maintain leaderboard | Low-to-medium for replay | Implemented / low risk |
 | 9 | Any unrelated sponsor API | Negative until core is finished | High / high |
 
 ## Red-team objections
@@ -166,6 +171,12 @@ becoming a dependency of the round.
 - Live judging is 2 minutes of demo plus 1 minute of Q&A, repeated 3–4 times.
 - Do not repeat the old fictional line “127 people played; 61% got fooled” unless those
   values are actually measured and the sample definition is stated.
-- Tiger Data's prize is confirmed by MLH, but do not claim Casey uses it until a real
-  service, deployed write, aggregate query, and privacy-safe result are verified.
+- Tiger Data's prize is confirmed by MLH. Claim the exact verified use: the local
+  Casey-to-Tiger shared-board path performs server rescoring and idempotent persistence.
+  Do not describe the deployed board or anonymous aggregate outcome analytics as live
+  until those separate checks pass.
+- The enabled cases currently cover two scam truths and one legitimate truth. Do not say
+  an unresolved case is shipped.
+- Use [the presentation playbook](HACKRICE_PRESENTATION.md) for the final video, live
+  timing, fallback language, and Q&A.
 - Take screenshots and record the resilient demo before feature freeze.

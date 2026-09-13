@@ -5,9 +5,11 @@
 
 ## Status
 
-- **Phase:** Case 01 vertical slice implemented; local live voice and Gemini structured-output
-  smoke tests verified; the post-Receipt Moriarty challenge and Tiger leaderboard are
-  implemented; deployed-HTTPS, provider retention, and human-playtest gates remain
+- **Phase:** Three authored cases are playable: two scam cases (Meridian job offer and
+  Harborline bank impersonation) plus one legitimate campus-employment case. Local live
+  voice and Gemini structured-output smoke tests are verified; the post-Receipt Moriarty
+  challenge and Tiger leaderboard are implemented. Deployed-HTTPS, live pressure-tool,
+  provider-retention, unresolved-case, and human-playtest gates remain.
 - **Event:** HackRice 16
 - **Deadline:** Sunday, September 13, 2026 at 9:00 AM CT
 - **Judging:** 3 minutes total—2-minute demo, 1-minute Q&A; repeated 3–4 times
@@ -15,8 +17,8 @@
 - **Track:** Games & Gamification (one track maximum)
 - **Primary challenge:** Best Use of ElevenLabs
 - **Secondary challenges:** Best Use of Gemini API through the bounded post-Receipt
-  Moriarty challenge, plus Best Use of Tiger Data through the shared leaderboard and
-  privacy-minimized analytics path
+  Moriarty challenge, plus Best Use of Tiger Data through the server-rescored shared
+  leaderboard; privacy-minimized outcome analytics remain a prepared next layer
 
 ## Idea
 
@@ -59,8 +61,8 @@ judge score. We earn it only if the live build satisfies every acceptance gate i
 
 ## Demo path
 
-1. Landing: judge enters the required local player name, reads “Take the call. Build the
-   proof.”, and selects **Deal the case**.
+1. Landing: judge enters the required local player name and board nickname, reads “Take
+   the call. Verify everything.”, and selects **Deal me in**.
 2. Briefing: two sentences establish a fictional research-job offer; the table deals the
    email, phone, and directory actions.
 3. Consent: judge chooses **Answer** after a clear processing/privacy notice. Declining
@@ -103,8 +105,10 @@ points from free-form conversation or model output.
 ### Required outcomes
 
 - Case 01: `scam` — **The Meridian Offer**
-- Case 02: `legit` — suspicious presentation, independently verifiable source
-- Case 03/P2: `not_enough_evidence` — insufficient evidence makes restraint correct
+- Case 02: `scam` — **A caller from your bank**
+- Case 03: `legit` — **The desk shift**
+- Remaining P2 gap: an authored `not_enough_evidence` case where an independent check
+  confirms that restraint is correct
 
 ## Scope
 
@@ -121,14 +125,18 @@ points from free-form conversation or model output.
 - Unit-tested score evaluator and case-schema validator
 - One automated end-to-end test for the demo path
 
-### Should ship only after Must demo
+### Implemented after Must demo
 
-- Case 02 to prove the game is not “always choose scam”
+- Case 02 bank-impersonation scam
+- Case 03 legitimate but suspicious-looking campus-employment call
+- Gemini Moriarty challenge with deterministic correctness and authored fallback
+- Tiger Data shared leaderboard with server-side rescoring and local fallback
+
+### Remaining only after release gates
+
+- Case where `not_enough_evidence` is the authored truth
 - Activate the prepared Tiger Data anonymous outcome telemetry and aggregate dashboard
-- Leaderboard, only if it remains privacy-safe and demo-independent
-- Gemini Moriarty challenge, only after the deterministic Receipt and with authored fallback
-- Case 03
-- Notability process-challenge evidence, if genuinely used during ideation/testing
+- Notability process-challenge evidence, only if genuinely used during ideation/testing
 
 ### Cut
 
@@ -150,7 +158,7 @@ points from free-form conversation or model output.
 | Voice auth | Server-only endpoint returns a short-lived signed URL/token |
 | Cases | Static typed JSON/TypeScript fixtures; schema validated |
 | Truth and score | Pure deterministic TypeScript functions |
-| Persistence | Local session first; optional Tiger Data anonymous outcomes are P2 |
+| Persistence | Browser-local progress; Tiger Data shared board with local fallback; anonymous outcomes remain P2 |
 | Deploy | Vercel, after local demo path is green |
 
 Do not pin framework or SDK version numbers in prose. The lockfile is authoritative.
@@ -179,7 +187,7 @@ multiple channels; this is how Casey distinguishes a new medium from an independ
 | ElevenLabs | Live fictional caller | `ELEVENLABS_API_KEY`, `ELEVENLABS_AGENT_ID` | No |
 | Gemini API | Post-Receipt source-independence cross-examination | `GEMINI_API_KEY`, `GEMINI_MODEL` | No |
 | Vercel | Deployment | configured in host | No for local play |
-| Tiger Data | Optional anonymous outcome analytics only | `TIGER_DATABASE_URL` | No |
+| Tiger Data | Server-rescored shared leaderboard; prepared anonymous outcome analytics | `TIGER_DATABASE_URL` | No |
 
 Official ElevenLabs references: [React SDK](https://elevenlabs.io/docs/eleven-agents/libraries/react),
 [agent authentication](https://elevenlabs.io/docs/eleven-agents/customization/authentication),
@@ -208,9 +216,11 @@ Casey-specific configuration steps live in the
 Current commands are `npm run dev`, `npm run lint`, `npm run typecheck`, `npm run test`,
 `npm run build`, `npm run test:e2e`, `npm run check`, `npm run db:migrate`, and
 `npm run db:verify`. Automated provider tests use mocks and consume no provider credits.
-A local real-agent WebRTC session was verified on September 12, 2026, and a local Gemini
-structured-output request was verified on September 13, 2026. The deployed call, live
-pressure-tool callback, deployed Gemini request, and human playtest remain manual gates.
+A local real-agent WebRTC session was verified on September 12, 2026. A local Gemini
+structured-output request and the configured Tiger outcome/leaderboard schema were
+verified on September 13, 2026. The deployed call, live pressure-tool callback, deployed
+Gemini/Tiger paths, provider retention, unresolved case, and human playtest remain manual
+gates.
 
 ## Glossary
 

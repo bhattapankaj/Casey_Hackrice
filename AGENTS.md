@@ -13,17 +13,18 @@ authentication, client-tool, privacy, and test contract.
 
 ## Current phase
 
-**The Case 01 vertical slice is playable end to end.** Implemented: the validated Meridian
-artifact/action/source graph in `lib/cases/**`, pure reducer and deterministic scoring in
-`lib/engine/**`, artifact-level evidence pinning capped at three, a provenance Receipt,
-explicit voice consent, authored text fallback, the protected-session token route,
-validated pressure-card client tool, and unit plus fallback demo-path tests.
+**Three authored cases are playable, and the Case 01 demo path is protected end to end.**
+Implemented: two scam cases and one legitimate case in `lib/cases/**`, pure reducer and
+deterministic scoring in `lib/engine/**`, artifact-level evidence pinning capped at three,
+a provenance Receipt, explicit voice consent, authored text fallback, protected-session
+token route, validated pressure-card client tool, Gemini Moriarty challenge with fallback,
+Tiger Data shared board with server-side rescoring, and unit plus browser demo-path tests.
 
-**External release gates remain.** The code path is ready for a protected ElevenLabs
-agent, but the dashboard configuration, retention settings, real credential smoke test,
-and deployed HTTPS call have not been verified in this repository. The five-person
-playtest has not been run. Do not describe live voice or learning results as verified
-until those manual gates are recorded.
+**External release gates remain.** Local real-credential ElevenLabs and Gemini smoke
+tests and the Tiger schema have been verified. The deployed HTTPS voice/Gemini/Tiger
+paths, live pressure-tool callback, ElevenLabs retention settings, an authored unresolved
+case, and the five-person playtest remain unverified. Do not describe those gates or
+learning results as complete until their manual records exist.
 
 As implementation continues, protect this two-minute demo path above every optional
 feature:
@@ -65,12 +66,18 @@ feature:
 - Keyboard navigation, visible focus, reduced motion, and captions/transcript
 - Unit tests for scoring and case validation; one end-to-end demo-path test
 
-### Build only after Must demo is green
+### Implemented after Must demo became green
 
-- Case 02, a legitimate but suspicious-looking scenario
-- Anonymous aggregate session counters and leaderboard
-- Case 03, where `not_enough_evidence` is correct
-- Additional polish, achievements, and Notability process-challenge materials
+- Case 02, a bank-impersonation scam
+- Case 03, a legitimate but suspicious-looking campus-employment scenario
+- Gemini post-Receipt cross-examination with authored fallback
+- Tiger Data shared leaderboard with server-side rescoring and local fallback
+
+### Remaining only after release gates
+
+- A case where `not_enough_evidence` is correct
+- Anonymous aggregate session-outcome ingestion/dashboard
+- Additional polish and Notability process-challenge materials
 
 ### Do not build for the hackathon
 

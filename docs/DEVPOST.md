@@ -10,7 +10,7 @@ As a two-person team from ULM, we built Casey around that moment. We wanted to m
 
 ## What it does
 
-Casey is a voice-first investigation game. You receive a suspicious job offer, speak with a persuasive fictional caller, investigate documents, and decide: Scam, Legitimate, or Not enough evidence.
+Casey is a voice-first investigation game with three playable cases: a suspicious job offer, a bank-impersonation alert, and an awkward but legitimate campus-employment call. You speak with a fictional caller, investigate documents, and decide: Scam, Legitimate, or Not enough evidence.
 
 You can pin only three pieces of evidence into your Trust Chain, so choosing what actually proves your case matters.
 
@@ -30,6 +30,8 @@ ElevenLabs Agents powers the conversational caller. A protected server endpoint 
 
 We use the Gemini API for a bounded post-verdict feature. Gemini receives limited, fictional metadata about the player's pinned evidence and produces a schema-constrained Moriarty objection and follow-up question. The server validates its response, and an authored fallback keeps the challenge playable if the API is unavailable.
 
+Tiger Data powers Casey's shared leaderboard. The browser submits the player's case choices rather than a claimed score; the server validates those choices, reconstructs the canonical result, and computes the score again before writing it. Browser-local progress keeps the game playable when the shared database is unavailable.
+
 The investigation itself runs on an authored and validated case graph. That graph defines the artifacts, available actions, source relationships, and evidence supporting each verdict.
 
 Case truth, challenge correctness, and scoring remain deterministic. ElevenLabs can vary the conversation, and Gemini can phrase a critical challenge, but neither model can invent evidence or decide whether the player is correct.
@@ -48,7 +50,7 @@ Gemini presented a similar boundary problem. We wanted its cross-examination to 
 
 ## Accomplishments that we're proud of
 
-We built a complete playable investigation, from the first offer to the final Receipt, with tested scoring and resilient fallbacks.
+We built three playable investigations, including job and bank-impersonation scams plus a legitimate campus call, with tested scoring and resilient fallbacks.
 
 Our favorite moment is the source reveal. Two convincing pieces of evidence can collapse into one claimant-controlled story. That makes an abstract security lesson visible through the player's own choices.
 
@@ -66,10 +68,10 @@ Gemini also showed us that AI can contribute without being the final authority. 
 
 ## What's next for Casey
 
-Our next steps are validating the ElevenLabs and Gemini integrations in the deployed environment and conducting first-time player testing, especially to learn whether players can explain why two confirmations may still count as one source.
+Our next steps are validating the ElevenLabs, Gemini, and Tiger Data integrations in the deployed environment and conducting first-time player testing, especially to learn whether players can explain why two confirmations may still count as one source.
 
-We want to expand beyond the first case with a legitimate offer that looks suspicious and a case where uncertainty is the correct outcome. Together, those scenarios would reward careful verification instead of reflexively labeling everything a scam.
+Our legitimate-but-suspicious case already prevents “always choose Scam” from winning. Next, we want to add a case where uncertainty is the correct outcome, rewarding restraint when independent verification still cannot settle the claim.
 
-We also want to explore privacy-conscious aggregate analytics to understand how players investigate without collecting raw conversations.
+We also want to extend the Tiger Data integration with privacy-conscious aggregate outcome analytics, without collecting raw conversations.
 
 Casey's takeaway is simple: before you trust a claim, find a source the claimant does not control.

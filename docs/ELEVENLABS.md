@@ -27,7 +27,7 @@ Use this order when you are ready to configure the account:
 2. Create the restricted `casey-hackrice-server` API key.
 3. Create **Casey — Case Caller** from the Blank template.
 4. Select a stock voice and a low-latency model.
-5. Add the nine dynamic-variable placeholders.
+5. Add the ten dynamic-variable placeholders.
 6. Paste the first message and system prompt from this document.
 7. Add `dealPressureCard` and the End call system tool.
 8. Enable protected access, Focus, and Manipulation guardrails.

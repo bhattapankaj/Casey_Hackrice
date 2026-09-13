@@ -39,7 +39,7 @@ control.
 
 ## Core features
 
-- Three authored cases covering scam, legitimate, and unresolved outcomes
+- Three authored cases covering two scam patterns and one legitimate-but-awkward caller
 - ElevenLabs voice caller with microphone consent, live captions, and bounded game tools
 - Automatic authored backup call when live voice cannot continue
 - Evidence pinning with a strict three-artifact Trust Chain
@@ -194,6 +194,8 @@ Provider tests use mocks and do not consume ElevenLabs or Gemini credits.
 - [Gemini setup](./docs/GEMINI.md)
 - [Tiger Data setup](./docs/TIGER_DATA.md)
 - [Backend architecture](./docs/BACKEND.md)
+- [Devpost submission copy](./docs/DEVPOST.md)
+- [Video, live demo, and judge Q&A playbook](./docs/HACKRICE_PRESENTATION.md)
 
 ## HackRice 16
 

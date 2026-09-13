@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CardTable } from "@/components/CardTable";
+import { PlayerAccessGate } from "@/components/PlayerAccessGate";
 import { getCase } from "@/lib/cases/registry";
 
 type PlayPageProps = {
@@ -30,5 +31,9 @@ export default async function PlayPage({ params }: PlayPageProps) {
     );
   }
 
-  return <CardTable gameCase={gameCase} />;
+  return (
+    <PlayerAccessGate>
+      <CardTable gameCase={gameCase} />
+    </PlayerAccessGate>
+  );
 }

@@ -63,10 +63,16 @@ const CARD_WIDTH = "w-[158px] min-[430px]:w-[170px] min-[780px]:w-[190px]";
 export function CardTable({ gameCase }: CardTableProps) {
   const player = usePlayerName();
   const [preparedRun, setPreparedRun] = useState<PreparedCaseRun | null>(null);
+  const preparedRunRef = useRef<PreparedCaseRun | null>(null);
 
   useEffect(() => {
+    if (preparedRunRef.current?.caseId === gameCase.id) {
+      setPreparedRun(preparedRunRef.current);
+      return;
+    }
     const current = readStoredProgress();
     const prepared = prepareCaseRun(current, gameCase.id);
+    preparedRunRef.current = prepared;
     if (prepared.progress !== current) {
       writeStoredProgress(prepared.progress);
     }
