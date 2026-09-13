@@ -49,8 +49,18 @@ export function getTigerDatabaseConfig(
     throw new Error("TIGER_DATABASE_URL must require TLS with sslmode=require or stronger");
   }
 
+  // pg 8.23+ otherwise treats `require` like `verify-full`, while Tiger's
+  // standard connection string uses libpq's encrypted `require` semantics.
+  // Keep TLS required without resorting to a process-wide certificate bypass.
+  if (
+    url.searchParams.get("sslmode") === "require" &&
+    !url.searchParams.has("uselibpqcompat")
+  ) {
+    url.searchParams.set("uselibpqcompat", "true");
+  }
+
   return {
-    connectionString,
+    connectionString: url.toString(),
     poolMax: parsePoolMax(environment.TIGER_DATABASE_POOL_MAX),
   };
 }

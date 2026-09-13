@@ -35,11 +35,17 @@ if (
 ) {
   throw new Error("TIGER_DATABASE_URL must include sslmode=require or stronger");
 }
+if (
+  connectionUrl.searchParams.get("sslmode") === "require" &&
+  !connectionUrl.searchParams.has("uselibpqcompat")
+) {
+  connectionUrl.searchParams.set("uselibpqcompat", "true");
+}
 if (command !== "migrate" && command !== "verify") {
   throw new Error("Use either migrate or verify");
 }
 
-const client = new Client({ connectionString });
+const client = new Client({ connectionString: connectionUrl.toString() });
 
 try {
   await client.connect();

@@ -46,7 +46,7 @@ describe("Tiger Data server configuration", () => {
       }),
     ).toEqual({
       connectionString:
-        "postgresql://casey:secret@service.example:5432/casey?sslmode=require",
+        "postgresql://casey:secret@service.example:5432/casey?sslmode=require&uselibpqcompat=true",
       poolMax: 4,
     });
 
@@ -60,6 +60,19 @@ describe("Tiger Data server configuration", () => {
         TIGER_DATABASE_URL: "https://service.example/casey?sslmode=require",
       }),
     ).toThrow("must use postgres");
+  });
+
+  it("preserves stronger certificate verification modes", () => {
+    expect(
+      getTigerDatabaseConfig({
+        TIGER_DATABASE_URL:
+          "postgresql://casey:secret@service.example:5432/casey?sslmode=verify-full",
+      }),
+    ).toEqual({
+      connectionString:
+        "postgresql://casey:secret@service.example:5432/casey?sslmode=verify-full",
+      poolMax: 3,
+    });
   });
 
   it("bounds the connection pool", () => {
