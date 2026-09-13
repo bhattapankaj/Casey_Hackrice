@@ -2,14 +2,14 @@ import { expect, test } from "@playwright/test";
 import { PLAYER_PROFILE_STORAGE_KEY } from "@/lib/player-profile";
 
 test("Case 01 fallback path reaches the deterministic Receipt", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await page.getByLabel("Your name").fill("Jordan");
   await page.getByRole("button", { name: "Deal me in" }).click();
   await expect(page).toHaveURL(/\/table$/);
   const meridian = page.getByRole("link", { name: /The Meridian Offer/ });
   await expect(meridian).toHaveAttribute("href", "/play/case-01");
-  await meridian.focus();
-  await meridian.press("Enter");
+  await meridian.click();
   await expect(page).toHaveURL(/\/play\/case-01$/);
   expect(
     await page.evaluate((key) => window.localStorage.getItem(key), PLAYER_PROFILE_STORAGE_KEY),

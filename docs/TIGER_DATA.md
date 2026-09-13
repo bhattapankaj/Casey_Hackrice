@@ -1,8 +1,8 @@
 # Casey — Tiger Data readiness runbook
 
-Tiger Data is Casey's optional, server-only anonymous outcome analytics layer. The
-browser remains the source of local play state for now, and Case 01 must always work
-without a database.
+Tiger Data is Casey's optional, server-only anonymous outcome analytics and shared
+leaderboard layer. The browser remains the source of local play state for now, and
+Case 01 must always work without a database.
 
 ## What is ready
 
@@ -13,10 +13,31 @@ without a database.
   hypertable, and an hourly continuous aggregate.
 - `db/migrations/002_board_entries.sql` creates the optional scored-board table. That
   table is not analytics telemetry.
+- `db/migrations/003_board_entry_idempotency.sql` upgrades earlier board tables with a
+  collision-safe submission UUID and idempotent upsert support.
+- `db/migrations/004_board_hand_chips.sql` stores the server-derived best hand and the
+  bounded chip balance shown on the shared board.
+- `/api/board` validates same-origin submissions, re-scores canonical case results on
+  the server, and stores only the optional board nickname plus score summary.
+- Shared rows display a memorable nickname-derived username while the full browser UUID
+  remains the database identity.
 - `db/queries/demo-dashboard.sql` contains judge-safe queries that keep the sample size
   beside every rate.
-- Nothing imports the insert adapter from the frontend or an API route yet, so local
-  play has no new network dependency.
+- Local progress still works when the shared store is missing or unreachable.
+
+## Live verification record
+
+On 2026-09-13, the reviewed migrations and `npm run db:verify` completed against the
+selected Tiger Cloud service. A same-origin API smoke test then:
+
+1. created a fictional board submission;
+2. updated the same submission UUID from 75 to 150 points;
+3. read back exactly one row with the expected nickname-derived username; and
+4. removed the smoke-test row, leaving the live board clean.
+
+This verifies the local Casey-to-Tiger leaderboard path. It does not verify a deployed
+HTTPS environment, a public dashboard, or anonymous `session_outcomes` ingestion; those
+remain release gates.
 
 ## Privacy contract
 
@@ -39,7 +60,7 @@ Install and authenticate using Tiger Data's official CLI:
 ```bash
 brew install --cask timescale/tap/tiger-cli
 tiger auth login
-tiger config set read_only true
+tiger config set read_only all
 tiger mcp install codex
 ```
 
@@ -56,29 +77,30 @@ intentional migration or service-management task requires writes, then restore i
 ```bash
 tiger config set read_only false
 # perform the reviewed write
-tiger config set read_only true
+tiger config set read_only all
 ```
 
 Do not put a Tiger account token or database password in Codex configuration. Tiger MCP
 uses the CLI login and local credential store.
 
-## Provision and migrate later
+## Setup and release
 
-When the frontend demo is frozen:
+The local service and schema are ready. For another machine or deployment:
 
-1. Create or select a Tiger Cloud service in the Tiger Console or with the reviewed MCP.
-2. Copy its PostgreSQL connection URL into `.env.local` as `TIGER_DATABASE_URL`; ensure
+1. Select the existing Tiger Cloud service in the Tiger Console or authenticated CLI.
+2. Put its PostgreSQL connection URL in the server environment as
+   `TIGER_DATABASE_URL`; ensure
    it includes `sslmode=require`. Never use a `NEXT_PUBLIC_` prefix.
-3. Run `npm run db:migrate` once and `npm run db:verify` to confirm the hypertable and
-   continuous aggregate.
-4. Add one same-origin, rate-limited server route that accepts a strict allowlisted event
-   shape, reconstructs canonical game state, and calls `buildAnonymousSessionOutcome`.
-5. Keep localStorage as the fallback. Failed telemetry must never block the Receipt.
-6. Run `db/queries/demo-dashboard.sql` in Tiger Console for the live analytics view.
+3. Run `npm run db:migrate` and `npm run db:verify`.
+4. Keep localStorage as the fallback. A failed board write must never block the game or
+   Receipt.
+5. Only after the core demo remains green, add a strict completion route that rebuilds
+   canonical state and calls `buildAnonymousSessionOutcome`.
+6. Run `db/queries/demo-dashboard.sql` before presenting a live analytics view.
 
-The current repository intentionally stops before steps 1 and 4. A schema file or MCP
-installation alone is not evidence of live Tiger Data use; record a real insert, query,
-and dashboard before claiming the challenge integration is complete.
+The board integration has a real insert/query record above. Do not describe anonymous
+outcome ingestion, the deployed environment, or a dashboard as verified until those
+separate gates are recorded.
 
 ## Commands
 

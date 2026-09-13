@@ -29,6 +29,9 @@ export default defineConfig({
   ],
   webServer: {
     command: `npm run dev -- --port ${E2E_PORT}`,
+    // Keep repeatable browser tests isolated from a developer's live Tiger board.
+    // The real service is covered by the explicit migration/verify and smoke checks.
+    env: { TIGER_DATABASE_URL: "" },
     url: E2E_BASE_URL,
     reuseExistingServer: false,
     timeout: 120_000,

@@ -78,13 +78,21 @@ try {
           AND tablename = 'board_entries'
           AND indexname = 'board_entries_submission_id_idx'
       ) AS board_idempotency_ready
+      ,(
+        SELECT COUNT(*) = 2
+        FROM information_schema.columns
+        WHERE table_schema = 'casey'
+          AND table_name = 'board_entries'
+          AND column_name IN ('best_hand', 'chips')
+      ) AS board_game_fields_ready
   `);
   const readiness = result.rows[0];
   if (
     !readiness?.hypertable_ready ||
     !readiness?.aggregate_ready ||
     !readiness?.board_ready ||
-    !readiness?.board_idempotency_ready
+    !readiness?.board_idempotency_ready ||
+    !readiness?.board_game_fields_ready
   ) {
     throw new Error("Tiger Data schema is incomplete; run npm run db:migrate");
   }
