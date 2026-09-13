@@ -51,11 +51,20 @@ test("board stays playable when the shared store is down", async ({ page, reques
   await expect(
     page.getByText("Showing your local scores. The shared board is unavailable."),
   ).toBeVisible();
-  await expect(page.getByRole("cell", { name: /Jordan/ })).toBeVisible();
-  await expect(page.getByText(/@Jordan-[A-F0-9]{6}/).first()).toBeVisible();
-  await expect(page.getByRole("columnheader", { name: "Best hand" })).toBeVisible();
-  await expect(page.getByRole("columnheader", { name: "Chips" })).toBeVisible();
-  await expect(page.getByText("You", { exact: true })).toBeVisible();
+  const register = page.getByRole("region", { name: "All investigators" });
+  if ((page.viewportSize()?.width ?? 0) < 640) {
+    const card = register.locator('[data-mobile-investigator^="Jordan-"]');
+    await expect(card).toBeVisible();
+    await expect(card.getByText(/@Jordan-[A-F0-9]{6}/)).toBeVisible();
+    await expect(card.getByText("You", { exact: true })).toBeVisible();
+  } else {
+    const row = register.getByRole("row").filter({ hasText: "Jordan" });
+    await expect(row).toBeVisible();
+    await expect(row.getByText(/@Jordan-[A-F0-9]{6}/)).toBeVisible();
+    await expect(row.getByText("You", { exact: true })).toBeVisible();
+    await expect(register.getByRole("columnheader", { name: "Best hand" })).toBeVisible();
+    await expect(register.getByRole("columnheader", { name: "Chips" })).toBeVisible();
+  }
   await expect(page.getByText("Scores are verified server-side.")).toBeVisible();
 });
 
@@ -116,8 +125,14 @@ test("shared board shows every other investigator returned by Tiger", async ({ p
   });
 
   await page.goto("/board");
-  await expect(page.getByRole("heading", { name: "All investigators" })).toBeVisible();
+  const register = page.getByRole("region", { name: "All investigators" });
+  await expect(register).toBeVisible();
   await expect(page.getByText("2 players", { exact: true })).toBeVisible();
-  await expect(page.getByRole("row").filter({ hasText: "Avery-B41D63" })).toBeVisible();
-  await expect(page.getByRole("row").filter({ hasText: "Morgan-74BA98" })).toBeVisible();
+  if ((page.viewportSize()?.width ?? 0) < 640) {
+    await expect(register.locator('[data-mobile-investigator="Avery-B41D63"]')).toBeVisible();
+    await expect(register.locator('[data-mobile-investigator="Morgan-74BA98"]')).toBeVisible();
+  } else {
+    await expect(register.getByRole("row").filter({ hasText: "Avery-B41D63" })).toBeVisible();
+    await expect(register.getByRole("row").filter({ hasText: "Morgan-74BA98" })).toBeVisible();
+  }
 });
