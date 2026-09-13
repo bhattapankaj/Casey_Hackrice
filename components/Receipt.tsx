@@ -6,6 +6,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Check, ExternalLink, Link2, X } from "lucide-react";
 import { ArtifactCard } from "@/components/ArtifactCard";
 import { NicknamePrompt } from "@/components/NicknamePrompt";
+import { MoriartyChallenge } from "@/components/MoriartyChallenge";
 import { ShareResult } from "@/components/ShareResult";
 import { ChipFace } from "@/components/VerdictChip";
 import { SiteNav } from "@/components/SiteNav";
@@ -386,6 +387,8 @@ export function Receipt({
             </div>
           ) : null}
         </section>
+
+        <MoriartyChallenge receipt={receipt} />
 
         <div className="mt-10 flex flex-wrap items-center gap-5">
           <button

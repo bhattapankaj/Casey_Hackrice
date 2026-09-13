@@ -2,7 +2,7 @@
 
 **Take the call. Build the proof.**
 
-HackRice 16 · Games & Gamification · ElevenLabs challenge
+HackRice 16 · Games & Gamification · ElevenLabs, Gemini, and Tiger Data challenges
 
 Canonical scope: [PROJECT.md](PROJECT.md)
 
@@ -54,6 +54,8 @@ casino/card theme, and Games & Gamification track.
 
 - Enter **Games & Gamification only**; the handbook permits at most one track.
 - Submit to **Best Use of ElevenLabs**.
+- Submit to **Best Use of Gemini API** with the bounded Moriarty cross-examination. It
+  deepens the core mechanic without allowing a model to decide truth, evidence, or score.
 - Use the card/casino metaphor coherently. Confirm the official event theme before
   making a theme-prize claim.
 - Notability is optional and counts only if the team genuinely uses it for sketches,
@@ -81,7 +83,9 @@ Detailed scoring strategy: [JUDGING.md](JUDGING.md).
    poker hand rank for the evidence chain, a documented national pattern from
    `sourceNote`, and the transferable action. Copy result puts three plain lines on
    the clipboard: case, verdict plus whether the chain was independent, and the case URL.
-7. **Replay** — a different truth state tests whether the player learned the mechanic.
+7. **Cross-examine** — optionally let Gemini's Moriarty attack one source assumption;
+   Casey deterministically validates the selected defense.
+8. **Replay** — a different truth state tests whether the player learned the mechanic.
 
 Table chips start at 100. Before locking a verdict the player stakes 10, 25, or 50.
 Correct adds the stake; wrong subtracts it, floored at zero. Chips never unlock content.
@@ -468,6 +472,12 @@ The Receipt is the visual climax:
 Primary button: **Try another case**. Secondary: **Replay this case**. Sharing or
 leaderboard placement is optional and must never block learning feedback.
 
+Below the truth, **Moriarty's Objection** is an optional final test. It preserves the
+felt, cream, red, and gold table language, traces a red thread across the challenged
+chain, and awards a cosmetic SVG deduction seal only when a real independent source
+survives the objection. A player who correctly recognizes a claimant-only chain receives
+the learning confirmation without a false proof badge.
+
 ### Motion and sound
 
 - One 400–600 ms staggered deal on case entry.
@@ -528,6 +538,8 @@ tests/
   deterministic Receipt with grouped source roots and pressure-card explanations.
 - `lib/voice/**` and `/api/voice-session` implement protected WebRTC token exchange,
   validated client-tool payloads, timeouts, safe errors, and fallback transitions.
+- `lib/engine/moriarty.ts` deterministically selects the post-Receipt challenge and
+  validates the defense. `/api/gemini/challenge` supplies only bounded character copy.
 - Unit, route, type, build, lint, and fallback browser checks exist. A real protected
   ElevenLabs agent, deployed HTTPS test, and human playtest remain manual release gates.
 
@@ -539,6 +551,10 @@ Typed case data ──→ pure engine ──→ React table ──→ Receipt
        └─ safe caller variables ─→ ElevenLabs agent
                                          │
                          allowlisted pressure-card client tool
+
+Receipt data ──→ pure challenge plan ──→ Moriarty card ──→ deterministic defense
+                         │
+                         └─ fictional source metadata ─→ Gemini structured copy
 ```
 
 Only authored case data and player actions determine the upper path. ElevenLabs enriches
@@ -619,14 +635,33 @@ Fallback is a supported mode, not a blank error state.
   deterministic Receipt.
 - Before judging, warm the live route and keep fallback one click away.
 
+### Gemini post-Receipt challenge
+
+- Use the official Google GenAI JavaScript SDK and current Interactions API.
+- Keep `GEMINI_API_KEY` server-only. `GEMINI_MODEL` is an optional deployment override;
+  the checked default is `gemini-3.8-flash`.
+- The browser sends only a case ID and up to three authored artifact IDs. It never sends
+  a player name, nickname, transcript, free-form prompt, score, or verdict.
+- The pure engine selects the challenge kind, evidence options, target, and valid answer.
+- Gemini returns four short strings through a strict JSON schema: objection, question,
+  success line, and failure line. Validate lengths, fields, links, markup, and dash usage.
+- Gemini never generates evidence, case truth, score, debrief advice, answer keys, or
+  badge eligibility.
+- Same-origin checks, bounded input, a six-request local rate limit, a five-second
+  provider timeout, and authored fallback keep the Receipt resilient.
+- The UI must label live Gemini copy and Casey fallback accurately.
+
+Provider and deployment steps: [Gemini setup runbook](GEMINI.md).
+
 ### State and persistence
 
 - Use a reducer or small store with serializable events.
 - Do not make network calls inside the pure engine.
 - Persist local progress in `casey_progress_v1`. A required, editable board nickname is
-  collected beside the private player name before play. Prefill it with the deterministic
-  `Name-Sleuth-221B` suggestion, sanitize to `[A-Za-z0-9 _-]`, and cap it at 20 characters.
-  Never add either name to voice dynamic variables.
+  collected beside the private player name before play. Prefill it as
+  `Name-Codename-221B`, drawing the codename from a curated Sherlock-themed pool, and
+  provide a control to deal another alias. Sanitize to `[A-Za-z0-9 _-]` and cap it at 20
+  characters. Never add either name to voice dynamic variables.
 - `POST /api/board` rescores verdicts and pins with `scoreCatalogRound`. A client-sent
   total is ignored. Tiger `board_entries` or Vercel KV is used when configured; otherwise
   `/board` shows local rows and "Showing your local scores. The shared board is unavailable."
@@ -635,6 +670,8 @@ Fallback is a supported mode, not a blank error state.
   deterministic score dimensions, evidence counts, independent-route signals,
   pressure-card count, and bounded duration.
 - Never store raw audio or full transcripts in the Casey datastore.
+- Do not store Gemini prompts or responses in Tiger Data. The cosmetic deduction result
+  remains ephemeral and has no effect on the leaderboard.
 
 ## 9. Privacy, safety, and fairness
 
@@ -649,6 +686,7 @@ Fallback is a supported mode, not a blank error state.
 - Configure provider retention to the minimum available and describe actual behavior;
   never promise deletion that has not been verified.
 - No model-generated links, phone numbers, evidence, case truth, or debrief advice.
+- Gemini receives fictional source metadata only and cannot alter challenge correctness.
 - The agent's tool output is untrusted and allowlisted.
 - The player may end the call immediately and still finish the case.
 - A legitimate case prevents the game from equating accent, grammar, or unfamiliarity
@@ -728,6 +766,8 @@ completed gate.
 - Add anonymous aggregates/leaderboard only if it cannot threaten the demo.
 - Activate the prepared Tiger Data hypertable only after its privacy boundary, migration,
   and failure-isolation tests are green.
+- Add the optional Gemini Moriarty challenge only after the Receipt remains deterministic,
+  schema-validation tests pass, and the authored fallback is visible.
 - Capture screenshots and a fallback recording.
 
 **Exit:** every 9+ evidence gate in the judging audit has a real artifact or an honest gap.

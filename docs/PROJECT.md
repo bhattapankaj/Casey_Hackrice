@@ -5,17 +5,18 @@
 
 ## Status
 
-- **Phase:** Case 01 vertical slice implemented; local live voice verified; Tiger Data
-  readiness scaffolded but not connected; dashboard-tool, deployed-HTTPS, provider
-  retention, database, and human-playtest gates remain
+- **Phase:** Case 01 vertical slice implemented; local live voice and Gemini structured-output
+  smoke tests verified; the post-Receipt Moriarty challenge and Tiger leaderboard are
+  implemented; deployed-HTTPS, provider retention, and human-playtest gates remain
 - **Event:** HackRice 16
 - **Deadline:** Sunday, September 13, 2026 at 9:00 AM CT
 - **Judging:** 3 minutes total—2-minute demo, 1-minute Q&A; repeated 3–4 times
 - **Submission:** mandatory 3–4 minute Devpost video
 - **Track:** Games & Gamification (one track maximum)
 - **Primary challenge:** Best Use of ElevenLabs
-- **Secondary challenge:** Best Use of Tiger Data, only after a real privacy-minimized
-  analytics path is deployed and demonstrated
+- **Secondary challenges:** Best Use of Gemini API through the bounded post-Receipt
+  Moriarty challenge, plus Best Use of Tiger Data through the shared leaderboard and
+  privacy-minimized analytics path
 
 ## Idea
 
@@ -72,6 +73,8 @@ judge score. We earn it only if the live build satisfies every acceptance gate i
 7. Verdict: judge chooses Scam, Legitimate, or Not enough evidence and confirms.
 8. Receipt: Casey flips pressure cards and maps each pinned artifact to its source root,
    then shows truth, four-part score, and one real-world action.
+9. Optional cross-examination: Gemini's Moriarty challenges one assumption in the pinned
+   chain; Casey deterministically judges the player's selected defense.
 
 The path must fit within two minutes without relying on a leaderboard, database, or a
 second case.
@@ -120,6 +123,7 @@ points from free-form conversation or model output.
 - Case 02 to prove the game is not “always choose scam”
 - Activate the prepared Tiger Data anonymous outcome telemetry and aggregate dashboard
 - Leaderboard, only if it remains privacy-safe and demo-independent
+- Gemini Moriarty challenge, only after the deterministic Receipt and with authored fallback
 - Case 03
 - Notability process-challenge evidence, if genuinely used during ideation/testing
 
@@ -170,6 +174,7 @@ multiple channels; this is how Casey distinguishes a new medium from an independ
 | Service | Use | Secret names | Required for fallback? |
 |---|---|---|---|
 | ElevenLabs | Live fictional caller | `ELEVENLABS_API_KEY`, `ELEVENLABS_AGENT_ID` | No |
+| Gemini API | Post-Receipt source-independence cross-examination | `GEMINI_API_KEY`, `GEMINI_MODEL` | No |
 | Vercel | Deployment | configured in host | No for local play |
 | Tiger Data | Optional anonymous outcome analytics only | `TIGER_DATABASE_URL` | No |
 
@@ -187,9 +192,11 @@ Casey-specific configuration steps live in the
   verified behavior may be represented as a Casey feature.
 - Fictional organizations and identities only; no real-person voice imitation.
 - Keep the required player name in browser storage only. Never send it to ElevenLabs,
-  Tiger Data, server routes, transcripts, case data, logs, or scoring.
+  Gemini, Tiger Data, server routes, transcripts, case data, logs, or scoring.
 - Explain microphone use before requesting permission. Never ask for real personal data.
 - Truth and score are never model-generated.
+- Gemini may phrase an objection, but Casey chooses the challenge, validates the answer,
+  and awards only a cosmetic deduction seal.
 - External failure must not break the game or Receipt.
 - Use measured results only. Record sample size next to every playtest or telemetry stat.
 
@@ -197,10 +204,10 @@ Casey-specific configuration steps live in the
 
 Current commands are `npm run dev`, `npm run lint`, `npm run typecheck`, `npm run test`,
 `npm run build`, `npm run test:e2e`, `npm run check`, `npm run db:migrate`, and
-`npm run db:verify`. Automated provider tests use mocks and consume no ElevenLabs
-credits. A local real-agent WebRTC session was verified on September 12, 2026; the
-deployed call, live pressure-tool callback, and Tiger Data schema/deployed analytics
-remain manual gates.
+`npm run db:verify`. Automated provider tests use mocks and consume no provider credits.
+A local real-agent WebRTC session was verified on September 12, 2026, and a local Gemini
+structured-output request was verified on September 13, 2026. The deployed call, live
+pressure-tool callback, deployed Gemini request, and human playtest remain manual gates.
 
 ## Glossary
 

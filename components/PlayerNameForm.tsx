@@ -1,8 +1,13 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
-import { ArrowRight, Search } from "lucide-react";
-import { suggestBoardNickname } from "@/lib/board/identity";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { ArrowRight, Search, Shuffle } from "lucide-react";
+import {
+  isLegacySleuthNickname,
+  randomSherlockCodename,
+  suggestBoardNickname,
+  type SherlockCodename,
+} from "@/lib/board/identity";
 import { sanitizeNickname } from "@/lib/board/submission";
 import { normalizePlayerName, PLAYER_NAME_MAX_LENGTH } from "@/lib/player-profile";
 
@@ -20,11 +25,10 @@ export function PlayerNameForm({
   onSave,
 }: PlayerNameFormProps) {
   const [value, setValue] = useState(initialName);
-  const [nickname, setNickname] = useState(
-    initialNickname || (initialName ? suggestBoardNickname(initialName) : ""),
-  );
+  const [nickname, setNickname] = useState(initialNickname);
   const [nicknameEdited, setNicknameEdited] = useState(Boolean(initialNickname));
   const [error, setError] = useState("");
+  const codenameRef = useRef<SherlockCodename | null>(null);
   const normalized = normalizePlayerName(value);
   const cleanNickname = sanitizeNickname(nickname);
   const nicknameValid = Boolean(cleanNickname && cleanNickname === nickname.trim());
@@ -33,16 +37,26 @@ export function PlayerNameForm({
   useEffect(() => {
     if (initialName) {
       setValue((current) => current || initialName);
-      setNickname((current) => current || suggestBoardNickname(initialName));
+      setNickname((current) => {
+        if (current) return current;
+        codenameRef.current ??= randomSherlockCodename();
+        return suggestBoardNickname(initialName, codenameRef.current);
+      });
     }
   }, [initialName]);
 
   useEffect(() => {
     if (initialNickname) {
-      setNickname(initialNickname);
-      setNicknameEdited(true);
+      if (initialName && isLegacySleuthNickname(initialNickname)) {
+        codenameRef.current ??= randomSherlockCodename();
+        setNickname(suggestBoardNickname(initialName, codenameRef.current));
+        setNicknameEdited(false);
+      } else {
+        setNickname(initialNickname);
+        setNicknameEdited(true);
+      }
     }
-  }, [initialNickname]);
+  }, [initialName, initialNickname]);
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -56,6 +70,17 @@ export function PlayerNameForm({
     }
     setError("");
     onSave(normalized, cleanNickname);
+  }
+
+  function dealAnotherAlias() {
+    const codename = randomSherlockCodename(
+      Math.random,
+      codenameRef.current ?? undefined,
+    );
+    codenameRef.current = codename;
+    setNickname(suggestBoardNickname(value, codename));
+    setNicknameEdited(false);
+    setError("");
   }
 
   return (
@@ -98,7 +123,12 @@ export function PlayerNameForm({
             const nextName = event.target.value;
             setValue(nextName);
             if (!nicknameEdited) {
-              setNickname(nextName.trim() ? suggestBoardNickname(nextName) : "");
+              codenameRef.current ??= randomSherlockCodename();
+              setNickname(
+                nextName.trim()
+                  ? suggestBoardNickname(nextName, codenameRef.current)
+                  : "",
+              );
             }
             setError("");
           }}
@@ -145,9 +175,18 @@ export function PlayerNameForm({
             placeholder="Your detective alias"
           />
           <p id="board-nickname-help" className="mt-2 text-[12px] leading-relaxed text-ink/55">
-            We add a Sherlock-style codename and 221B marker. Edit it if you like. This
+            We deal a Sherlock-style codename and 221B marker. Edit it if you like. This
             is the name other players will see on the shared board.
           </p>
+          <button
+            type="button"
+            onClick={dealAnotherAlias}
+            disabled={!normalized}
+            className="mt-2 inline-flex min-h-[36px] items-center gap-1.5 text-[12px] font-semibold text-felt-deep underline decoration-felt-deep/30 underline-offset-4 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Shuffle size={13} strokeWidth={2} aria-hidden />
+            Deal another alias
+          </button>
         </div>
 
         <button

@@ -1,5 +1,6 @@
 "use client";
 
+import { Check } from "lucide-react";
 import type { Stake } from "@/lib/engine/chips";
 import { STAKE_OPTIONS } from "@/lib/engine/chips";
 
@@ -22,19 +23,38 @@ export function StakeControl({ value, onChange, disabled = false }: StakeControl
               type="button"
               disabled={disabled}
               aria-pressed={selected}
-              aria-label={`Stake ${stake}`}
+              aria-label={`Stake ${stake}${selected ? ", selected" : ""}`}
               onClick={() => onChange(stake)}
-              className="flex flex-col items-center gap-2 disabled:opacity-45"
+              className={`flex cursor-pointer flex-col items-center gap-2 transition-opacity duration-150 active:scale-95 disabled:cursor-default disabled:opacity-45 ${
+                selected ? "opacity-100" : "opacity-70 hover:opacity-100"
+              }`}
             >
               <span
-                className={`relative flex size-[56px] items-center justify-center rounded-full bg-cream text-ink shadow-[0_2px_6px_rgba(37,33,33,0.28)] ${
-                  selected ? "ring-2 ring-gold ring-offset-2 ring-offset-felt" : ""
+                className={`relative flex size-[56px] items-center justify-center rounded-full text-ink transition-all duration-150 ${
+                  selected
+                    ? "scale-110 bg-gold ring-4 ring-cream ring-offset-3 ring-offset-felt shadow-[0_8px_20px_rgba(37,33,33,0.38)]"
+                    : "bg-cream shadow-[0_2px_6px_rgba(37,33,33,0.28)] hover:-translate-y-0.5"
                 }`}
-                style={{ boxShadow: "0 2px 6px rgba(37,33,33,0.28), inset 0 0 0 1.5px #CF9C2D" }}
+                style={{
+                  boxShadow: selected
+                    ? "0 8px 20px rgba(37,33,33,0.38), inset 0 0 0 2px #F5EFE0"
+                    : "0 2px 6px rgba(37,33,33,0.28), inset 0 0 0 1.5px #CF9C2D",
+                }}
               >
                 <span className="font-serif text-[18px] font-semibold">{stake}</span>
+                {selected ? (
+                  <span className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-full border-2 border-cream bg-felt-deep text-cream shadow-sm">
+                    <Check size={11} strokeWidth={3} aria-hidden />
+                  </span>
+                ) : null}
               </span>
-              <span className="font-label text-[11px] tracking-[0.08em] text-cream/70">{stake}</span>
+              <span
+                className={`font-label text-[11px] tracking-[0.08em] ${
+                  selected ? "font-semibold text-cream" : "text-cream/60"
+                }`}
+              >
+                {selected ? "Selected" : `${stake} chips`}
+              </span>
             </button>
           );
         })}

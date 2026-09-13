@@ -3,6 +3,21 @@ import { PLAYER_PROFILE_STORAGE_KEY } from "@/lib/player-profile";
 
 test("Case 01 fallback path reaches the deterministic Receipt", async ({ page }) => {
   const boardSubmissions: Array<Record<string, unknown>> = [];
+  await page.route("**/api/gemini/challenge", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        source: "gemini",
+        copy: {
+          objection: "Three clues sit before us, but only one may have escaped the claimant's hand.",
+          question: "Which pinned exhibit proves that your investigation reached a separate source?",
+          successLine: "A separate origin. Your chain survives my objection, detective.",
+          failureLine: "A different channel can still carry the claimant's own story.",
+        },
+      }),
+    });
+  });
   await page.route("**/api/board", async (route) => {
     if (route.request().method() === "POST") {
       boardSubmissions.push(route.request().postDataJSON() as Record<string, unknown>);
@@ -18,7 +33,12 @@ test("Case 01 fallback path reaches the deterministic Receipt", async ({ page })
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await page.getByLabel("Your name").fill("Jordan");
-  await expect(page.getByLabel("Leaderboard nickname")).toHaveValue("Jordan-Sleuth-221B");
+  await expect(page.getByLabel("Leaderboard nickname")).toHaveValue(
+    /^Jor[A-Za-z0-9]*-(Adler|Baker|Bohemian|Cipher|Deduction|Hound|Irregular|Lantern|Lestrade|Magnifier|Mycroft|Violin|Watson)-221B$/,
+  );
+  const firstAlias = await page.getByLabel("Leaderboard nickname").inputValue();
+  await page.getByRole("button", { name: "Deal another alias" }).click();
+  await expect(page.getByLabel("Leaderboard nickname")).not.toHaveValue(firstAlias);
   await page.getByLabel("Leaderboard nickname").fill("Jordan-Hound-221B");
   await page.getByRole("button", { name: "Deal me in" }).click();
   await expect(page).toHaveURL(/\/table$/);
@@ -78,6 +98,20 @@ test("Case 01 fallback path reaches the deterministic Receipt", async ({ page })
     .click();
 
   await page.getByRole("button", { name: "Call it a scam" }).click();
+  await expect(page.getByRole("button", { name: "Stake 25, selected" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await page.getByRole("button", { name: "Stake 10" }).click();
+  await expect(page.getByRole("button", { name: "Stake 10, selected" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(page.getByRole("button", { name: "Stake 25" })).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+  await page.getByRole("button", { name: "Stake 25" }).click();
   await page.getByRole("button", { name: "Submit verdict" }).click();
   await expect(page.getByRole("heading", { name: "Lock this verdict?" })).toBeVisible();
   await page.getByRole("button", { name: "Lock verdict" }).click();
@@ -93,6 +127,14 @@ test("Case 01 fallback path reaches the deterministic Receipt", async ({ page })
   await expect(
     page.getByText(/contact a number the claimant did not provide/),
   ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Moriarty's Objection" })).toBeVisible();
+  await page.getByRole("button", { name: "Invite Moriarty" }).click();
+  await expect(page.getByText("GEMINI LIVE")).toBeVisible();
+  await expect(page.getByText(/Three clues sit before us/)).toBeVisible();
+  await page.getByRole("button", { name: /Directory-listed call/ }).click();
+  await expect(page.getByText("CHAIN HELD")).toBeVisible();
+  await expect(page.getByRole("img", { name: "Moriarty-Proof deduction badge" })).toBeVisible();
+  await expect(page.getByText("1000 / 1,000", { exact: true }).first()).toBeVisible();
   await expect.poll(() => boardSubmissions.length).toBe(1);
   expect(boardSubmissions[0]).toMatchObject({
     nickname: "Jordan-Hound-221B",
