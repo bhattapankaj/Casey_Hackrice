@@ -8,12 +8,13 @@ export const LOCAL_BOARD_KEY = "casey_board_local_v1";
 export function caseResultsFromProgress(progress: ProgressV1) {
   const results: Record<string, { verdict: string; pinnedArtifactIds: string[] }> = {};
   for (const [caseId, entry] of Object.entries(progress.cases)) {
-    if (!entry.lastVerdict) {
+    const verdict = entry.bestVerdict || entry.lastVerdict;
+    if (!verdict) {
       continue;
     }
     results[caseId] = {
-      verdict: entry.lastVerdict,
-      pinnedArtifactIds: entry.pinnedArtifactIds ?? [],
+      verdict,
+      pinnedArtifactIds: entry.bestPinnedArtifactIds ?? entry.pinnedArtifactIds ?? [],
     };
   }
   return results;
@@ -44,7 +45,7 @@ export function localStatsFromProgress(progress: ProgressV1): BoardStats {
   const case01 = progress.cases["case-01"];
   return {
     playersTonight: played.length > 0 ? 1 : 0,
-    casesPlayed: played.reduce((total, entry) => total + entry.attempts, 0),
+    casesPlayed: played.length,
     case01WrongPercent:
       !case01 || case01.attempts === 0
         ? null

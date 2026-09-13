@@ -8,6 +8,7 @@ test("board stays playable when the shared store is down", async ({ page, reques
 
   const forged = await request.post("/api/board", {
     data: {
+      submissionId: "01994677-4a80-7a55-8dc2-0242ac120002",
       nickname: "Jordan",
       score: 9999,
       caseResults: {
@@ -42,10 +43,11 @@ test("board stays playable when the shared store is down", async ({ page, reques
   });
 
   await page.goto("/board");
-  await expect(page.getByRole("heading", { name: "The board" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "The Deduction Ledger" })).toBeVisible();
   await expect(
     page.getByText("Showing your local scores. The shared board is unavailable."),
   ).toBeVisible();
   await expect(page.getByRole("cell", { name: /Jordan/ })).toBeVisible();
+  await expect(page.getByText(/@Jordan-[A-F0-9]{6}/).first()).toBeVisible();
   await expect(page.getByText("You")).toBeVisible();
 });

@@ -24,10 +24,13 @@ describe("progress recording", () => {
       score: 150,
       correct: true,
       usedOutOfBand: true,
+      pinnedArtifactIds: ["directory-call"],
       at: "2026-09-13T00:01:00.000Z",
     });
     expect(progress.cases["case-01"]?.bestScore).toBe(150);
     expect(progress.cases["case-01"]?.attempts).toBe(2);
+    expect(progress.cases["case-01"]?.bestVerdict).toBe("scam");
+    expect(progress.cases["case-01"]?.bestPinnedArtifactIds).toEqual(["directory-call"]);
 
     progress = recordCaseResult(progress, {
       caseId: "case-01",
@@ -35,10 +38,13 @@ describe("progress recording", () => {
       score: 0,
       correct: false,
       usedOutOfBand: true,
+      pinnedArtifactIds: ["offer-email"],
       at: "2026-09-13T00:02:00.000Z",
     });
     expect(progress.cases["case-01"]?.bestScore).toBe(150);
     expect(progress.cases["case-01"]?.cleared).toBe(true);
+    expect(progress.cases["case-01"]?.bestVerdict).toBe("scam");
+    expect(progress.cases["case-01"]?.bestPinnedArtifactIds).toEqual(["directory-call"]);
   });
 
   it("counts the longest run of correct first-attempt verdicts", () => {

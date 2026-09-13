@@ -15,10 +15,7 @@ type BoardStore = {
 };
 
 type BoardSqlExecutor = {
-  query: <T extends Record<string, unknown> = Record<string, unknown>>(
-    text: string,
-    values?: unknown[],
-  ) => Promise<{ rows: T[] }>;
+  query: (text: string, values?: unknown[]) => Promise<{ rows: unknown[] }>;
 };
 
 function emptySnapshot(): SharedBoardSnapshot {
@@ -91,28 +88,14 @@ function tigerStore(executor?: BoardSqlExecutor): BoardStore {
     async read() {
       const database = await sql();
       const [result, aggregate] = await Promise.all([
-        database.query<{
-        submission_id: string;
-        nickname: string;
-        score: number;
-        cases_cleared: number;
-        cases_played: number;
-        case01_wrong: boolean | null;
-        created_at: Date;
-        updated_at: Date;
-      }>(
+        database.query(
         `SELECT submission_id::text, nickname, score, cases_cleared, cases_played,
                 case01_wrong, created_at, updated_at
          FROM casey.board_entries
          ORDER BY score DESC, created_at ASC
          LIMIT 100`,
         ),
-        database.query<{
-          players_tonight: string | number;
-          cases_played: string | number;
-          case01_judged: string | number;
-          case01_wrong: string | number;
-        }>(
+        database.query(
           `SELECT
              COUNT(*) FILTER (WHERE updated_at >= now() - INTERVAL '18 hours') AS players_tonight,
              COALESCE(SUM(cases_played), 0) AS cases_played,
@@ -121,7 +104,17 @@ function tigerStore(executor?: BoardSqlExecutor): BoardStore {
            FROM casey.board_entries`,
         ),
       ]);
-      const mapped = result.rows.map((row) => ({
+      const rows = result.rows as Array<{
+        submission_id: string;
+        nickname: string;
+        score: number;
+        cases_cleared: number;
+        cases_played: number;
+        case01_wrong: boolean | null;
+        created_at: Date;
+        updated_at: Date;
+      }>;
+      const mapped = rows.map((row) => ({
         id: row.submission_id,
         nickname: row.nickname,
         score: row.score,
@@ -131,7 +124,14 @@ function tigerStore(executor?: BoardSqlExecutor): BoardStore {
         casesPlayed: row.cases_played,
         case01Wrong: row.case01_wrong,
       }));
-      const counts = aggregate.rows[0];
+      const counts = aggregate.rows[0] as
+        | {
+            players_tonight: string | number;
+            cases_played: string | number;
+            case01_judged: string | number;
+            case01_wrong: string | number;
+          }
+        | undefined;
       const judged = Number(counts?.case01_judged ?? 0);
       const wrong = Number(counts?.case01_wrong ?? 0);
       return {

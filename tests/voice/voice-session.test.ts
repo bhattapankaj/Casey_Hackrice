@@ -69,7 +69,7 @@ describe("POST /api/voice-session boundary", () => {
       {},
       "INVALID_REQUEST",
     ],
-    ["unknown case", JSON.stringify({ caseId: "case-02" }), {}, "UNKNOWN_CASE"],
+    ["unknown case", JSON.stringify({ caseId: "case-99" }), {}, "UNKNOWN_CASE"],
   ])("rejects %s", async (_label, body, headers, code) => {
     const response = await responseWith(request(body, headers));
     expect(response.status).toBe(400);

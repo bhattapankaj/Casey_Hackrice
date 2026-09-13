@@ -29,6 +29,7 @@ describe("board API fallback", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          submissionId: "01994677-4a80-7a55-8dc2-0242ac120002",
           nickname: "Jordan",
           score: 9999,
           caseResults: {

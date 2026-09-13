@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CASE_01 } from "@/lib/cases/case-01";
 import {
   parseCaseResults,
+  parseSubmissionId,
   sanitizeNickname,
   scoreBoardSubmission,
 } from "@/lib/board/submission";
@@ -9,6 +10,14 @@ import {
 const lookup = (id: string) => (id === "case-01" ? CASE_01 : undefined);
 
 describe("board submission", () => {
+  it("accepts only canonical UUID submission identities", () => {
+    expect(parseSubmissionId("01994677-4A80-7A55-8DC2-0242AC120002")).toBe(
+      "01994677-4a80-7a55-8dc2-0242ac120002",
+    );
+    expect(parseSubmissionId("Jordan")).toBeNull();
+    expect(parseSubmissionId("01994677-4a80-7a55-0000-0242ac120002")).toBeNull();
+  });
+
   it("strips nickname characters that are not allowed", () => {
     expect(sanitizeNickname("Judge 01!")).toBe("Judge 01");
     expect(sanitizeNickname("ok_name-1")).toBe("ok_name-1");
@@ -45,6 +54,30 @@ describe("board submission", () => {
       pinnedArtifactIds: ["offer-email", "directory-call"],
     });
     expect(scoreBoardSubmission("A", parsed!, lookup)).toMatchObject({ score: 0 });
+  });
+
+  it("rejects malformed, duplicate, and over-limit pin arrays", () => {
+    expect(
+      parseCaseResults({
+        "case-01": { verdict: "scam", pinnedArtifactIds: ["offer-email", 7] },
+      }),
+    ).toBeNull();
+    expect(
+      parseCaseResults({
+        "case-01": {
+          verdict: "scam",
+          pinnedArtifactIds: ["offer-email", "offer-email"],
+        },
+      }),
+    ).toBeNull();
+    expect(
+      parseCaseResults({
+        "case-01": {
+          verdict: "scam",
+          pinnedArtifactIds: ["a", "b", "c", "d"],
+        },
+      }),
+    ).toBeNull();
   });
 
   it("rejects unknown cases and unknown pins", () => {

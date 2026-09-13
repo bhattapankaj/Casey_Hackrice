@@ -3,6 +3,8 @@ export const PROGRESS_STORAGE_KEY = "casey_progress_v1";
 export type CaseProgress = {
   attempts: number;
   bestScore: number;
+  bestVerdict: string;
+  bestPinnedArtifactIds: string[];
   cleared: boolean;
   lastVerdict: string;
   usedOutOfBand: boolean;
@@ -88,6 +90,17 @@ function parseCaseProgress(value: unknown): CaseProgress | null {
   return {
     attempts: entry.attempts,
     bestScore: Math.max(0, entry.bestScore),
+    bestVerdict:
+      typeof entry.bestVerdict === "string"
+        ? entry.bestVerdict
+        : typeof entry.lastVerdict === "string"
+          ? entry.lastVerdict
+          : "",
+    bestPinnedArtifactIds: Array.isArray(entry.bestPinnedArtifactIds)
+      ? entry.bestPinnedArtifactIds.filter((id): id is string => typeof id === "string")
+      : Array.isArray(entry.pinnedArtifactIds)
+        ? entry.pinnedArtifactIds.filter((id): id is string => typeof id === "string")
+        : [],
     cleared: entry.cleared === true,
     lastVerdict: typeof entry.lastVerdict === "string" ? entry.lastVerdict : "",
     usedOutOfBand: entry.usedOutOfBand === true,
@@ -105,6 +118,7 @@ export function recordCaseResult(progress: ProgressV1, result: CaseResultInput):
   const firstAttemptCorrect =
     previous?.firstAttemptCorrect ?? (attempts === 1 ? result.correct : null);
   const cleared = (previous?.cleared ?? false) || result.correct;
+  const isNewBest = !previous || result.score > previous.bestScore;
   return {
     ...progress,
     cases: {
@@ -112,6 +126,10 @@ export function recordCaseResult(progress: ProgressV1, result: CaseResultInput):
       [result.caseId]: {
         attempts,
         bestScore: Math.max(previous?.bestScore ?? 0, Math.max(0, result.score)),
+        bestVerdict: isNewBest ? result.verdict : previous.bestVerdict,
+        bestPinnedArtifactIds: isNewBest
+          ? (result.pinnedArtifactIds ?? [])
+          : previous.bestPinnedArtifactIds,
         cleared,
         lastVerdict: result.verdict,
         usedOutOfBand: result.usedOutOfBand,

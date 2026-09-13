@@ -5,10 +5,12 @@ import {
   scoreBoardSubmission,
 } from "@/lib/board/submission";
 import { emptySnapshot, getBoardStore } from "@/lib/db/board.server";
+import { createLocalRateLimiter } from "@/lib/voice/rate-limit.server";
 
 export const dynamic = "force-dynamic";
 
 const JSON_HEADERS = { "Cache-Control": "no-store, max-age=0" };
+const boardRateLimiter = createLocalRateLimiter({ limit: 12, windowMs: 60_000 });
 
 function json(body: unknown, status = 200): Response {
   return Response.json(body, { status, headers: JSON_HEADERS });
@@ -17,6 +19,10 @@ function json(body: unknown, status = 200): Response {
 function isSameOrigin(request: Request): boolean {
   const origin = request.headers.get("origin");
   return origin === null || origin === new URL(request.url).origin;
+}
+
+function requestKey(request: Request): string {
+  return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
 }
 
 export async function GET(): Promise<Response> {
@@ -38,6 +44,20 @@ export async function POST(request: Request): Promise<Response> {
   }
   if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
     return json({ ok: false, error: "JSON required" }, 415);
+  }
+  const declaredLength = Number(request.headers.get("content-length") ?? 0);
+  if (Number.isFinite(declaredLength) && declaredLength > 16_384) {
+    return json({ ok: false, error: "Submission too large" }, 413);
+  }
+  const limit = boardRateLimiter.consume(requestKey(request), Date.now());
+  if (!limit.allowed) {
+    return Response.json(
+      { ok: false, error: "Too many submissions" },
+      {
+        status: 429,
+        headers: { ...JSON_HEADERS, "Retry-After": String(limit.retryAfterSeconds) },
+      },
+    );
   }
   let body: unknown;
   try {
