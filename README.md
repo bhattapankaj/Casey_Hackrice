@@ -76,4 +76,4 @@ npm run test:e2e
 The [official HackRice 16 site](https://hackrice.com/) confirms the September 11–13,
 2026 event and casino/card theme. The FTC reported that losses to job and
 employment-agency scams rose from $90 million in 2020 to $501 million in 2024
-([FTC source](https://www.ftc.gov/news-events/news/press-releases/2025/03/new-ftc-data-show-big-jump-reported-losses-fraud-125-billion-2024)).
+([FTC source](https://www.ftc.gov/news-events/news/press-releases/2025/03/new-ftc-data-show-big-jump-reported-losses-fraud-125-billion-2024))..
