@@ -1,8 +1,19 @@
 "use client";
 
-import { Check } from "lucide-react";
 import type { Stake } from "@/lib/engine/chips";
 import { STAKE_OPTIONS } from "@/lib/engine/chips";
+
+const STAKE_CHIP_ACCENT: Record<Stake, string> = {
+  10: "var(--color-gold)",
+  25: "var(--color-red)",
+  50: "var(--color-ink)",
+};
+
+const STAKE_CHIP_SELECTED_TEXT: Record<Stake, string> = {
+  10: "var(--color-ink)",
+  25: "var(--color-cream)",
+  50: "var(--color-cream)",
+};
 
 type StakeControlProps = {
   value: Stake;
@@ -17,6 +28,7 @@ export function StakeControl({ value, onChange, disabled = false }: StakeControl
       <div className="mt-4 flex items-start justify-center gap-6">
         {STAKE_OPTIONS.map((stake) => {
           const selected = value === stake;
+          const accent = STAKE_CHIP_ACCENT[stake];
           return (
             <button
               key={stake}
@@ -26,27 +38,46 @@ export function StakeControl({ value, onChange, disabled = false }: StakeControl
               aria-label={`Stake ${stake}${selected ? ", selected" : ""}`}
               onClick={() => onChange(stake)}
               className={`flex cursor-pointer flex-col items-center gap-2 transition-opacity duration-150 active:scale-95 disabled:cursor-default disabled:opacity-45 ${
-                selected ? "opacity-100" : "opacity-70 hover:opacity-100"
+                selected ? "opacity-100" : "opacity-75 hover:opacity-100"
               }`}
             >
               <span
-                className={`relative flex size-[56px] items-center justify-center rounded-full text-ink transition-all duration-150 ${
+                className={`relative flex size-[64px] items-center justify-center rounded-full border border-cream/70 transition-all duration-150 ${
                   selected
-                    ? "scale-110 bg-gold ring-4 ring-cream ring-offset-3 ring-offset-felt shadow-[0_8px_20px_rgba(37,33,33,0.38)]"
-                    : "bg-cream shadow-[0_2px_6px_rgba(37,33,33,0.28)] hover:-translate-y-0.5"
+                    ? "scale-110 ring-2 ring-cream ring-offset-[3px] ring-offset-gold"
+                    : "hover:-translate-y-0.5"
                 }`}
                 style={{
+                  backgroundImage: `repeating-conic-gradient(from -9deg, ${accent} 0deg 18deg, var(--color-cream) 18deg 36deg)`,
                   boxShadow: selected
-                    ? "0 8px 20px rgba(37,33,33,0.38), inset 0 0 0 2px #F5EFE0"
-                    : "0 2px 6px rgba(37,33,33,0.28), inset 0 0 0 1.5px #CF9C2D",
+                    ? "0 10px 22px rgba(37,33,33,0.42), inset 0 1px 1px rgba(255,255,255,0.4)"
+                    : "0 4px 9px rgba(37,33,33,0.34), inset 0 1px 1px rgba(255,255,255,0.45)",
                 }}
               >
-                <span className="font-serif text-[18px] font-semibold">{stake}</span>
-                {selected ? (
-                  <span className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-full border-2 border-cream bg-felt-deep text-cream shadow-sm">
-                    <Check size={11} strokeWidth={3} aria-hidden />
-                  </span>
-                ) : null}
+                <span
+                  aria-hidden
+                  className="absolute inset-[7px] rounded-full border border-ink/15 bg-cream shadow-[inset_0_0_0_1px_rgba(255,255,255,0.65)]"
+                />
+                <span
+                  aria-hidden
+                  className="absolute inset-[10px] rounded-full border-2 border-dashed"
+                  style={{ borderColor: accent }}
+                />
+                <span
+                  aria-hidden
+                  className="absolute inset-[14px] rounded-full border border-ink/15 transition-colors duration-150"
+                  style={{
+                    backgroundColor: selected ? accent : "var(--color-cream-dim)",
+                  }}
+                />
+                <span
+                  className="relative font-serif text-[18px] font-bold tabular-nums"
+                  style={{
+                    color: selected ? STAKE_CHIP_SELECTED_TEXT[stake] : "var(--color-ink)",
+                  }}
+                >
+                  {stake}
+                </span>
               </span>
               <span
                 className={`font-label text-[11px] tracking-[0.08em] ${
