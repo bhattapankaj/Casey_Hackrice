@@ -109,8 +109,7 @@ function tigerStore(executor?: BoardSqlExecutor): BoardStore {
           `SELECT submission_id::text, nickname, score, cases_cleared, cases_played,
                   case01_wrong, best_hand, chips, created_at, updated_at
            FROM casey.board_entries
-           ORDER BY score DESC, created_at ASC
-           LIMIT 100`,
+           ORDER BY score DESC, created_at ASC`,
         ),
         database.query(
           `SELECT

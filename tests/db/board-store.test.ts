@@ -37,7 +37,7 @@ describe("Tiger leaderboard store", () => {
   it("reads ranked rows and computes totals across the whole table", async () => {
     const now = new Date("2026-09-13T05:00:00.000Z");
     const query = vi.fn(async (sql: string) => {
-      if (sql.includes("LIMIT 100")) {
+      if (sql.includes("ORDER BY score")) {
         return {
           rows: [
             {
@@ -87,5 +87,6 @@ describe("Tiger leaderboard store", () => {
         case01WrongPercent: 30,
       },
     });
+    expect(query.mock.calls[0]?.[0]).not.toContain("LIMIT");
   });
 });

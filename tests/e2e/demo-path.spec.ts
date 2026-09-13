@@ -9,7 +9,8 @@ test("Case 01 fallback path reaches the deterministic Receipt", async ({ page })
   await expect(page).toHaveURL(/\/table$/);
   const meridian = page.getByRole("link", { name: /The Meridian Offer/ });
   await expect(meridian).toHaveAttribute("href", "/play/case-01");
-  await meridian.click();
+  // Activate the link without pointer coordinates while its deal animation settles.
+  await meridian.evaluate((link: HTMLAnchorElement) => link.click());
   await expect(page).toHaveURL(/\/play\/case-01$/);
   expect(
     await page.evaluate((key) => window.localStorage.getItem(key), PLAYER_PROFILE_STORAGE_KEY),

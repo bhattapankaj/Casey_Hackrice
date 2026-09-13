@@ -79,3 +79,45 @@ test("board empty state hides the zero stat strip", async ({ page }) => {
   await expect(page.getByText("Detectives tonight")).toHaveCount(0);
   await expect(page.getByText("Players tonight")).toHaveCount(0);
 });
+
+test("shared board shows every other investigator returned by Tiger", async ({ page }) => {
+  await page.route("**/api/board", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ok: true,
+        unavailable: false,
+        entries: [
+          {
+            id: "b41d63e7-28f4-4c5e-91a2-6b7d8e9f0a12",
+            nickname: "Avery",
+            username: "Avery-B41D63",
+            score: 950,
+            casesCleared: 3,
+            bestHand: "Straight",
+            chips: 425,
+            createdAt: "2026-09-13T01:00:00.000Z",
+          },
+          {
+            id: "74ba9816-6cb8-4a02-bf40-c5473db0a91b",
+            nickname: "Morgan",
+            username: "Morgan-74BA98",
+            score: 725,
+            casesCleared: 2,
+            bestHand: "Three of a kind",
+            chips: 275,
+            createdAt: "2026-09-13T02:00:00.000Z",
+          },
+        ],
+        stats: { playersTonight: 2, casesPlayed: 5, case01WrongPercent: 0 },
+      }),
+    });
+  });
+
+  await page.goto("/board");
+  await expect(page.getByRole("heading", { name: "All investigators" })).toBeVisible();
+  await expect(page.getByText("2 players", { exact: true })).toBeVisible();
+  await expect(page.getByRole("row").filter({ hasText: "Avery-B41D63" })).toBeVisible();
+  await expect(page.getByRole("row").filter({ hasText: "Morgan-74BA98" })).toBeVisible();
+});

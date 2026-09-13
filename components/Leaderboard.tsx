@@ -141,9 +141,6 @@ export function Leaderboard() {
   }, []);
 
   const ranked = entries.map((row, index) => ({ row, rank: index + 1 }));
-  const top = ranked.slice(0, 25);
-  const you = ranked.find((entry) => entry.row.id === youId || entry.row.you);
-  const youOutside = Boolean(you && you.rank > 25);
   const podium = ranked.slice(0, 3);
   const hasScores = !loading && entries.length > 0;
 
@@ -254,68 +251,74 @@ export function Leaderboard() {
             </section>
           ) : null}
 
-          <table className="mt-8 w-full border-collapse text-left">
-            <caption className="sr-only">Top 25 scores</caption>
-            <thead>
-              <tr className="border-b border-cream-dim/20">
-                <th
-                  scope="col"
-                  className="py-2 pr-4 font-label text-[11px] tracking-[0.08em] text-cream/65"
-                >
-                  Rank
-                </th>
-                <th
-                  scope="col"
-                  className="py-2 pr-4 font-label text-[11px] tracking-[0.08em] text-cream/65"
-                >
-                  Nickname
-                </th>
-                <th
-                  scope="col"
-                  className="py-2 pr-4 font-label text-[11px] tracking-[0.08em] text-cream/65"
-                >
-                  Cases cleared
-                </th>
-                <th
-                  scope="col"
-                  className="py-2 pr-4 font-label text-[11px] tracking-[0.08em] text-cream/65"
-                >
-                  Best hand
-                </th>
-                <th
-                  scope="col"
-                  className="py-2 pr-4 font-label text-[11px] tracking-[0.08em] text-cream/65"
-                >
-                  Chips
-                </th>
-                <th
-                  scope="col"
-                  className="py-2 text-right font-label text-[11px] tracking-[0.08em] text-cream/65"
-                >
-                  Score
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {top.map((entry) => (
-                <Row
-                  key={entry.row.id}
-                  rank={entry.rank}
-                  row={entry.row}
-                  current={entry.row.id === youId || Boolean(entry.row.you)}
-                />
-              ))}
-            </tbody>
-          </table>
-
-          {youOutside && you ? (
-            <table className="mt-4 w-full border-collapse text-left">
-              <caption className="sr-only">Your rank outside the top 25</caption>
-              <tbody>
-                <Row rank={you.rank} row={you.row} current />
-              </tbody>
-            </table>
-          ) : null}
+          <section aria-labelledby="all-investigators-title" className="mt-8">
+            <div className="flex items-end justify-between gap-4">
+              <h2
+                id="all-investigators-title"
+                className="font-serif text-[22px] font-semibold text-cream"
+              >
+                All investigators
+              </h2>
+              <p className="font-label text-[10px] tracking-[0.1em] text-cream/55 uppercase">
+                {ranked.length} {ranked.length === 1 ? "player" : "players"}
+              </p>
+            </div>
+            <div className="mt-3 overflow-x-auto rounded-[12px] border border-cream/10 px-4">
+              <table className="w-full min-w-[700px] border-collapse text-left">
+                <caption className="sr-only">All player scores</caption>
+                <thead>
+                  <tr className="border-b border-cream-dim/20">
+                    <th
+                      scope="col"
+                      className="py-2 pr-4 font-label text-[11px] tracking-[0.08em] text-cream/65"
+                    >
+                      Rank
+                    </th>
+                    <th
+                      scope="col"
+                      className="py-2 pr-4 font-label text-[11px] tracking-[0.08em] text-cream/65"
+                    >
+                      Nickname
+                    </th>
+                    <th
+                      scope="col"
+                      className="py-2 pr-4 font-label text-[11px] tracking-[0.08em] text-cream/65"
+                    >
+                      Cases cleared
+                    </th>
+                    <th
+                      scope="col"
+                      className="py-2 pr-4 font-label text-[11px] tracking-[0.08em] text-cream/65"
+                    >
+                      Best hand
+                    </th>
+                    <th
+                      scope="col"
+                      className="py-2 pr-4 font-label text-[11px] tracking-[0.08em] text-cream/65"
+                    >
+                      Chips
+                    </th>
+                    <th
+                      scope="col"
+                      className="py-2 text-right font-label text-[11px] tracking-[0.08em] text-cream/65"
+                    >
+                      Score
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ranked.map((entry) => (
+                    <Row
+                      key={entry.row.id}
+                      rank={entry.rank}
+                      row={entry.row}
+                      current={entry.row.id === youId || Boolean(entry.row.you)}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
         </>
       )}
 
