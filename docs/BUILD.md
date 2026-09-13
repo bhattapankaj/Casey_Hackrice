@@ -498,18 +498,17 @@ tests/
 
 ### Current implementation snapshot
 
-- The root package is the Casey Next.js application.
-- `app/page.tsx` is an `ArtifactCard`/`Pip` isolation review, not the landing screen.
-- The CSS palette, typography, logo assets, channel primitives, and artifact-card shell
-  exist.
-- The current `Band`-colored channel pip is prototype shorthand. Before game use, split
-  channel identity from `sourceClass`/`sourceRoot` so a new medium never implies an
-  independent source.
-- Case fixtures, the pure engine, Trust Chain, Receipt, voice route, fallback, and tests
-  do not exist yet.
-
-Build forward from this prototype; do not re-scaffold the app or describe the isolation
-page as a playable round.
+- The root package is the Casey Next.js application and Case 01 is playable end to end.
+- `lib/cases/**` owns the validated Meridian graph; `lib/engine/**` owns reducer, score,
+  selectors, and Receipt generation.
+- Channel and source provenance are separate. UI bands are derived only at the
+  presentation boundary.
+- The table pins at most three artifacts, uses the authored text fallback, and renders a
+  deterministic Receipt with grouped source roots and pressure-card explanations.
+- `lib/voice/**` and `/api/voice-session` implement protected WebRTC token exchange,
+  validated client-tool payloads, timeouts, safe errors, and fallback transitions.
+- Unit, route, type, build, lint, and fallback browser checks exist. A real protected
+  ElevenLabs agent, deployed HTTPS test, and human playtest remain manual release gates.
 
 ### System boundary
 

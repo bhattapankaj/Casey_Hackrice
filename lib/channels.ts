@@ -1,13 +1,22 @@
-import { Building2, Globe, Mail, Phone, type LucideIcon } from "lucide-react";
+import {
+  Building2,
+  Globe,
+  Mail,
+  Phone,
+  ShieldCheck,
+  type LucideIcon,
+} from "lucide-react";
+import type { Channel } from "@/lib/cases/schema";
 
-export type Channel = "email" | "phone" | "directory" | "web";
-export type Band = "in" | "out";
+export type { Channel };
+export type Band = "in" | "out" | "unknown";
 export type CardState = "facedown" | "unopened" | "viewed";
 
-/** Band names the origin of a source, never whether it is trustworthy. */
+/** Band is a presentation label for source provenance, never a trust verdict. */
 export const BAND_LABEL: Record<Band, string> = {
   in: "Their channel",
   out: "Independent",
+  unknown: "Source unknown",
 };
 
 export const CHANNEL_ICONS: Record<Channel, LucideIcon> = {
@@ -15,6 +24,7 @@ export const CHANNEL_ICONS: Record<Channel, LucideIcon> = {
   phone: Phone,
   directory: Building2,
   web: Globe,
+  portal: ShieldCheck,
 };
 
 export const CHANNEL_INDEX: Record<Channel, string> = {
@@ -22,13 +32,15 @@ export const CHANNEL_INDEX: Record<Channel, string> = {
   phone: "P",
   directory: "D",
   web: "W",
+  portal: "O",
 };
 
 export const CHANNEL_OPEN_LABEL: Record<Channel, string> = {
   email: "Open the email",
-  phone: "Call this number",
+  phone: "Open the call record",
   directory: "Open the directory",
   web: "Open the page",
+  portal: "Open the portal",
 };
 
 export const CHANNEL_CLOSE_LABEL: Record<Channel, string> = {
@@ -36,9 +48,11 @@ export const CHANNEL_CLOSE_LABEL: Record<Channel, string> = {
   phone: "Close the call",
   directory: "Close the directory",
   web: "Close the page",
+  portal: "Close the portal",
 };
 
 export const BAND_PHRASE: Record<Band, string> = {
-  in: "from the original message",
-  out: "found independently",
+  in: "from a claimant-controlled source",
+  out: "found through an independent source",
+  unknown: "with an unverified source",
 };

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import type { EmailContent } from "@/lib/cases";
+import type { EmailContent } from "@/lib/cases/schema";
 
 export function EmailArtifact({ content }: { content: EmailContent }) {
   const [expanded, setExpanded] = useState(false);
@@ -15,7 +15,7 @@ export function EmailArtifact({ content }: { content: EmailContent }) {
 
   const details: [string, string][] = [
     ["from", `${content.fromName} <${content.fromEmail}>`],
-    ["to", content.to],
+    ["to", content.to ?? "you"],
   ];
   if (content.replyTo) {
     details.push(["reply-to", content.replyTo]);
@@ -89,15 +89,17 @@ export function EmailArtifact({ content }: { content: EmailContent }) {
         {content.paragraphs.map((paragraph) => (
           <p key={paragraph}>{paragraph}</p>
         ))}
-        <p>
-          <a
-            href={content.link.href}
-            onClick={(event) => event.preventDefault()}
-            className="text-[#1a73e8] underline"
-          >
-            {content.link.label}
-          </a>
-        </p>
+        {content.link ? (
+          <p>
+            <a
+              href={content.link.href}
+              onClick={(event) => event.preventDefault()}
+              className="text-[#1a73e8] underline"
+            >
+              {content.link.label}
+            </a>
+          </p>
+        ) : null}
       </div>
 
       <div className="mt-6">

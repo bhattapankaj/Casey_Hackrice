@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CardTable } from "@/components/CardTable";
-import { getCase } from "@/lib/cases";
+import { getCase } from "@/lib/cases/registry";
 
 type PlayPageProps = {
   params: Promise<{ caseId: string }>;

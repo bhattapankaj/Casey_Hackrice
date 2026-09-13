@@ -26,13 +26,14 @@ source the claimant does not control.
 
 ## Current status
 
-Casey is in early implementation. The repository currently contains the Next.js visual
-shell, brand tokens and assets, channel primitives, and an `ArtifactCard`/`Pip` isolation
-view. The playable case engine, Trust Chain, Receipt, fallback path, automated tests, and
-ElevenLabs integration are still to be built.
+Case 01 is playable end to end. It uses a runtime-validated authored case graph, a pure
+reducer, a three-artifact Trust Chain, deterministic 1,000-point scoring, a provenance
+Receipt, and an authored no-microphone fallback. The protected ElevenLabs WebRTC token
+route and React client-tool adapter are implemented and covered with mocked tests.
 
-The must-demo target is one polished two-minute case with a resilient no-microphone path.
-A second case comes only after that vertical slice is complete.
+Still required before calling the live voice release complete: configure and test the
+protected agent in the ElevenLabs dashboard, verify a real call on the deployed HTTPS
+origin, and run the five-person playtest. No database is required for the demo path.
 
 ## Run locally
 
@@ -45,10 +46,11 @@ Open [http://localhost:3000](http://localhost:3000). Current checks are:
 
 ```bash
 npm run lint
+npm run typecheck
+npm run test
 npm run build
+npm run test:e2e
 ```
-
-Dedicated unit, typecheck, and browser-test scripts have not been added yet.
 
 ## Documentation
 

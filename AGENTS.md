@@ -13,18 +13,17 @@ authentication, client-tool, privacy, and test contract.
 
 ## Current phase
 
-**The single-player loop is playable end to end.** Implemented: the card-table shell,
-three cases in `lib/cases.ts` with a deterministic artifact graph, evidence pinning, a
-two-step verdict with a confirmation for empty evidence, deterministic scoring in
-`lib/scoring.ts`, a Receipt that groups evidence by recorded source, a browser-local run
-score and board, synthesized table sound with a persisted mute, and the keyboard, focus,
-dialog, and reduced-motion contracts.
+**The Case 01 vertical slice is playable end to end.** Implemented: the validated Meridian
+artifact/action/source graph in `lib/cases/**`, pure reducer and deterministic scoring in
+`lib/engine/**`, artifact-level evidence pinning capped at three, a provenance Receipt,
+explicit voice consent, authored text fallback, the protected-session token route,
+validated pressure-card client tool, and unit plus fallback demo-path tests.
 
-**Not implemented: the ElevenLabs integration and the automated tests.** There is no
-`lib/voice/**`, no signed-URL route, and no model in the loop. The phone artifact plays an
-authored fictional transcript; if the player grants the microphone it drives a local level
-meter only, and no audio or transcript leaves the device. Describe it as a scripted
-simulation, never as a live AI caller.
+**External release gates remain.** The code path is ready for a protected ElevenLabs
+agent, but the dashboard configuration, retention settings, real credential smoke test,
+and deployed HTTPS call have not been verified in this repository. The five-person
+playtest has not been run. Do not describe live voice or learning results as verified
+until those manual gates are recorded.
 
 As implementation continues, protect this two-minute demo path above every optional
 feature:

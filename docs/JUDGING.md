@@ -2,10 +2,11 @@
 
 This is a deliberately strict review against the five criteria recorded from the team’s
 HackRice 16 handbook. The [official event site](https://hackrice.com/) confirms the
-September 11–13, 2026 event, casino/card theme, and Games & Gamification track. Scores
-describe the documented concept plus the current component prototype—not a working
-submission. No design can guarantee a 9+ judge score; Casey earns that range only by
-shipping and showing the evidence gates below.
+September 11–13, 2026 event, casino/card theme, and Games & Gamification track. The
+deterministic Case 01 and fallback demo path are now implemented and automated; live
+provider behavior and human comprehension are not yet verified. No design can guarantee
+a 9+ judge score; Casey earns that range only by shipping and showing the evidence gates
+below.
 
 ## Executive verdict
 
@@ -22,13 +23,13 @@ implementation evidence is still required.
 
 ## Honest baseline
 
-| Handbook criterion | Design-stage score | Why it is not 9+ yet |
-|---|---:|---|
-| Technical Rigor | 6.5/10 | The visual shell runs, but there is no playable engine, deterministic Receipt, voice integration, or automated proof yet. |
-| Originality & Creativity | 8.3/10 | The card-table metaphor and source-provenance lesson are fresh. Without tighter mechanics, it can still read as “security training plus chatbot.” |
-| User Experience & Design | 7.6/10 | Visual direction is coherent, but onboarding, evidence selection, call states, consent, captions, fallback, and error recovery are under-specified. |
-| Practicality & Impact | 7.0/10 | The problem is real, yet the prior pitch uses unqualified statistics and invented future player counts. There is no transfer measure or authoring/scaling story. |
-| Relevance | 8.4/10 | It fits gamified learning and ElevenLabs, but a two-case quiz may not yet be “genuinely fun” or replayable, as the Games track requests. |
+| Handbook criterion | Implemented evidence | Remaining proof gap |
+|---|---|---|
+| Technical Rigor | Validated case graph, pure reducer, deterministic Receipt, secure token route, and automated fallback path | Real protected-agent call on the deployed HTTPS origin |
+| Originality & Creativity | Source-root collapse and pressure-card mechanic are implemented | Observe whether first-time players notice the source distinction without coaching |
+| User Experience & Design | Consent, fallback, pin limit, verdict confirmation, Receipt, keyboard dialog behavior, and reduced motion are present | Manual 390 px/device pass and five rapid playtests |
+| Practicality & Impact | The lesson and FTC-backed real-world action are explicit | Measured comprehension and completion results with the actual sample size |
+| Relevance | The card-table game loop and ElevenLabs client-tool boundary are implemented | Demonstrate reliable live voice during judging and avoid unsupported outcome claims |
 
 ## Design changes that move the ceiling
 

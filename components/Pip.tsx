@@ -17,7 +17,8 @@ export function Pip({
 }: PipProps) {
   const Icon = CHANNEL_ICONS[channel];
   const phrase = BAND_PHRASE[band];
-  const tone = band === "in" ? "text-red" : "text-gold";
+  const tone =
+    band === "in" ? "text-red" : band === "out" ? "text-gold" : "text-ink/60";
 
   return (
     <span

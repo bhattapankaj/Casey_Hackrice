@@ -18,12 +18,11 @@ export type ArtifactCardProps = {
   band: Band;
   label: string;
   state: CardState;
-  /** Neutral fact shown once the card has been viewed. Never a verdict. */
+  /** Neutral provenance detail shown once viewed. Never a verdict. */
   preview?: string;
   onOpen?: () => void;
   layoutId?: string;
   interactive?: boolean;
-  /** Tailwind width classes. Height follows from the 3:4 ratio. */
   width?: string;
   className?: string;
 };
@@ -57,7 +56,7 @@ export function ArtifactCard({
   const viewed = state === "viewed";
   const action = CHANNEL_OPEN_LABEL[channel];
   const phrase = BAND_PHRASE[band];
-
+  const tone = band === "in" ? "text-red" : band === "out" ? "text-gold" : "text-ink/60";
   const classes = [
     "surface-cream relative aspect-[3/4] overflow-hidden rounded-[12px] bg-cream",
     width,
@@ -92,16 +91,10 @@ export function ArtifactCard({
           </div>
 
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-4 text-center">
-            <Icon
-              size={26}
-              strokeWidth={1.75}
-              aria-hidden
-              className={band === "in" ? "text-red" : "text-gold"}
-            />
+            <Icon size={26} strokeWidth={1.75} aria-hidden className={tone} />
             <span className="font-sans text-[16px] leading-snug font-semibold text-ink">
               {label}
             </span>
-
             <span
               className={`mt-0.5 font-label text-[11px] tracking-[0.08em] ${
                 viewed ? "text-ink/70" : "text-ink/50"
@@ -109,7 +102,6 @@ export function ArtifactCard({
             >
               {viewed ? "Viewed" : "Unopened"}
             </span>
-
             {viewed && preview ? (
               <span className="mt-1 line-clamp-3 text-[12px] leading-snug text-ink/70">
                 {preview}

@@ -2,52 +2,42 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { Check, CircleHelp, X } from "lucide-react";
+import type { Verdict } from "@/lib/cases/schema";
 import { CHIP_DURATION, EASE_DEAL } from "@/lib/motion";
-import type { Verdict } from "@/lib/cases";
 
-export const VERDICT_ORDER: Verdict[] = ["scam", "legit", "more"];
+export const VERDICT_ORDER: Verdict[] = ["scam", "legit", "not_enough_evidence"];
 
 type ChipCopy = {
   label: string;
   action: string;
   icon: typeof X;
-  /** Rim colour. Always paired with a distinct symbol and a visible label. */
   accent: string;
 };
 
 export const CHIP_COPY: Record<Verdict, ChipCopy> = {
   scam: {
     label: "Scam",
-    action: "Select the verdict Scam",
+    action: "Call it a scam",
     icon: X,
     accent: "var(--color-red)",
   },
   legit: {
     label: "Legitimate",
-    action: "Select the verdict Legitimate",
+    action: "Call it legitimate",
     icon: Check,
     accent: "var(--color-felt-deep)",
   },
-  more: {
-    label: "Insufficient evidence",
-    action: "Select the verdict Insufficient evidence",
+  not_enough_evidence: {
+    label: "Not enough evidence",
+    action: "Choose not enough evidence",
     icon: CircleHelp,
     accent: "var(--color-ink)",
   },
 };
 
-/** The chip face on its own, with no interaction. */
-export function ChipFace({
-  verdict,
-  size = 68,
-}: {
-  verdict: Verdict;
-  size?: number;
-}) {
+export function ChipFace({ verdict, size = 68 }: { verdict: Verdict; size?: number }) {
   const { icon: Icon, accent } = CHIP_COPY[verdict];
   const rim = Math.round(size * 0.13);
-  // Edge spots blur into a starburst below roughly 48px, so small chips take a
-  // solid rim instead.
   const spotted = size >= 48;
 
   return (
@@ -56,11 +46,9 @@ export function ChipFace({
       style={{
         width: size,
         height: size,
-        boxShadow:
-          "0 2px 6px rgba(37,33,33,0.28), inset 0 -1px 0 rgba(37,33,33,0.14)",
+        boxShadow: "0 2px 6px rgba(37,33,33,0.28), inset 0 -1px 0 rgba(37,33,33,0.14)",
       }}
     >
-      {/* Segmented rim, the way a clay chip is edge-spotted. */}
       <span
         aria-hidden
         className="absolute inset-0 rounded-full"
@@ -70,7 +58,6 @@ export function ChipFace({
             : accent,
         }}
       />
-      {/* Inset centre. */}
       <span
         aria-hidden
         className="absolute rounded-full bg-cream"
@@ -95,7 +82,6 @@ type VerdictChipProps = {
   selected: Verdict | null;
   committed: boolean;
   onSelect: (verdict: Verdict) => void;
-  /** Set when the chip is drawn inside the verdict spot rather than the rack. */
   inSpot?: boolean;
 };
 
@@ -117,15 +103,10 @@ export function VerdictChip({
       disabled={committed}
       aria-pressed={isSelected}
       aria-label={copy.action}
-      /* Framer's layout projection emits tabindex during SSR only, so state it
-         explicitly and keep server and client markup identical. */
       tabIndex={0}
       layoutId={`chip-${verdict}`}
       className="flex min-h-[44px] cursor-pointer flex-col items-center gap-2 disabled:cursor-default"
-      transition={{
-        duration: reduce ? 0 : CHIP_DURATION,
-        ease: EASE_DEAL,
-      }}
+      transition={{ duration: reduce ? 0 : CHIP_DURATION, ease: EASE_DEAL }}
       whileHover={committed || reduce ? undefined : { y: -4 }}
       whileTap={committed || reduce ? undefined : { y: 1 }}
     >

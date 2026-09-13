@@ -2,11 +2,12 @@
 
 import { FormEvent, useState } from "react";
 import { Lock, Search } from "lucide-react";
-import type { DirectoryContent } from "@/lib/cases";
+import type { DirectoryContent } from "@/lib/cases/schema";
 
 export function DirectoryArtifact({ content }: { content: DirectoryContent }) {
-  const [query, setQuery] = useState(content.searchTerm);
-  const [searched, setSearched] = useState(content.searchTerm);
+  const searchTerm = content.searchTerm ?? content.name;
+  const [query, setQuery] = useState(searchTerm);
+  const [searched, setSearched] = useState(searchTerm);
 
   const matches = searched
     .trim()
@@ -37,7 +38,7 @@ export function DirectoryArtifact({ content }: { content: DirectoryContent }) {
       <div className="flex items-center gap-2 border-b border-[#d5d5d5] bg-[#f1f3f4] px-3 py-2">
         <Lock size={13} strokeWidth={2.25} aria-hidden className="text-[#5f6368]" />
         <span className="truncate text-[13px] text-[#3c4043]">
-          {content.domain}
+          {content.domain ?? "directory.harlow.example.test"}
         </span>
       </div>
 
@@ -153,12 +154,12 @@ export function DirectoryArtifact({ content }: { content: DirectoryContent }) {
           <button
             type="button"
             onClick={() => {
-              setQuery(content.searchTerm);
-              setSearched(content.searchTerm);
+              setQuery(searchTerm);
+              setSearched(searchTerm);
             }}
             className="mt-3 text-[14px] text-[#003366] underline"
           >
-            Search for “{content.searchTerm}” instead
+            Search for “{searchTerm}” instead
           </button>
         </div>
       )}

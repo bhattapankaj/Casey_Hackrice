@@ -1,14 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Pin, PinOff, X } from "lucide-react";
-import { CallArtifact } from "@/components/artifacts/CallArtifact";
 import { DirectoryArtifact } from "@/components/artifacts/DirectoryArtifact";
 import { EmailArtifact } from "@/components/artifacts/EmailArtifact";
 import { Pip } from "@/components/Pip";
-import { BAND_LABEL } from "@/lib/channels";
-import type { CaseArtifact } from "@/lib/cases";
+import { sourceClassToBand } from "@/lib/cases/public-case";
+import type {
+  Artifact,
+  CallContent,
+  PortalContent,
+  WebContent,
+} from "@/lib/cases/schema";
+import { BAND_LABEL, CHANNEL_CLOSE_LABEL } from "@/lib/channels";
 import {
   BACKDROP_DURATION,
   EASE_OPEN,
@@ -17,37 +22,33 @@ import {
 } from "@/lib/motion";
 
 type ArtifactViewerProps = {
-  artifact: CaseArtifact;
-  pinnedIds: string[];
-  onTogglePin: (excerptId: string) => void;
+  artifact: Artifact;
+  isPinned: boolean;
+  canPin: boolean;
+  onPin: () => void;
+  onUnpin: () => void;
   onClose: () => void;
   onAnnounce: (message: string) => void;
 };
 
 export function ArtifactViewer({
   artifact,
-  pinnedIds,
-  onTogglePin,
+  isPinned,
+  canPin,
+  onPin,
+  onUnpin,
   onClose,
   onAnnounce,
 }: ArtifactViewerProps) {
   const reduce = useReducedMotion();
   const panelRef = useRef<HTMLDivElement>(null);
-  const [callLive, setCallLive] = useState(false);
-  const layoutId = `artifact-${artifact.id}`;
-
-  // Closing a live call must also end it, so the microphone is never left running.
-  const closeLabel = callLive ? "End the call and close" : "Close";
-
-  const handleClose = useCallback(() => {
-    onClose();
-  }, [onClose]);
+  const closeLabel = CHANNEL_CLOSE_LABEL[artifact.channel];
+  const band = sourceClassToBand(artifact.sourceClass);
+  const handleClose = useCallback(() => onClose(), [onClose]);
 
   useEffect(() => {
     const panel = panelRef.current;
-    if (!panel) {
-      return;
-    }
+    if (!panel) return;
 
     const previous = document.activeElement;
     const focusables = () =>
@@ -58,20 +59,15 @@ export function ArtifactViewer({
       ).filter((node) => !node.hasAttribute("disabled"));
 
     focusables()[0]?.focus();
-
     function onKey(event: KeyboardEvent) {
       if (event.key === "Escape") {
         event.preventDefault();
         handleClose();
         return;
       }
-      if (event.key !== "Tab") {
-        return;
-      }
+      if (event.key !== "Tab") return;
       const items = focusables();
-      if (items.length === 0) {
-        return;
-      }
+      if (items.length === 0) return;
       const first = items[0];
       const last = items[items.length - 1];
       if (event.shiftKey && document.activeElement === first) {
@@ -86,9 +82,7 @@ export function ArtifactViewer({
     document.addEventListener("keydown", onKey);
     return () => {
       document.removeEventListener("keydown", onKey);
-      if (previous instanceof HTMLElement) {
-        previous.focus();
-      }
+      if (previous instanceof HTMLElement) previous.focus();
     };
   }, [handleClose]);
 
@@ -109,40 +103,26 @@ export function ArtifactViewer({
 
       <motion.div
         ref={panelRef}
-        layoutId={layoutId}
+        layoutId={reduce ? undefined : `artifact-${artifact.id}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="artifact-title"
         className="surface-cream relative z-10 flex max-h-[92vh] w-full max-w-[720px] flex-col rounded-[12px] bg-cream p-3 shadow-[0_8px_28px_rgba(20,40,30,0.45)] sm:p-4"
-        transition={{
-          duration: reduce ? REDUCE_DURATION : OPEN_DURATION,
-          ease: EASE_OPEN,
-        }}
+        transition={{ duration: reduce ? REDUCE_DURATION : OPEN_DURATION, ease: EASE_OPEN }}
       >
         <div className="relative flex min-h-0 flex-1 flex-col rounded-[6px] border-[1.5px] border-gold p-3 sm:p-4">
           <div className="mb-3 flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <h2
-                id="artifact-title"
-                className="font-serif text-[20px] leading-tight font-semibold text-ink"
-              >
-                {artifact.label}
+              <h2 id="artifact-title" className="font-serif text-[20px] leading-tight font-semibold text-ink">
+                {artifact.title}
               </h2>
-              {/* Origin is stated outside the artifact, never inside it. */}
               <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[14px] text-ink/75">
-                <Pip
-                  channel={artifact.channel}
-                  band={artifact.band}
-                  size={15}
-                  decorative
-                />
+                <Pip channel={artifact.channel} band={band} size={15} decorative />
                 <span className="font-label text-[11px] tracking-[0.08em] text-ink/60">
-                  {BAND_LABEL[artifact.band]}
+                  {BAND_LABEL[band]}
                 </span>
-                <span aria-hidden className="text-ink/30">
-                  |
-                </span>
-                <span>{artifact.originLabel}</span>
+                <span aria-hidden className="text-ink/30">|</span>
+                <span>{artifact.provenance}</span>
               </p>
             </div>
             <button
@@ -159,57 +139,94 @@ export function ArtifactViewer({
             className="artifact min-h-0 flex-1 overflow-auto rounded-[4px] bg-white shadow-[inset_0_0_0_1px_rgba(37,33,33,0.1)]"
             data-artifact-kind={artifact.content.kind}
           >
-            {artifact.content.kind === "email" ? (
-              <EmailArtifact content={artifact.content} />
-            ) : null}
-            {artifact.content.kind === "directory" ? (
-              <DirectoryArtifact content={artifact.content} />
-            ) : null}
-            {artifact.content.kind === "call" ? (
-              <CallArtifact
-                content={artifact.content}
-                onAnnounce={onAnnounce}
-                onLiveChange={setCallLive}
-              />
-            ) : null}
+            {artifact.content.kind === "email" ? <EmailArtifact content={artifact.content} /> : null}
+            {artifact.content.kind === "directory" ? <DirectoryArtifact content={artifact.content} /> : null}
+            {artifact.content.kind === "call" ? <AuthoredCallArtifact content={artifact.content} /> : null}
+            {artifact.content.kind === "web" ? <WebArtifact content={artifact.content} /> : null}
+            {artifact.content.kind === "portal" ? <PortalArtifact content={artifact.content} /> : null}
           </div>
 
-          <div className="mt-3 shrink-0">
-            <p className="font-label text-[11px] tracking-[0.08em] text-ink/60">
-              Pin what you found
+          <div className="mt-3 flex shrink-0 flex-wrap items-center justify-between gap-3">
+            <p className="max-w-[48ch] text-[13px] leading-relaxed text-ink/65">
+              Source: {artifact.sourceRootLabel}. Opening this card does not add it to your Trust Chain.
             </p>
-            <ul className="mt-2 flex flex-wrap gap-2">
-              {artifact.excerpts.map((excerpt) => {
-                const pinned = pinnedIds.includes(excerpt.id);
-                return (
-                  <li key={excerpt.id}>
-                    <button
-                      type="button"
-                      onClick={() => onTogglePin(excerpt.id)}
-                      aria-pressed={pinned}
-                      className={`inline-flex min-h-[44px] items-center gap-2 rounded-[8px] border px-3 py-2 text-left text-[14px] leading-snug transition-colors duration-150 ${
-                        pinned
-                          ? "border-ink/40 bg-ink/10 text-ink"
-                          : "border-ink/20 text-ink/80 hover:bg-ink/5"
-                      }`}
-                    >
-                      {pinned ? (
-                        <Pin size={16} strokeWidth={2} aria-hidden />
-                      ) : (
-                        <PinOff size={16} strokeWidth={1.75} aria-hidden />
-                      )}
-                      <span>{excerpt.text}</span>
-                      <span className="sr-only">
-                        {pinned ? "Pinned" : "Not pinned"}
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
+            {isPinned ? (
+              <button
+                type="button"
+                onClick={() => {
+                  onUnpin();
+                  onAnnounce(`${artifact.title} removed from the Trust Chain.`);
+                }}
+                className="inline-flex min-h-[44px] items-center gap-2 rounded-[8px] border border-ink/25 px-3 py-2 text-[14px] font-semibold text-ink"
+              >
+                <PinOff size={16} strokeWidth={1.75} aria-hidden />
+                Unpin evidence
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={!canPin}
+                onClick={() => {
+                  onPin();
+                  onAnnounce(`${artifact.title} pinned to the Trust Chain.`);
+                }}
+                className="inline-flex min-h-[44px] items-center gap-2 rounded-[8px] bg-ink px-3 py-2 text-[14px] font-semibold text-cream disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                <Pin size={16} strokeWidth={2} aria-hidden />
+                {canPin ? "Pin as evidence" : "Trust Chain full"}
+              </button>
+            )}
           </div>
         </div>
       </motion.div>
     </motion.div>
+  );
+}
+
+function AuthoredCallArtifact({ content }: { content: CallContent }) {
+  return (
+    <div className="artifact flex min-h-[320px] flex-col items-center bg-[#f7f7f8] px-6 py-10 text-[#1d1d1f]">
+      <p className="text-[28px] font-semibold">{content.contactName}</p>
+      <p className="mt-1 text-[14px] text-[#6e6e73]">{content.number}</p>
+      <div className="mt-8 w-full max-w-[32rem] space-y-3" aria-label="Authored call record">
+        {content.transcript.map((line) => (
+          <p key={line} className="rounded-[10px] bg-white px-4 py-3 text-[14px] leading-relaxed">
+            {line}
+          </p>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function WebArtifact({ content }: { content: WebContent }) {
+  return (
+    <div className="artifact min-h-[320px] bg-white text-[#222]">
+      <div className="border-b border-[#ddd] bg-[#f4f4f4] px-5 py-3 text-[13px] text-[#555]">{content.url}</div>
+      <div className="px-6 py-8">
+        <p className="text-[13px] font-semibold uppercase tracking-wide text-[#666]">{content.siteName}</p>
+        <h3 className="mt-2 text-[26px] font-semibold">{content.heading}</h3>
+        <div className="mt-6 space-y-4 text-[15px] leading-relaxed text-[#444]">
+          {content.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PortalArtifact({ content }: { content: PortalContent }) {
+  return (
+    <div className="artifact min-h-[320px] bg-white px-6 py-8 text-[#222]">
+      <p className="text-[13px] font-semibold uppercase tracking-wide text-[#666]">{content.serviceName}</p>
+      <h3 className="mt-2 text-[26px] font-semibold">{content.heading}</h3>
+      <dl className="mt-6 divide-y divide-[#ddd]">
+        {content.rows.map((row) => (
+          <div key={row.label} className="grid grid-cols-[1fr_2fr] gap-4 py-3 text-[14px]">
+            <dt className="text-[#666]">{row.label}</dt>
+            <dd>{row.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
   );
 }

@@ -12,15 +12,7 @@ export function SiteNav() {
       >
         <Wordmark />
       </Link>
-      <div className="flex items-center gap-5 min-[520px]:gap-7">
-        <SoundToggle />
-        <Link
-          href="/board"
-          className="inline-flex min-h-[44px] items-center font-label text-[12px] tracking-[0.08em] text-cream/80 transition-colors duration-150 hover:text-cream"
-        >
-          The board
-        </Link>
-      </div>
+      <SoundToggle />
     </nav>
   );
 }

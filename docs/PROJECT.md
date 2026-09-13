@@ -5,7 +5,7 @@
 
 ## Status
 
-- **Phase:** early implementation; visual shell exists, core game loop is not complete
+- **Phase:** Case 01 vertical slice implemented; live-provider and human-playtest gates remain
 - **Event:** HackRice 16
 - **Deadline:** Sunday, September 13, 2026 at 9:00 AM CT
 - **Judging:** 3 minutes total—2-minute demo, 1-minute Q&A; repeated 3–4 times
@@ -185,9 +185,9 @@ Casey-specific configuration steps live in the
 
 ## Commands
 
-Current commands are `npm run dev`, `npm run lint`, and `npm run build`. The repository
-does not yet define dedicated typecheck, unit-test, or browser-test scripts; add those
-with the engine and end-to-end slices instead of claiming those gates already pass.
+Current commands are `npm run dev`, `npm run lint`, `npm run typecheck`, `npm run test`,
+`npm run build`, `npm run test:e2e`, and `npm run check`. Automated provider tests use
+mocks and consume no ElevenLabs credits; real-agent verification remains a manual gate.
 
 ## Glossary
 
