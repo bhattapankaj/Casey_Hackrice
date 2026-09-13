@@ -1,11 +1,12 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
 import { ArtifactCard } from "@/components/ArtifactCard";
+import { PlayerNameForm } from "@/components/PlayerNameForm";
 import { SoundToggle } from "@/components/SoundToggle";
 import { Wordmark } from "@/components/Wordmark";
+import { usePlayerName } from "@/hooks/usePlayerName";
 import { getEnabledCases } from "@/lib/cases/registry";
 import { DEAL_DURATION, DEAL_STAGGER, EASE_DEAL } from "@/lib/motion";
 import { seededRotation } from "@/lib/seededRotation";
@@ -16,6 +17,8 @@ const HERO_ARTIFACT_IDS = ["offer-email", "supplied-call", "official-directory"]
 
 export function LandingHero() {
   const reduce = useReducedMotion();
+  const router = useRouter();
+  const player = usePlayerName();
   const heroArtifacts = HERO_ARTIFACT_IDS.flatMap((id) => {
     const artifact = FIRST.artifacts.find((candidate) => candidate.id === id);
     return artifact ? [artifact] : [];
@@ -41,19 +44,18 @@ export function LandingHero() {
             find a source they did not hand you, and build a Trust Chain you can defend.
           </p>
 
-          <div className="mt-7 flex flex-wrap items-center gap-5">
-            <Link
-              href={`/play/${FIRST.id}`}
-              className="surface-cream inline-flex min-h-[52px] items-center gap-2 rounded-[12px] bg-cream px-7 font-sans text-[17px] font-semibold text-ink transition-shadow duration-150 hover:shadow-[0_6px_16px_rgba(20,40,30,0.45)]"
-            >
-              Deal me in
-              <ArrowRight size={20} strokeWidth={2} aria-hidden />
-            </Link>
-          </div>
+          <PlayerNameForm
+            initialName={player.name ?? ""}
+            buttonLabel="Deal me in"
+            onSave={(name) => {
+              player.saveName(name);
+              router.push(`/play/${FIRST.id}`);
+            }}
+          />
 
           <p className="mt-8 max-w-[46ch] text-[14px] leading-relaxed text-cream/60">
-            Practice with invented people and organizations. No real offer,
-            account, or personal information is needed.
+            Practice with invented people and organizations. No real offer or
+            account is involved.
           </p>
         </div>
 

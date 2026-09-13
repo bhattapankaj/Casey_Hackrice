@@ -12,11 +12,13 @@ import { Pin, TriangleAlert } from "lucide-react";
 import { ArtifactCard } from "@/components/ArtifactCard";
 import { ArtifactViewer } from "@/components/ArtifactViewer";
 import { CallPanel, CompactCallControls } from "@/components/CallPanel";
+import { PlayerNameForm } from "@/components/PlayerNameForm";
 import { Receipt } from "@/components/Receipt";
 import { SiteNav } from "@/components/SiteNav";
 import { CHIP_COPY, VERDICT_ORDER, VerdictChip } from "@/components/VerdictChip";
 import { useCaseyVoice } from "@/hooks/useCaseyVoice";
 import { useGameSession } from "@/hooks/useGameSession";
+import { usePlayerName } from "@/hooks/usePlayerName";
 import type { CaseFile, Verdict } from "@/lib/cases/schema";
 import {
   DEAL_DURATION,
@@ -31,17 +33,50 @@ type CardTableProps = {
   gameCase: CaseFile;
 };
 
+type CardTableGameProps = CardTableProps & {
+  playerName: string;
+};
+
 const CARD_WIDTH = "w-[158px] min-[430px]:w-[170px] min-[780px]:w-[190px]";
 
 export function CardTable({ gameCase }: CardTableProps) {
+  const player = usePlayerName();
+
+  if (!player.ready) {
+    return (
+      <>
+        <SiteNav />
+        <main className="mx-auto min-h-screen w-full max-w-[680px] px-4 py-16 text-cream sm:px-5">
+          <p role="status">Preparing your case...</p>
+        </main>
+      </>
+    );
+  }
+
+  if (!player.name) {
+    return (
+      <>
+        <SiteNav />
+        <main className="mx-auto min-h-screen w-full max-w-[680px] px-4 py-16 text-cream sm:px-5">
+          <p className="font-label text-[12px] tracking-[0.08em] text-cream/70">CASE INTAKE</p>
+          <h1 className="mt-2 font-serif text-[34px] font-semibold">Who received this call?</h1>
+          <p className="mt-3 max-w-[48ch] text-[16px] leading-relaxed text-cream/85">
+            Enter your name before the case begins.
+          </p>
+          <PlayerNameForm buttonLabel="Enter the case" onSave={player.saveName} />
+        </main>
+      </>
+    );
+  }
+
   return (
     <ConversationProvider>
-      <CardTableGame gameCase={gameCase} />
+      <CardTableGame gameCase={gameCase} playerName={player.name} />
     </ConversationProvider>
   );
 }
 
-function CardTableGame({ gameCase }: CardTableProps) {
+function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
   const reduce = useReducedMotion();
   const game = useGameSession(gameCase);
   const voice = useCaseyVoice({
@@ -134,7 +169,7 @@ function CardTableGame({ gameCase }: CardTableProps) {
   }, [game, voice]);
 
   if (showReceipt && game.receipt) {
-    return <Receipt receipt={game.receipt} onReplay={replay} />;
+    return <Receipt receipt={game.receipt} playerName={playerName} onReplay={replay} />;
   }
 
   const spotChip = committed ?? choice;
@@ -173,12 +208,19 @@ function CardTableGame({ gameCase }: CardTableProps) {
         </header>
 
         <div className="mt-4 max-w-[60ch] text-[16px] leading-relaxed text-cream/90">
-          {gameCase.briefing.map((line) => <p key={line}>{line}</p>)}
+          {gameCase.briefing.map((line, index) => (
+            <p key={line}>
+              {index === 0 && line.startsWith("You ")
+                ? `${playerName}, you ${line.slice(4)}`
+                : line}
+            </p>
+          ))}
         </div>
 
         <CallPanel
           characterName={gameCase.caller?.characterName ?? "Caller"}
           organizationName={gameCase.caller?.organizationName ?? "Unknown caller"}
+          playerName={playerName}
           voice={voice}
           pressureTactics={game.session.pressureTactics}
         />

@@ -10,6 +10,7 @@ type VoiceController = ReturnType<typeof useCaseyVoice>;
 type CallPanelProps = {
   characterName: string;
   organizationName: string;
+  playerName: string;
   voice: VoiceController;
   pressureTactics: PressureTactic[];
 };
@@ -111,6 +112,7 @@ export function CompactCallControls({
 export function CallPanel({
   characterName,
   organizationName,
+  playerName,
   voice,
   pressureTactics,
 }: CallPanelProps) {
@@ -267,7 +269,7 @@ export function CallPanel({
               voice.captions.map((caption, index) => (
                 <p key={`${caption.role}-${index}-${caption.text}`} className="text-[14px] leading-relaxed">
                   <span className="font-semibold">
-                    {caption.role === "user" ? "You" : caption.role === "casey" ? "Casey" : characterName}:
+                    {caption.role === "user" ? playerName : caption.role === "casey" ? "Casey" : characterName}:
                   </span>{" "}
                   <span className="text-[#3a3a3c]">{caption.text}</span>
                 </p>

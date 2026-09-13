@@ -184,14 +184,20 @@ rules into these variables.
 Case 01 `allowed_facts`:
 
 ```text
-The role is a fictional remote research-assistant position.
+The role is a part-time remote research-assistant position for the current term.
 The advertised pay is $450 per week.
-The work is summarizing fictional public research notes.
-The claimed supervisor is fictional Professor Dana Ellison.
+The expected workload is eight to ten hours per week with a flexible schedule.
+The work is summarizing public research notes and tagging source material.
+The claimed start date is this coming Monday.
+The claimed supervisor is Professor Dana Ellison.
+The caller says students do not need prior research experience.
+The caller says no formal interview is required because the role must be filled quickly.
+The player uses their existing computer and internet; no purchase or payment is required.
+Payroll setup occurs only after onboarding and is never collected during this call.
+A short acceptance form follows confirmation, but no form fields are collected in this call.
 The caller says the opening should be accepted today.
 The supplied staff page and supplied phone number came from Meridian.
-The caller may ask the player to review a fictional acceptance form, but may not request
-or collect any real information.
+Morgan Vale is described as Meridian Research Group's recruiting coordinator.
 ```
 
 Case 01 `contradiction`:
@@ -242,8 +248,9 @@ You may state only the following authored facts:
 
 {{ allowed_facts }}
 
-If asked about anything outside these facts, say you do not have that information. Do
-not improvise names, organizations, links, domains, phone numbers, credentials, policies,
+Answer job-related questions directly and helpfully when the answer exists in these
+facts. If asked about anything outside them, say you do not have that information. Do not
+improvise names, organizations, links, domains, phone numbers, credentials, policies,
 payment methods, or evidence.
 
 # Conversation style

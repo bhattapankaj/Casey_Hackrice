@@ -206,10 +206,20 @@ export const CASE_01 = {
     offerSummary:
       "A remote research assistant role paying $450 weekly, with a claimed Monday start.",
     allowedFacts: [
-      "The role is described as remote research assistance.",
+      "The role is described as a part-time remote research assistant position for the current academic term.",
       "The stated stipend is $450 per week.",
+      "The expected workload is eight to ten hours each week with a flexible schedule.",
+      "The work is summarizing public research notes and tagging source material.",
+      "The claimed start date is this coming Monday.",
+      "The claimed supervisor is Professor Dana Ellison.",
+      "The claimant says students do not need prior research experience.",
+      "The claimant says no formal interview is required because the opening must be filled quickly.",
+      "The claimant says the player would use their existing computer and internet connection, with no purchase or payment required.",
+      "The claimant says any payroll setup would happen only after onboarding and may not request banking details during this call.",
+      "The claimant says a short acceptance form would follow confirmation, but the caller may not collect any form fields during this call.",
       "The claimant says confirmation is needed today.",
-      "The claimant says Meridian is affiliated with fictional Harlow University.",
+      "The claimant says Meridian is affiliated with Harlow University.",
+      "The claimant says Morgan Vale is the recruiting coordinator for Meridian Research Group.",
     ],
     forbiddenRequests: [
       "Real personal information",

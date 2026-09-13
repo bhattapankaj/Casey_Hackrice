@@ -22,6 +22,7 @@ import { play } from "@/lib/sound";
 
 type ReceiptProps = {
   receipt: ScoreReceipt;
+  playerName: string;
   onReplay: () => void;
 };
 
@@ -54,7 +55,7 @@ const SCORE_LINES = [
   ["Composure", "composure"],
 ] as const;
 
-export function Receipt({ receipt, onReplay }: ReceiptProps) {
+export function Receipt({ receipt, playerName, onReplay }: ReceiptProps) {
   const reduce = useReducedMotion();
   const correct = receipt.truth === receipt.selectedVerdict;
 
@@ -78,6 +79,9 @@ export function Receipt({ receipt, onReplay }: ReceiptProps) {
         <h1 className="mt-1 font-serif text-[30px] leading-tight font-semibold text-cream sm:text-[37px]">
           {receipt.caseTitle}
         </h1>
+        <p className="mt-2 text-[16px] text-cream/80">
+          {playerName}, here is what your Trust Chain proved.
+        </p>
 
         <dl className="mt-6 grid gap-3 sm:grid-cols-3">
           <div className="surface-cream rounded-[12px] bg-cream p-4 text-ink">

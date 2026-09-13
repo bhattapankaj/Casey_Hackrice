@@ -1,9 +1,22 @@
 import { expect, test } from "@playwright/test";
+import { PLAYER_PROFILE_STORAGE_KEY } from "@/lib/player-profile";
 
 test("Case 01 fallback path reaches the deterministic Receipt", async ({ page }) => {
-  await page.goto("/play/case-01");
+  await page.goto("/");
+
+  const dealButton = page.getByRole("button", { name: "Deal me in" });
+  await expect(dealButton).toBeDisabled();
+  await page.getByLabel("Your name").fill("Jordan");
+  await dealButton.click();
+  await expect(page).toHaveURL(/\/play\/case-01$/);
+  expect(
+    await page.evaluate((key) => window.localStorage.getItem(key), PLAYER_PROFILE_STORAGE_KEY),
+  ).toBe(JSON.stringify({ version: 1, name: "Jordan" }));
+
+  await page.reload();
 
   await expect(page.getByRole("heading", { name: /The Meridian Offer/ })).toBeVisible();
+  await expect(page.getByText("Jordan, you received a research assistant offer this morning.")).toBeVisible();
   await expect(page.getByText("INCOMING CALL", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Answer with microphone" })).toBeVisible();
   await expect(page.getByText(/microphone audio to ElevenLabs/)).toBeVisible();
@@ -48,6 +61,7 @@ test("Case 01 fallback path reaches the deterministic Receipt", async ({ page })
   await page.getByRole("button", { name: "Lock verdict" }).click();
 
   await expect(page.getByText("RECEIPT")).toBeVisible();
+  await expect(page.getByText("Jordan, here is what your Trust Chain proved.")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Truth: Scam" })).toBeVisible();
   await expect(page.getByText("Harlow University", { exact: true })).toBeVisible();
   await expect(page.getByText("Meridian claimant", { exact: true })).toBeVisible();

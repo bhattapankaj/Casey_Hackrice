@@ -55,7 +55,8 @@ judge score. We earn it only if the live build satisfies every acceptance gate i
 
 ## Demo path
 
-1. Landing: judge reads “Take the call. Build the proof.” and selects **Deal the case**.
+1. Landing: judge enters the required local player name, reads “Take the call. Build the
+   proof.”, and selects **Deal the case**.
 2. Briefing: two sentences establish a fictional research-job offer; the table deals the
    email, phone, and directory actions.
 3. Consent: judge chooses **Answer with microphone** or **Use text instead** after a clear
@@ -153,6 +154,7 @@ Do not pin framework or SDK version numbers in prose. The lockfile is authoritat
 - `EvidencePin`: artifact ID and pin order; maximum three.
 - `GameSession`: case ID, mode, revealed IDs, actions taken, pins, pressure cards, verdict,
   and timestamps.
+- `PlayerProfile`: versioned browser-local JSON containing only the required player name.
 - `ScoreReceipt`: deterministic dimension scores, explanation keys, and total.
 
 The detailed contract lives in the build doc. One `sourceRoot` may produce artifacts in
@@ -179,6 +181,8 @@ Casey-specific configuration steps live in the
 - Product code must be authored during the official hacking period. Only implemented,
   verified behavior may be represented as a Casey feature.
 - Fictional organizations and identities only; no real-person voice imitation.
+- Keep the required player name in browser storage only. Never send it to ElevenLabs,
+  server routes, transcripts, case data, logs, or scoring.
 - Explain microphone use before requesting permission. Never ask for real personal data.
 - Truth and score are never model-generated.
 - External failure must not break the game or Receipt.

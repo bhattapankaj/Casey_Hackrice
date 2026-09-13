@@ -364,6 +364,8 @@ Primary content:
 - Casey mark and “Take the call. Build the proof.”
 - One rule: **“Before your verdict, pin the evidence you trust. A new channel is not
   always a new source.”**
+- Required player-name field. Validate it, store it as versioned JSON in browser
+  `localStorage`, and use it only in local briefing, caption labels, and Receipt copy.
 - Primary button: **Deal the case**
 - Secondary: **How to play** opens a three-card, dismissible explanation.
 
@@ -602,6 +604,8 @@ Fallback is a supported mode, not a blank error state.
 
 - Use a reducer or small store with serializable events.
 - Do not make network calls inside the pure engine.
+- Store the required player name as validated, versioned JSON in browser `localStorage`.
+  Never add it to voice dynamic variables or a server request.
 - Persist current local progress only if it costs little.
 - A leaderboard/database is P2 and may store only nickname, score, case ID, mode, and
   timestamp. Reject or normalize unsafe nicknames.
@@ -615,6 +619,8 @@ Fallback is a supported mode, not a blank error state.
 - Tell players when ElevenLabs processes microphone audio and provide a no-mic path.
 - Tell players not to share real personal information; the caller is forbidden from
   requesting it.
+- The locally displayed player name is never sent to ElevenLabs and never becomes part
+  of the provider transcript.
 - Configure provider retention to the minimum available and describe actual behavior;
   never promise deletion that has not been verified.
 - No model-generated links, phone numbers, evidence, case truth, or debrief advice.
