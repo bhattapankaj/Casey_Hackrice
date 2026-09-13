@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { boardUsername } from "@/lib/board/identity";
+import { boardUsername, suggestBoardNickname } from "@/lib/board/identity";
 
 describe("leaderboard username", () => {
   it("appends a stable alphanumeric suffix to the board name", () => {
@@ -14,5 +14,13 @@ describe("leaderboard username", () => {
     ).not.toBe(
       boardUsername("Jordan", "a1994677-4a80-7a55-8dc2-0242ac120002"),
     );
+  });
+
+  it("suggests an editable 221B-style nickname within the board limit", () => {
+    expect(suggestBoardNickname("Jeevan")).toBe("Jeevan-Sleuth-221B");
+    expect(suggestBoardNickname("Jordan Lee")).toBe("JordanLe-Sleuth-221B");
+    expect(suggestBoardNickname("Ana María")).toBe("AnaMaria-Sleuth-221B");
+    expect(suggestBoardNickname("A very long detective name")).toBe("Averylon-Sleuth-221B");
+    expect(suggestBoardNickname("A very long detective name")).toHaveLength(20);
   });
 });

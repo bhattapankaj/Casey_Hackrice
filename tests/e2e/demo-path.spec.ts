@@ -2,9 +2,24 @@ import { expect, test } from "@playwright/test";
 import { PLAYER_PROFILE_STORAGE_KEY } from "@/lib/player-profile";
 
 test("Case 01 fallback path reaches the deterministic Receipt", async ({ page }) => {
+  const boardSubmissions: Array<Record<string, unknown>> = [];
+  await page.route("**/api/board", async (route) => {
+    if (route.request().method() === "POST") {
+      boardSubmissions.push(route.request().postDataJSON() as Record<string, unknown>);
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ ok: true, score: 150, casesCleared: 1 }),
+      });
+      return;
+    }
+    await route.continue();
+  });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await page.getByLabel("Your name").fill("Jordan");
+  await expect(page.getByLabel("Leaderboard nickname")).toHaveValue("Jordan-Sleuth-221B");
+  await page.getByLabel("Leaderboard nickname").fill("Jordan-Hound-221B");
   await page.getByRole("button", { name: "Deal me in" }).click();
   await expect(page).toHaveURL(/\/table$/);
   const meridian = page.getByRole("link", { name: /The Meridian Offer/ });
@@ -15,6 +30,9 @@ test("Case 01 fallback path reaches the deterministic Receipt", async ({ page })
   expect(
     await page.evaluate((key) => window.localStorage.getItem(key), PLAYER_PROFILE_STORAGE_KEY),
   ).toBe(JSON.stringify({ version: 1, name: "Jordan" }));
+  expect(
+    await page.evaluate(() => JSON.parse(window.localStorage.getItem("casey_progress_v1") ?? "{}")),
+  ).toMatchObject({ nickname: "Jordan-Hound-221B", nicknameAsked: true });
 
   await page.reload();
 
@@ -75,4 +93,15 @@ test("Case 01 fallback path reaches the deterministic Receipt", async ({ page })
   await expect(
     page.getByText(/contact a number the claimant did not provide/),
   ).toBeVisible();
+  await expect.poll(() => boardSubmissions.length).toBe(1);
+  expect(boardSubmissions[0]).toMatchObject({
+    nickname: "Jordan-Hound-221B",
+    chips: 125,
+    caseResults: {
+      "case-01": {
+        verdict: "scam",
+        pinnedArtifactIds: ["offer-email", "supplied-call", "directory-call"],
+      },
+    },
+  });
 });

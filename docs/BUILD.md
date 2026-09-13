@@ -623,9 +623,10 @@ Fallback is a supported mode, not a blank error state.
 
 - Use a reducer or small store with serializable events.
 - Do not make network calls inside the pure engine.
-- Persist local progress in `casey_progress_v1`. An optional board nickname is collected
-  after the first Receipt, never before play. Sanitize to `[A-Za-z0-9 _-]`, max 20.
-  Skip stays local and anonymous. Never add a nickname to voice dynamic variables.
+- Persist local progress in `casey_progress_v1`. A required, editable board nickname is
+  collected beside the private player name before play. Prefill it with the deterministic
+  `Name-Sleuth-221B` suggestion, sanitize to `[A-Za-z0-9 _-]`, and cap it at 20 characters.
+  Never add either name to voice dynamic variables.
 - `POST /api/board` rescores verdicts and pins with `scoreCatalogRound`. A client-sent
   total is ignored. Tiger `board_entries` or Vercel KV is used when configured; otherwise
   `/board` shows local rows and "Showing your local scores. The shared board is unavailable."

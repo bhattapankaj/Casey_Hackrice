@@ -1,17 +1,24 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { HowToPlayCards } from "@/components/HowToPlay";
 import { PlayerNameForm } from "@/components/PlayerNameForm";
 import { SiteNav } from "@/components/SiteNav";
 import { usePlayerName } from "@/hooks/usePlayerName";
 import { getEnabledCases } from "@/lib/cases/registry";
+import { persistNickname, readStoredProgress } from "@/lib/progress";
 
 const ENABLED_CASES = getEnabledCases();
 
 export function LandingHero() {
   const router = useRouter();
   const player = usePlayerName();
+  const [nickname, setNickname] = useState("");
+
+  useEffect(() => {
+    setNickname(readStoredProgress().nickname ?? "");
+  }, []);
 
   return (
     <>
@@ -32,9 +39,11 @@ export function LandingHero() {
 
             <PlayerNameForm
               initialName={player.name ?? ""}
+              initialNickname={nickname}
               buttonLabel="Deal me in"
-              onSave={(name) => {
-                player.saveName(name);
+              onSave={(name, boardNickname) => {
+                if (!player.saveName(name)) return;
+                persistNickname(boardNickname, true);
                 router.push("/table");
               }}
             />

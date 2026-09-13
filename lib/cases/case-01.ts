@@ -247,7 +247,7 @@ export const CASE_01 = {
   },
   debrief: {
     lesson:
-      "A confirmation only counts when its underlying source is independent—not merely when it arrives through a different channel.",
+      "A confirmation only counts when its underlying source is independent, not merely when it arrives through a different channel.",
     realWorldAction:
       "Find the organization's official directory yourself and contact a number the claimant did not provide.",
     sourceUrl: "https://consumer.ftc.gov/articles/job-scams",

@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@elevenlabs/react": "^1.15.2",
+    "@google/genai": "^2.22.0",
     "framer-motion": "^13.2.0",
     "lucide-react": "^1.45.0",
     "next": "15.5.22",
