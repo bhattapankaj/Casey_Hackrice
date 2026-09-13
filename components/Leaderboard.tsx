@@ -238,14 +238,20 @@ function PokerSeat({ rank, row, current }: RankedRow & { current: boolean }) {
         <p className="font-label text-[8px] tracking-[0.17em] text-ink/45 uppercase">
           {first ? "Table leader" : theme.name + " seat"}
         </p>
-        <div className="mt-4 flex min-w-0 items-center gap-2 pr-10">
-          <h3 className="truncate font-serif text-[21px] leading-tight font-semibold">
+        <div className="mt-4 flex min-w-0 flex-wrap items-center justify-center gap-2 px-10 text-center">
+          <h3
+            data-podium-nickname={row.nickname}
+            className="max-w-full [overflow-wrap:anywhere] font-serif text-[21px] leading-tight font-semibold"
+          >
             {row.nickname}
           </h3>
           {hasMasterBadge(row) ? <MasterBadge size={30} /> : null}
         </div>
-        <div className="mt-1 flex flex-wrap items-center gap-2">
-          <p className="truncate font-label text-[9px] tracking-[0.06em] text-felt-deep">
+        <div className="mt-1 flex min-w-0 flex-wrap items-center justify-center gap-2 px-4 text-center">
+          <p
+            data-podium-username={row.username}
+            className="max-w-full [overflow-wrap:anywhere] font-label text-[9px] leading-relaxed tracking-[0.06em] text-felt-deep"
+          >
             @{row.username}
           </p>
           {current ? (
@@ -494,7 +500,9 @@ function MobileRow({ rank, row, current }: RankedRow & { current: boolean }) {
         <CasinoChip label={rank} size={43} accent={theme.accent} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="truncate font-serif text-[18px] font-semibold">{row.nickname}</h3>
+            <h3 className="max-w-full [overflow-wrap:anywhere] font-serif text-[18px] leading-tight font-semibold">
+              {row.nickname}
+            </h3>
             {hasMasterBadge(row) ? <MasterBadge size={25} /> : null}
             {current ? (
               <span className="rounded-full border border-felt/35 px-2 py-0.5 font-label text-[8px] tracking-[0.12em] text-felt-deep uppercase">
@@ -502,7 +510,7 @@ function MobileRow({ rank, row, current }: RankedRow & { current: boolean }) {
               </span>
             ) : null}
           </div>
-          <p className="font-label text-[9px] tracking-[0.06em] text-felt-deep">
+          <p className="max-w-full [overflow-wrap:anywhere] font-label text-[9px] leading-relaxed tracking-[0.06em] text-felt-deep">
             @{row.username}
           </p>
         </div>

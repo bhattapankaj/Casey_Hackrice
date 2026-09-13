@@ -125,8 +125,8 @@ test("shared board shows every other investigator returned by Tiger", async ({ p
         entries: [
           {
             id: "b41d63e7-28f4-4c5e-91a2-6b7d8e9f0a12",
-            nickname: "Avery",
-            username: "Avery-B41D63",
+            nickname: "Jeevan-Lestrade-221B",
+            username: "Jeevan-Lestrade-221B-BFCE32",
             score: 950,
             casesCleared: 3,
             bestHand: "Straight",
@@ -152,7 +152,7 @@ test("shared board shows every other investigator returned by Tiger", async ({ p
   await page.goto("/board");
   await expect(page.getByText("Baker Street final table", { exact: true })).toBeVisible();
   await expect(
-    page.getByRole("article", { name: "Avery, rank 1, Diamonds seat" }),
+    page.getByRole("article", { name: "Jeevan-Lestrade-221B, rank 1, Diamonds seat" }),
   ).toBeVisible();
   await expect(
     page.getByRole("article", { name: "Morgan, rank 2, Spades seat" }),
@@ -160,11 +160,28 @@ test("shared board shows every other investigator returned by Tiger", async ({ p
   const register = page.getByRole("region", { name: "All investigators" });
   await expect(register).toBeVisible();
   await expect(page.getByText("2 players", { exact: true })).toBeVisible();
+  const podiumNickname = page.locator(
+    '[data-podium-nickname="Jeevan-Lestrade-221B"]',
+  );
+  const podiumUsername = page.locator(
+    '[data-podium-username="Jeevan-Lestrade-221B-BFCE32"]',
+  );
+  await expect(podiumNickname).toHaveText("Jeevan-Lestrade-221B");
+  await expect(podiumUsername).toHaveText("@Jeevan-Lestrade-221B-BFCE32");
+  await expect(podiumNickname).toHaveCSS("text-align", "center");
+  await expect(podiumUsername).toHaveCSS("text-align", "center");
+  expect(
+    await podiumUsername.evaluate((element) => element.scrollWidth <= element.clientWidth),
+  ).toBe(true);
   if ((page.viewportSize()?.width ?? 0) < 640) {
-    await expect(register.locator('[data-mobile-investigator="Avery-B41D63"]')).toBeVisible();
+    await expect(
+      register.locator('[data-mobile-investigator="Jeevan-Lestrade-221B-BFCE32"]'),
+    ).toBeVisible();
     await expect(register.locator('[data-mobile-investigator="Morgan-74BA98"]')).toBeVisible();
   } else {
-    await expect(register.getByRole("row").filter({ hasText: "Avery-B41D63" })).toBeVisible();
+    await expect(
+      register.getByRole("row").filter({ hasText: "Jeevan-Lestrade-221B-BFCE32" }),
+    ).toBeVisible();
     await expect(register.getByRole("row").filter({ hasText: "Morgan-74BA98" })).toBeVisible();
   }
 });
