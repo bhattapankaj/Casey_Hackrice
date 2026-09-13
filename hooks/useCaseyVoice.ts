@@ -144,10 +144,10 @@ export function useCaseyVoice({
     },
     onError: () => {
       setPhase("error");
-      enterFallback("Live call unavailable. Continue with the text call.");
+      enterFallback("Live call unavailable. Switching to the backup call.");
     },
     onUnhandledClientToolCall: () => {
-      enterFallback("The live caller sent an unsupported action. Continue with the text call.");
+      enterFallback("The live caller sent an unsupported action. Switching to the backup call.");
     },
     onModeChange: ({ mode }) => setPhase(mode),
     onMessage: ({ message, role }) => {
@@ -200,7 +200,7 @@ export function useCaseyVoice({
       if (attempt !== startAttempt.current) {
         return;
       }
-      enterFallback("Microphone permission was not granted. Continue with the text call.");
+      enterFallback("Microphone permission was not granted. Switching to the backup call.");
       return;
     }
 
@@ -226,7 +226,7 @@ export function useCaseyVoice({
           return;
         }
         if (!response.ok || !isVoiceSessionSuccess(body)) {
-          enterFallback("Live call authorization failed. Continue with the text call.");
+          enterFallback("Live call authorization failed. Switching to the backup call.");
           return;
         }
         setPhase("connecting");
@@ -245,16 +245,9 @@ export function useCaseyVoice({
       if (attempt !== startAttempt.current) {
         return;
       }
-      enterFallback("The network could not start the live call. Continue with the text call.");
+      enterFallback("The network could not start the live call. Switching to the backup call.");
     }
   }, [caseId, enterFallback, phase, selectMode, startSession]);
-
-  const chooseFallback = useCallback(() => {
-    if (phase !== "consent") {
-      return;
-    }
-    enterFallback();
-  }, [enterFallback, phase]);
 
   const decline = useCallback(() => {
     if (phase !== "consent") {
@@ -333,7 +326,6 @@ export function useCaseyVoice({
     setMuted,
     startLive,
     decline,
-    chooseFallback,
     advanceFallback,
     hasNextFallbackBeat: fallbackIndex + 1 < fallbackBeats.length,
     end,

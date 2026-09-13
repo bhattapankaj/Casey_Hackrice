@@ -63,8 +63,8 @@ judge score. We earn it only if the live build satisfies every acceptance gate i
    proof.”, and selects **Deal the case**.
 2. Briefing: two sentences establish a fictional research-job offer; the table deals the
    email, phone, and directory actions.
-3. Consent: judge chooses **Answer with microphone** or **Use text instead** after a clear
-   processing/privacy notice.
+3. Consent: judge chooses **Answer** after a clear processing/privacy notice. Declining
+   creates no transcript; a live-call failure switches automatically to the authored backup.
 4. Call: the ElevenLabs character responds in short turns and deals face-down pressure
    cards through an allowlisted client tool.
 5. Investigate: judge chooses a supplied route, an independently sourced route, or both;
@@ -113,7 +113,7 @@ points from free-form conversation or model output.
 - Three verdicts, deterministic scoring, and Receipt
 - ElevenLabs voice call, mic consent, call status, and hang-up control
 - Face-down pressure-card client tool with strict enum validation
-- Text or prerecorded fallback using the same case and Receipt
+- Automatic text or prerecorded fallback using the same case and Receipt when live voice fails
 - Keyboard, visible focus, captions/transcript, reduced motion, 390 px layout
 - Unit-tested score evaluator and case-schema validator
 - One automated end-to-end test for the demo path

@@ -30,6 +30,12 @@ test("Case 01 fallback path reaches the deterministic Receipt", async ({ page })
     }
     await route.continue();
   });
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator.mediaDevices, "getUserMedia", {
+      configurable: true,
+      value: () => Promise.reject(new DOMException("Denied for fallback test", "NotAllowedError")),
+    });
+  });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await page.getByLabel("Your name").fill("Jordan");
@@ -42,6 +48,12 @@ test("Case 01 fallback path reaches the deterministic Receipt", async ({ page })
   await page.getByLabel("Leaderboard nickname").fill("Jordan-Hound-221B");
   await page.getByRole("button", { name: "Deal me in" }).click();
   await expect(page).toHaveURL(/\/table$/);
+  await expect(page.getByRole("heading", { name: "Choose a case. Read every tell." })).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "Case files on the table" }),
+  ).toBeVisible();
+  await expect(page.getByRole("link", { name: /About 2 minutes/ })).toHaveCount(2);
+  await expect(page.getByRole("link", { name: /About 3 minutes/ })).toHaveCount(1);
   const meridian = page.getByRole("link", { name: /The Meridian Offer/ });
   await expect(meridian).toHaveAttribute("href", "/play/case-01");
   // Activate the link without pointer coordinates while its deal animation settles.
@@ -60,6 +72,7 @@ test("Case 01 fallback path reaches the deterministic Receipt", async ({ page })
   await expect(page.getByText("Jordan, you received a research assistant offer this morning.")).toBeVisible();
   await expect(page.getByText("Incoming", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Answer", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Use text instead", exact: true })).toHaveCount(0);
   await expect(page.getByText("Answering uses your microphone. Nothing is recorded.")).toBeVisible();
   await page.getByRole("button", { name: "Show microphone details" }).click();
   await expect(page.getByText(/microphone audio to ElevenLabs/)).toBeVisible();
@@ -67,10 +80,10 @@ test("Case 01 fallback path reaches the deterministic Receipt", async ({ page })
   await expect(page.getByText("Independent route", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Meridian claimant", { exact: true })).toHaveCount(0);
 
-  await page.getByRole("button", { name: "Use text instead", exact: true }).click();
-  await expect(page.getByText("Text mode", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Answer", exact: true }).click();
+  await expect(page.getByText("Fallback call", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "End call", exact: true })).toHaveCount(0);
-  await expect(page.getByText("Text transcript", { exact: true })).toBeVisible();
+  await expect(page.getByText("Fallback transcript", { exact: true })).toBeVisible();
   await expect(page.getByLabel("Call transcript")).toContainText("Morgan Vale");
 
   await page.locator("#card-offer-email").click();

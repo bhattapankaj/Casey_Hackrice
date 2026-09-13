@@ -675,7 +675,8 @@ any live state
 Rules:
 
 - Request microphone access only after the user selects **Answer with microphone**.
-- Offer **Use text instead** beside it.
+- Do not offer text as an initial call mode. Enter the authored backup automatically only
+  after microphone denial, authorization failure, timeout, disconnect, or provider error.
 - Show textual status; sound and animation are not enough.
 - Add mute and end-call controls.
 - End the provider session during unmount/navigation.

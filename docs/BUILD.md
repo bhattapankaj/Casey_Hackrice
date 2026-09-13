@@ -392,17 +392,23 @@ The catalog is a separate screen: three playable cases, a Next up row, and a sta
 strip of cases completed, best streak, and total score. `/?demo=1` still clears
 progress and opens Case 01.
 
+The landing and catalog share the leaderboard's Baker Street casino room. The landing
+uses a padded private-table frame around the required nameplate and house rules. The
+catalog deals bright cream, suit-coded case files inside the same rail and presents local
+progress as casino-chip counters. Suit assignments are decorative and never influence
+case truth, availability, scoring, or progress.
+
 No microphone prompt on landing.
 
 ### Screen 2 — Briefing and consent
 
 - Two-sentence briefing; no long narrative.
-- Show call modes before requesting browser permission:
-  - **Answer with microphone** — disclose that microphone audio is sent to ElevenLabs,
-    that Casey does not store it, and that players must not share personal information.
-  - **Use text instead** — full game with the authored text call.
+- Show **Answer** and **Decline** before requesting browser permission. Disclose that
+  answering sends microphone audio to ElevenLabs, that Casey does not store it, and that
+  players must not share personal information.
 - Request permission only after the player chooses the microphone path.
-- Permission denial changes mode without blame or dead end.
+- Permission denial or provider failure automatically activates the authored backup
+  without blame or a dead end. Do not present text as a selectable incoming-call mode.
 
 ### Screen 3 — The table
 
@@ -442,13 +448,13 @@ Every state has visible text:
 
 At timeout/error:
 
-`Live call unavailable → Continue with text call`
+`Live call unavailable → Automatic backup call`
 
 Include end-call, mute, volume, and captions/transcript controls. The player can continue
 investigating while the call is active.
 
 `Decline` closes the unopened line and creates no caller dialogue or transcript. The
-separate `Use text instead` control intentionally starts the authored fallback path.
+authored fallback path starts only when the attempted live call cannot continue.
 
 ### Verdict
 

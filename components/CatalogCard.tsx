@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { MirroredCorner, PlayingCardShell } from "@/components/ArtifactCard";
+import { CASINO_SUITS, type CasinoSuit } from "@/components/CasinoDetails";
 import { CATEGORY_META } from "@/lib/cases/categories";
 import type { CaseCategory, CaseRank } from "@/lib/cases/schema";
 import type { Hand } from "@/lib/engine/hand";
@@ -19,14 +20,26 @@ type CatalogCardProps = {
   href?: string;
   upcoming?: boolean;
   width?: string;
+  suit?: CasinoSuit;
 };
 
-function Corner({ rank, category }: { rank: CaseRank; category: CaseCategory }) {
-  const Icon = CATEGORY_META[category].icon;
+function Corner({
+  rank,
+  suit,
+}: {
+  rank: CaseRank;
+  suit: CasinoSuit;
+}) {
+  const theme = CASINO_SUITS[suit];
   return (
     <div className="flex w-5 flex-col items-center gap-0.5" aria-hidden>
       <span className="font-serif text-[15px] leading-none font-semibold text-ink">{rank}</span>
-      <Icon size={14} strokeWidth={1.75} className="text-gold" />
+      <span
+        className="font-serif text-[17px] leading-none"
+        style={{ color: theme.accent }}
+      >
+        {theme.symbol}
+      </span>
     </div>
   );
 }
@@ -40,42 +53,68 @@ function CatalogFace({
   bestHand,
   upcoming,
   width,
+  suit = "diamonds",
 }: CatalogCardProps) {
   const meta = CATEGORY_META[category];
   const Icon = meta.icon;
+  const theme = CASINO_SUITS[suit];
 
   return (
-    <PlayingCardShell width={width ?? "w-[240px]"}>
+    <PlayingCardShell
+      width={width ?? "w-[240px]"}
+      className="transition-transform duration-150 group-hover:-translate-y-1 group-hover:shadow-[0_12px_24px_rgba(17,28,22,0.42)]"
+    >
+      <span
+        aria-hidden
+        className="absolute -right-5 -bottom-11 font-serif text-[150px] leading-none opacity-[0.055]"
+        style={{ color: theme.accent }}
+      >
+        {theme.symbol}
+      </span>
       <div className="pointer-events-none absolute inset-[14px]" aria-hidden>
         <div className="absolute top-0 left-0">
-          <Corner rank={rank} category={category} />
+          <Corner rank={rank} suit={suit} />
         </div>
         <MirroredCorner>
-          <Corner rank={rank} category={category} />
+          <Corner rank={rank} suit={suit} />
         </MirroredCorner>
       </div>
 
       <div className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
-        <Icon
-          size={28}
-          strokeWidth={1.75}
+        <span
           aria-hidden
-          className="text-gold opacity-[0.18]"
-        />
-        <p className="mt-2 font-serif text-[16px] leading-tight font-semibold text-ink">
+          className="grid size-12 place-items-center rounded-full border bg-cream-dim/35"
+          style={{ borderColor: theme.accent, color: theme.accent }}
+        >
+          <Icon size={22} strokeWidth={1.7} />
+        </span>
+        <p className="mt-3 font-serif text-[18px] leading-tight font-semibold text-ink">
           {title}
         </p>
         {status === "cleared" ? (
-          <span aria-hidden className="mt-2 block h-px w-12 bg-gold" />
+          <span aria-hidden className="mt-2 block h-px w-12" style={{ background: theme.accent }} />
         ) : null}
         <p className="mt-2 font-label text-[10px] tracking-[0.12em] text-ink/55 uppercase">
           {meta.label}
         </p>
+        <p
+          aria-hidden
+          className="mt-2 font-label text-[8px] tracking-[0.18em] uppercase"
+          style={{ color: theme.accent }}
+        >
+          {upcoming ? "Held by the dealer" : `${theme.name} file`}
+        </p>
       </div>
 
-      {upcoming ? null : (
+      {upcoming ? (
         <div className="absolute inset-x-8 bottom-7 text-center">
-          <p className="flex items-center justify-center gap-1 font-sans text-[11px] text-ink/70">
+          <p className="font-label text-[9px] tracking-[0.13em] text-ink/45 uppercase">
+            Coming next
+          </p>
+        </div>
+      ) : (
+        <div className="absolute inset-x-8 bottom-7 text-center">
+          <p className="flex items-center justify-center gap-1.5 font-sans text-[11px] text-ink/70">
             {status === "cleared" && bestHand ? (
               <>
                 <Check size={12} strokeWidth={2.25} aria-hidden className="text-gold" />
@@ -90,6 +129,9 @@ function CatalogFace({
               ·
             </span>
             {estimatedMinutes} min
+          </p>
+          <p className="mt-2 font-label text-[9px] tracking-[0.14em] text-felt-deep uppercase">
+            Open case
           </p>
         </div>
       )}
@@ -122,7 +164,7 @@ export function CatalogCard(props: CatalogCardProps) {
     <Link
       href={props.href}
       aria-label={`${label}. ${statusLabel}. About ${props.estimatedMinutes} minutes.`}
-      className="block rounded-[12px]"
+      className="group block rounded-[12px]"
     >
       <CatalogFace {...props} />
     </Link>

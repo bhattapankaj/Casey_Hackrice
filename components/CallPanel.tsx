@@ -167,7 +167,7 @@ export function CallPanel({
       : voice.phase === "ended"
         ? "Call transcript"
         : textFallback
-          ? "Text transcript"
+          ? "Fallback transcript"
           : "Live transcript";
   const initial = characterName.charAt(0);
   const listEnd = useRef<HTMLLIElement | null>(null);
@@ -228,7 +228,7 @@ export function CallPanel({
                   </p>
                 ) : textFallback ? (
                   <p className="font-label text-[11px] font-medium tracking-[0.07em] text-ink/60">
-                    Text mode
+                    Fallback call
                   </p>
                 ) : (
                   <p className="font-serif text-[17px] leading-none text-ink tabular-nums">
@@ -282,14 +282,6 @@ export function CallPanel({
                   Decline
                 </button>
               </div>
-              <button
-                type="button"
-                onClick={voice.chooseFallback}
-                className="mt-2 inline-flex h-[34px] w-full items-center justify-center gap-1.5 rounded-full border border-gold/55 bg-gold/[0.08] font-sans text-[13px] font-semibold text-cream"
-              >
-                <MessageSquareText size={14} strokeWidth={1.75} aria-hidden />
-                Use text instead
-              </button>
               <MicDisclosure />
               <p className="mt-1.5 text-center font-sans text-[11px] text-cream/45">
                 The line closes at 75 seconds.

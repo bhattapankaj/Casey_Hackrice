@@ -18,7 +18,7 @@ const TURN_MS = 3200;
 
 type CallArtifactProps = {
   content: CallContent;
-  /** Text mode runs the same script with no microphone at all. */
+  /** The backup runs the same script with no microphone at all. */
   onAnnounce: (message: string) => void;
   onLiveChange: (live: boolean) => void;
 };
@@ -245,7 +245,7 @@ export function CallArtifact({
       </div>
       {state === "live" && textMode ? (
         <p className="mt-2 text-center text-[13px] text-[#6e6e73]">
-          Text mode. The microphone is off.
+          Backup call. The microphone is off.
         </p>
       ) : null}
 
@@ -265,14 +265,6 @@ export function CallArtifact({
               <Phone size={18} strokeWidth={2} aria-hidden />
               Start the call
             </button>
-            <button
-              type="button"
-              onClick={startText}
-              className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[#c7c7cc] bg-white px-5 text-[15px] text-[#1d1d1f]"
-            >
-              <Type size={18} strokeWidth={2} aria-hidden />
-              Use text instead
-            </button>
           </div>
         </div>
       ) : null}
@@ -281,8 +273,8 @@ export function CallArtifact({
         <div className="mt-6 flex flex-1 flex-col items-center justify-end gap-4">
           <p className="max-w-[42ch] text-center text-[14px] leading-relaxed text-[#3a3a3c]">
             {state === "denied"
-              ? "The browser blocked microphone access. You can allow it in the address bar and try again, or read the call as text instead."
-              : "No microphone is available in this browser. You can read the call as text instead."}
+              ? "The browser blocked microphone access. You can allow it in the address bar and try again, or continue with the backup call."
+              : "No microphone is available in this browser. You can continue with the backup call."}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             {state === "denied" ? (
@@ -301,7 +293,7 @@ export function CallArtifact({
               className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[#c7c7cc] bg-white px-5 text-[15px] text-[#1d1d1f]"
             >
               <Type size={18} strokeWidth={2} aria-hidden />
-              Use text instead
+              Continue with backup
             </button>
           </div>
         </div>
