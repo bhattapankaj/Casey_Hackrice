@@ -205,4 +205,4 @@ Provider tests use mocks and do not consume ElevenLabs or Gemini credits.
 - **Demo target:** One complete investigation in two minutes
 - **Teaching goal:** Verify through an independently found source
 
-Built for [HackRice 16](https://hackrice.com/)..
+Built for [HackRice 16](https://hackrice.com/).
