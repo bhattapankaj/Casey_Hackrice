@@ -173,11 +173,17 @@ describe("POST /api/voice-session boundary", () => {
   it("returns the token, conversation ID, and exact authored variables", async () => {
     const response = await responseWith(request());
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({
+    const body = await response.json();
+    expect(body).toEqual({
       conversationToken: "provider-token",
       conversationId: "conversation-id",
       dynamicVariables: buildCaseVariables(CASE_01),
     });
+    expect(body.dynamicVariables).toMatchObject({
+      opening_line: CASE_01.caller.firstMessage,
+      scenario_summary: CASE_01.caller.scenarioSummary,
+    });
+    expect(body.dynamicVariables).not.toHaveProperty("offer_summary");
   });
 
   it("marks every response non-cacheable", async () => {

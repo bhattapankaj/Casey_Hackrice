@@ -203,7 +203,7 @@ export const CASE_01 = {
       "Warm, confident, and mildly rushed recruiter character. Keep every reply under 25 words.",
     firstMessage:
       "Hi, this is Morgan from Meridian Research Group. I am calling about the research assistant offer. Do you have a minute?",
-    offerSummary:
+    scenarioSummary:
       "A remote research assistant role paying $450 weekly, with a claimed Monday start.",
     allowedFacts: [
       "The role is described as a part-time remote research assistant position for the current academic term.",
