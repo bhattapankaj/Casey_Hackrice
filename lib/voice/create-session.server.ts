@@ -160,9 +160,20 @@ export async function createVoiceSessionResponse(
   } catch (error) {
     const providerError =
       error instanceof VoiceProviderError ? error : new VoiceProviderError("unavailable");
-    const code = providerError.kind === "timeout" ? "VOICE_TIMEOUT" : "VOICE_UNAVAILABLE";
+    const code =
+      providerError.kind === "timeout"
+        ? "VOICE_TIMEOUT"
+        : providerError.kind === "configuration"
+          ? "VOICE_NOT_CONFIGURED"
+          : "VOICE_UNAVAILABLE";
+    const status =
+      providerError.kind === "timeout"
+        ? 504
+        : providerError.kind === "configuration"
+          ? 503
+          : 502;
     return finish(
-      errorResponse(code, providerError.kind === "timeout" ? 504 : 502, requestId),
+      errorResponse(code, status, requestId),
       code,
       providerError.providerStatusClass,
     );

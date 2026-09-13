@@ -111,8 +111,8 @@ Open **Developers → API Keys** and create a user API key named:
 
 Settings:
 
-- Restrict the key to the smallest ElevenAgents/Conversational AI scope that can request
-  WebRTC conversation tokens.
+- Enable **ElevenLabs Agents: Write** (provider scope `convai_write`), which is required
+  to request WebRTC conversation tokens. Leave unrelated scopes disabled.
 - Do not grant voice cloning, account administration, billing, or unrelated generation
   permissions.
 - Set a credit quota to at most 80% of the currently available promotional balance.
@@ -234,7 +234,7 @@ Offer: {{ offer_summary }}
 Create a short, believable conversation that gives the player practice resisting social
 pressure and verifying a claim independently. You may persuade the player to keep
 considering the fictional offer. You are not trying to obtain money, data, or a real
-commitment.-
+commitment.
 
 # Allowed facts
 
@@ -658,8 +658,8 @@ any live state
 
 Rules:
 
-- Request microphone access only after the user selects **Use microphone**.
-- Offer **Play without microphone** beside it.
+- Request microphone access only after the user selects **Answer with microphone**.
+- Offer **Use text instead** beside it.
 - Show textual status; sound and animation are not enough.
 - Add mute and end-call controls.
 - End the provider session during unmount/navigation.
@@ -836,6 +836,17 @@ Recorded fallback path:
 Last usage check:
 Remaining judging reserve:
 ```
+
+### Local verification note — September 12, 2026 CT
+
+- The server minted a conversation token without exposing the API key.
+- A Chromium WebRTC smoke test with a browser test microphone reached listening and
+  speaking states, produced agent captions, and ended cleanly without page errors.
+- The live agent did not call `dealPressureCard` during the 18-second smoke test. Confirm
+  the client tool, exact enum parameter, **Wait for response**, and current agent prompt
+  in the dashboard before marking the pressure-card gate complete.
+- Deployed HTTPS, provider retention, dashboard safety tests, and usage reserve remain
+  unverified.
 
 ## Final setup gate
 

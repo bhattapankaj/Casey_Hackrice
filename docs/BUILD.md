@@ -373,9 +373,9 @@ No statistics wall, signup, leaderboard, or microphone prompt on landing.
 
 - Two-sentence briefing; no long narrative.
 - Show call modes before requesting browser permission:
-  - **Use microphone** — “Your voice is processed by ElevenLabs for this fictional call.
-    Do not share real personal information.”
-  - **Play without microphone** — full game with text/prerecorded call.
+  - **Answer with microphone** — disclose that microphone audio is sent to ElevenLabs,
+    that Casey does not store it, and that players must not share personal information.
+  - **Use text instead** — full game with the authored text call.
 - Request permission only after the player chooses the microphone path.
 - Permission denial changes mode without blame or dead end.
 

@@ -4,13 +4,20 @@ test("Case 01 fallback path reaches the deterministic Receipt", async ({ page })
   await page.goto("/play/case-01");
 
   await expect(page.getByRole("heading", { name: /The Meridian Offer/ })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Use microphone" })).toBeVisible();
+  await expect(page.getByText("INCOMING CALL", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Answer with microphone" })).toBeVisible();
+  await expect(page.getByText(/microphone audio to ElevenLabs/)).toBeVisible();
+  await expect(page.getByText("Claimant route", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("Independent route", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("Meridian claimant", { exact: true })).toHaveCount(0);
 
-  await page.getByRole("button", { name: "Play without microphone" }).click();
-  await expect(page.getByText("Text call", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Use text instead" }).click();
+  await expect(page.getByRole("status")).toContainText("Text call active");
   await expect(page.getByLabel("1 pressure cards dealt")).toBeVisible();
 
   await page.locator("#card-offer-email").click();
+  await expect(page.getByRole("dialog").getByText("In call with Morgan Vale")).toBeVisible();
+  await expect(page.getByRole("dialog").getByRole("button", { name: "End the call" })).toBeVisible();
   await page.getByRole("button", { name: "Pin as evidence" }).click();
   await page
     .getByRole("dialog")

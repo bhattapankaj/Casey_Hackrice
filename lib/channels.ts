@@ -35,6 +35,14 @@ export const CHANNEL_INDEX: Record<Channel, string> = {
   portal: "O",
 };
 
+export const CHANNEL_LABEL: Record<Channel, string> = {
+  email: "Email",
+  phone: "Phone",
+  directory: "Directory",
+  web: "Website",
+  portal: "Portal",
+};
+
 export const CHANNEL_OPEN_LABEL: Record<Channel, string> = {
   email: "Open the email",
   phone: "Open the call record",

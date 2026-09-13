@@ -9,10 +9,16 @@ export type ProviderToken = {
 
 export class VoiceProviderError extends Error {
   constructor(
-    public readonly kind: "timeout" | "unavailable",
+    public readonly kind: "configuration" | "timeout" | "unavailable",
     public readonly providerStatusClass?: string,
   ) {
-    super(kind === "timeout" ? "Provider request timed out" : "Provider request failed");
+    super(
+      kind === "timeout"
+        ? "Provider request timed out"
+        : kind === "configuration"
+          ? "Provider credentials are not authorized"
+          : "Provider request failed",
+    );
     this.name = "VoiceProviderError";
   }
 }
@@ -47,7 +53,8 @@ export async function requestConversationToken(
       signal: controller.signal,
     });
     if (!response.ok) {
-      throw new VoiceProviderError("unavailable", statusClass(response.status));
+      const kind = response.status === 401 || response.status === 403 ? "configuration" : "unavailable";
+      throw new VoiceProviderError(kind, statusClass(response.status));
     }
 
     let body: unknown;

@@ -11,13 +11,12 @@ import {
 import { Pin, TriangleAlert } from "lucide-react";
 import { ArtifactCard } from "@/components/ArtifactCard";
 import { ArtifactViewer } from "@/components/ArtifactViewer";
-import { CallPanel } from "@/components/CallPanel";
+import { CallPanel, CompactCallControls } from "@/components/CallPanel";
 import { Receipt } from "@/components/Receipt";
 import { SiteNav } from "@/components/SiteNav";
 import { CHIP_COPY, VERDICT_ORDER, VerdictChip } from "@/components/VerdictChip";
 import { useCaseyVoice } from "@/hooks/useCaseyVoice";
 import { useGameSession } from "@/hooks/useGameSession";
-import { sourceClassToBand } from "@/lib/cases/public-case";
 import type { CaseFile, Verdict } from "@/lib/cases/schema";
 import {
   DEAL_DURATION,
@@ -107,13 +106,14 @@ function CardTableGame({ gameCase }: CardTableProps) {
 
   const confirmVerdict = useCallback(() => {
     if (!choice || committed) return;
+    voice.end();
     game.commitVerdict(choice);
     setWarning(false);
     setActiveId(null);
     play("pot");
     setAnnounce(`Verdict submitted: ${CHIP_COPY[choice].label}.`);
     window.setTimeout(() => setShowReceipt(true), reduce ? 120 : 420);
-  }, [choice, committed, game, reduce]);
+  }, [choice, committed, game, reduce, voice]);
 
   const submit = useCallback(() => {
     if (!choice || committed) return;
@@ -178,6 +178,7 @@ function CardTableGame({ gameCase }: CardTableProps) {
 
         <CallPanel
           characterName={gameCase.caller?.characterName ?? "Caller"}
+          organizationName={gameCase.caller?.organizationName ?? "Unknown caller"}
           voice={voice}
           pressureTactics={game.session.pressureTactics}
         />
@@ -201,9 +202,6 @@ function CardTableGame({ gameCase }: CardTableProps) {
                   className="min-h-[44px] rounded-[10px] border border-cream/25 px-4 py-2 text-left font-sans text-[14px] font-semibold text-cream transition-colors duration-150 hover:bg-cream/10"
                 >
                   {action.label}
-                  <span className="ml-2 text-[11px] font-normal text-cream/60">
-                    {action.sourceClass === "independent" ? "Independent route" : "Claimant route"}
-                  </span>
                 </button>
               ))
             )}
@@ -238,10 +236,9 @@ function CardTableGame({ gameCase }: CardTableProps) {
                   <ArtifactCard
                     id={`card-${artifact.id}`}
                     channel={artifact.channel}
-                    band={sourceClassToBand(artifact.sourceClass)}
+                    band="unknown"
                     label={artifact.title}
                     state={viewed ? "viewed" : "unopened"}
-                    preview={artifact.provenance}
                     width={CARD_WIDTH}
                     onOpen={() => openArtifact(artifact.id)}
                     layoutId={reduce ? undefined : `artifact-${artifact.id}`}
@@ -280,7 +277,6 @@ function CardTableGame({ gameCase }: CardTableProps) {
                     </span>
                     <span className="text-[16px] leading-snug text-cream">
                       {artifact.title}
-                      <span className="ml-2 text-[13px] text-cream/60">{artifact.sourceRootLabel}</span>
                     </span>
                   </button>
                 </li>
@@ -401,6 +397,12 @@ function CardTableGame({ gameCase }: CardTableProps) {
             onUnpin={() => game.unpin(activeArtifact.id)}
             onClose={closeArtifact}
             onAnnounce={setAnnounce}
+            callControls={
+              <CompactCallControls
+                characterName={gameCase.caller?.characterName ?? "Caller"}
+                voice={voice}
+              />
+            }
           />
         ) : null}
       </AnimatePresence>

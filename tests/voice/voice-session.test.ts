@@ -106,7 +106,7 @@ describe("POST /api/voice-session boundary", () => {
     expect(serialized).not.toContain(ENVIRONMENT.agentId);
   });
 
-  it.each([401, 403, 422, 429, 500, 503])(
+  it.each([422, 429, 500, 503])(
     "sanitizes provider status %s as 502",
     async (status) => {
       const providerBody = `provider-secret-body-${status}`;
@@ -116,6 +116,20 @@ describe("POST /api/voice-session boundary", () => {
       expect(response.status).toBe(502);
       const serialized = JSON.stringify(await response.json());
       expect(serialized).toContain("VOICE_UNAVAILABLE");
+      expect(serialized).not.toContain(providerBody);
+    },
+  );
+
+  it.each([401, 403])(
+    "maps provider credential status %s to sanitized configuration failure",
+    async (status) => {
+      const providerBody = `provider-secret-body-${status}`;
+      const response = await responseWith(request(), {
+        fetcher: vi.fn(async () => new Response(providerBody, { status })),
+      });
+      expect(response.status).toBe(503);
+      const serialized = JSON.stringify(await response.json());
+      expect(serialized).toContain("VOICE_NOT_CONFIGURED");
       expect(serialized).not.toContain(providerBody);
     },
   );
@@ -190,7 +204,7 @@ describe("POST /api/voice-session boundary", () => {
         caseId: "case-01",
         providerStatusClass: "4xx",
         elapsedMs: 0,
-        internalCode: "VOICE_UNAVAILABLE",
+        internalCode: "VOICE_NOT_CONFIGURED",
       },
     ]);
     const serialized = JSON.stringify(logs);

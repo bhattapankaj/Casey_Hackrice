@@ -28,7 +28,7 @@ const publicSans = Public_Sans({
 export const metadata: Metadata = {
   title: "Casey",
   description:
-    "A fictional social engineering simulation. Take the call. Verify everything.",
+    "A voice-first investigation game. Take the call. Verify everything.",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "16x16 32x32 48x48" },

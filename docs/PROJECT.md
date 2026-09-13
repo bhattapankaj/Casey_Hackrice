@@ -5,7 +5,8 @@
 
 ## Status
 
-- **Phase:** Case 01 vertical slice implemented; live-provider and human-playtest gates remain
+- **Phase:** Case 01 vertical slice implemented; local live voice verified; dashboard-tool,
+  deployed-HTTPS, retention, and human-playtest gates remain
 - **Event:** HackRice 16
 - **Deadline:** Sunday, September 13, 2026 at 9:00 AM CT
 - **Judging:** 3 minutes total—2-minute demo, 1-minute Q&A; repeated 3–4 times
@@ -57,7 +58,7 @@ judge score. We earn it only if the live build satisfies every acceptance gate i
 1. Landing: judge reads “Take the call. Build the proof.” and selects **Deal the case**.
 2. Briefing: two sentences establish a fictional research-job offer; the table deals the
    email, phone, and directory actions.
-3. Consent: judge chooses **Use microphone** or **Play without microphone** after a clear
+3. Consent: judge chooses **Answer with microphone** or **Use text instead** after a clear
    processing/privacy notice.
 4. Call: the ElevenLabs character responds in short turns and deals face-down pressure
    cards through an allowlisted client tool.
@@ -187,7 +188,8 @@ Casey-specific configuration steps live in the
 
 Current commands are `npm run dev`, `npm run lint`, `npm run typecheck`, `npm run test`,
 `npm run build`, `npm run test:e2e`, and `npm run check`. Automated provider tests use
-mocks and consume no ElevenLabs credits; real-agent verification remains a manual gate.
+mocks and consume no ElevenLabs credits. A local real-agent WebRTC session was verified
+on September 12, 2026; the deployed call and live pressure-tool callback remain manual gates.
 
 ## Glossary
 

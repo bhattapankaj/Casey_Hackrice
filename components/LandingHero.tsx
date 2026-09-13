@@ -7,7 +7,6 @@ import { ArtifactCard } from "@/components/ArtifactCard";
 import { SoundToggle } from "@/components/SoundToggle";
 import { Wordmark } from "@/components/Wordmark";
 import { getEnabledCases } from "@/lib/cases/registry";
-import { sourceClassToBand } from "@/lib/cases/public-case";
 import { DEAL_DURATION, DEAL_STAGGER, EASE_DEAL } from "@/lib/motion";
 import { seededRotation } from "@/lib/seededRotation";
 
@@ -53,9 +52,8 @@ export function LandingHero() {
           </div>
 
           <p className="mt-8 max-w-[46ch] text-[14px] leading-relaxed text-cream/60">
-            A fictional simulation. Every person, employer, address, and phone
-            number in Casey is invented. Nothing here is a real offer, and no
-            real accounts are involved.
+            Practice with invented people and organizations. No real offer,
+            account, or personal information is needed.
           </p>
         </div>
 
@@ -86,7 +84,7 @@ export function LandingHero() {
               >
                 <ArtifactCard
                   channel={artifact.channel}
-                  band={sourceClassToBand(artifact.sourceClass)}
+                  band="unknown"
                   label={artifact.title}
                   state="unopened"
                   interactive={false}

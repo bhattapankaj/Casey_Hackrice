@@ -1,19 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, type ReactNode } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Pin, PinOff, X } from "lucide-react";
 import { DirectoryArtifact } from "@/components/artifacts/DirectoryArtifact";
 import { EmailArtifact } from "@/components/artifacts/EmailArtifact";
 import { Pip } from "@/components/Pip";
-import { sourceClassToBand } from "@/lib/cases/public-case";
 import type {
   Artifact,
   CallContent,
   PortalContent,
   WebContent,
 } from "@/lib/cases/schema";
-import { BAND_LABEL, CHANNEL_CLOSE_LABEL } from "@/lib/channels";
+import { CHANNEL_CLOSE_LABEL, CHANNEL_LABEL } from "@/lib/channels";
 import {
   BACKDROP_DURATION,
   EASE_OPEN,
@@ -29,6 +28,7 @@ type ArtifactViewerProps = {
   onUnpin: () => void;
   onClose: () => void;
   onAnnounce: (message: string) => void;
+  callControls?: ReactNode;
 };
 
 export function ArtifactViewer({
@@ -39,11 +39,11 @@ export function ArtifactViewer({
   onUnpin,
   onClose,
   onAnnounce,
+  callControls,
 }: ArtifactViewerProps) {
   const reduce = useReducedMotion();
   const panelRef = useRef<HTMLDivElement>(null);
   const closeLabel = CHANNEL_CLOSE_LABEL[artifact.channel];
-  const band = sourceClassToBand(artifact.sourceClass);
   const handleClose = useCallback(() => onClose(), [onClose]);
 
   useEffect(() => {
@@ -111,18 +111,17 @@ export function ArtifactViewer({
         transition={{ duration: reduce ? REDUCE_DURATION : OPEN_DURATION, ease: EASE_OPEN }}
       >
         <div className="relative flex min-h-0 flex-1 flex-col rounded-[6px] border-[1.5px] border-gold p-3 sm:p-4">
+          {callControls}
           <div className="mb-3 flex items-start justify-between gap-3">
             <div className="min-w-0">
               <h2 id="artifact-title" className="font-serif text-[20px] leading-tight font-semibold text-ink">
                 {artifact.title}
               </h2>
               <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[14px] text-ink/75">
-                <Pip channel={artifact.channel} band={band} size={15} decorative />
+                <Pip channel={artifact.channel} band="unknown" size={15} decorative />
                 <span className="font-label text-[11px] tracking-[0.08em] text-ink/60">
-                  {BAND_LABEL[band]}
+                  {CHANNEL_LABEL[artifact.channel]}
                 </span>
-                <span aria-hidden className="text-ink/30">|</span>
-                <span>{artifact.provenance}</span>
               </p>
             </div>
             <button
@@ -148,7 +147,7 @@ export function ArtifactViewer({
 
           <div className="mt-3 flex shrink-0 flex-wrap items-center justify-between gap-3">
             <p className="max-w-[48ch] text-[13px] leading-relaxed text-ink/65">
-              Source: {artifact.sourceRootLabel}. Opening this card does not add it to your Trust Chain.
+              Review the contents before relying on this artifact. Opening it does not add it to your Trust Chain.
             </p>
             {isPinned ? (
               <button

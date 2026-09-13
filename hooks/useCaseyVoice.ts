@@ -57,6 +57,8 @@ export function useCaseyVoice({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const endedIntentionally = useRef(false);
   const connectedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const requestController = useRef<AbortController | null>(null);
+  const startAttempt = useRef(0);
   const endSessionRef = useRef<() => void>(() => undefined);
   const fallbackBeats = getFallbackBeats(caseId);
 
@@ -132,6 +134,9 @@ export function useCaseyVoice({
   const { endSession, isMuted, setMuted, startSession } = conversation;
 
   const end = useCallback(() => {
+    startAttempt.current += 1;
+    requestController.current?.abort();
+    requestController.current = null;
     endedIntentionally.current = true;
     if (connectedTimer.current) {
       clearTimeout(connectedTimer.current);
@@ -146,6 +151,8 @@ export function useCaseyVoice({
       return;
     }
     selectMode("live_voice");
+    const attempt = startAttempt.current + 1;
+    startAttempt.current = attempt;
     endedIntentionally.current = false;
     setErrorMessage(null);
     setPhase("requesting_microphone");
@@ -153,13 +160,21 @@ export function useCaseyVoice({
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       stream.getTracks().forEach((track) => track.stop());
     } catch {
+      if (attempt !== startAttempt.current) {
+        return;
+      }
       enterFallback("Microphone permission was not granted. Continue with the text call.");
+      return;
+    }
+
+    if (attempt !== startAttempt.current) {
       return;
     }
 
     setPhase("requesting_token");
     try {
       const controller = new AbortController();
+      requestController.current = controller;
       const timer = window.setTimeout(() => controller.abort(), 8_000);
       try {
         const response = await fetch("/api/voice-session", {
@@ -170,6 +185,9 @@ export function useCaseyVoice({
           signal: controller.signal,
         });
         const body: unknown = await response.json();
+        if (attempt !== startAttempt.current) {
+          return;
+        }
         if (!response.ok || !isVoiceSessionSuccess(body)) {
           enterFallback("Live call authorization failed. Continue with the text call.");
           return;
@@ -182,8 +200,14 @@ export function useCaseyVoice({
         });
       } finally {
         window.clearTimeout(timer);
+        if (requestController.current === controller) {
+          requestController.current = null;
+        }
       }
     } catch {
+      if (attempt !== startAttempt.current) {
+        return;
+      }
       enterFallback("The network could not start the live call. Continue with the text call.");
     }
   }, [caseId, enterFallback, phase, selectMode, startSession]);
@@ -215,6 +239,9 @@ export function useCaseyVoice({
   }, [dealPressureCard, fallbackBeats]);
 
   const reset = useCallback(() => {
+    startAttempt.current += 1;
+    requestController.current?.abort();
+    requestController.current = null;
     endedIntentionally.current = true;
     void endSession();
     if (connectedTimer.current) {
@@ -229,6 +256,9 @@ export function useCaseyVoice({
 
   useEffect(
     () => () => {
+      startAttempt.current += 1;
+      requestController.current?.abort();
+      requestController.current = null;
       endedIntentionally.current = true;
       if (connectedTimer.current) {
         clearTimeout(connectedTimer.current);

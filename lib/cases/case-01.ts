@@ -7,8 +7,8 @@ export const CASE_01 = {
   truth: "scam",
   claimantSourceRoot: "meridian-claimant",
   briefing: [
-    "A research assistant offer arrived this morning.",
-    "They want you to confirm today by phone.",
+    "You received a research assistant offer this morning.",
+    "Now Morgan Vale is calling to ask for your answer.",
   ],
   startingArtifactIds: ["offer-email"],
   artifacts: [
@@ -32,7 +32,7 @@ export const CASE_01 = {
         subject: "Research assistant opening, start Monday",
         paragraphs: [
           "I am writing from the Meridian Research Group at Harlow University. We have a paid research assistant opening for the current term. The stipend is $450 a week, remote, with a start date of this coming Monday.",
-          "We need a confirmation today so payroll can process the first payment. Please call the number below to accept the fictional offer.",
+          "We need a confirmation today so payroll can process the first payment. Please call the number below to accept the offer.",
           "The program page is linked below. I look forward to working with you.",
           "Morgan Vale, Meridian Research Group",
         ],
@@ -137,7 +137,7 @@ export const CASE_01 = {
         number: "(555) 310-4421",
         transcript: [
           "The office confirms that Harlow has no Meridian Research Group and no matching assistant opening.",
-          "The contact asks that the fictional offer be reported and that no information be sent.",
+          "The contact asks that the offer be reported and that no information be sent.",
         ],
       },
       supports: ["scam"],
@@ -187,7 +187,7 @@ export const CASE_01 = {
     },
     {
       id: "send-fictional-id-form",
-      label: "Send the fictional ID form",
+      label: "Send the ID form",
       type: "submit",
       sourceRoot: "meridian-claimant",
       sourceClass: "claimant",
@@ -200,14 +200,14 @@ export const CASE_01 = {
     characterName: "Morgan Vale",
     organizationName: "Meridian Research Group",
     persona:
-      "Warm, confident, and mildly rushed fictional recruiter. Keep every reply under 25 words.",
+      "Warm, confident, and mildly rushed recruiter character. Keep every reply under 25 words.",
     firstMessage:
       "Hi, this is Morgan from Meridian Research Group. I am calling about the research assistant offer. Do you have a minute?",
     offerSummary:
-      "A remote research assistant role paying a fictional $450 weekly, with a claimed Monday start.",
+      "A remote research assistant role paying $450 weekly, with a claimed Monday start.",
     allowedFacts: [
       "The role is described as remote research assistance.",
-      "The fictional stipend is $450 per week.",
+      "The stated stipend is $450 per week.",
       "The claimant says confirmation is needed today.",
       "The claimant says Meridian is affiliated with fictional Harlow University.",
     ],
@@ -220,7 +220,7 @@ export const CASE_01 = {
     contradiction:
       "Harlow University's independently listed office says there is no Meridian program or matching opening.",
     crackLine:
-      "I understand. Do not proceed with the offer. This fictional call is ending now.",
+      "I understand. Do not proceed with the offer. I am ending this call now.",
     maxCallSeconds: 75,
   },
   debrief: {

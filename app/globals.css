@@ -86,8 +86,30 @@ body {
   }
 }
 
+.voice-bar {
+  opacity: 0.38;
+  transform: scaleY(0.45);
+  transition: opacity 180ms ease;
+  transform-origin: center;
+}
+
+.voice-bars-active .voice-bar {
+  animation: voice-bar 860ms ease-in-out infinite alternate;
+  opacity: 0.9;
+}
+
+@keyframes voice-bar {
+  from {
+    transform: scaleY(0.35);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .call-pulse {
+  .call-pulse,
+  .voice-bars-active .voice-bar {
     animation: none;
   }
 }
