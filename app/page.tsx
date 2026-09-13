@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import { CaseCatalog } from "@/components/CaseCatalog";
 import { DemoReset } from "@/components/DemoReset";
+import { LandingHero } from "@/components/LandingHero";
 
 export default function HomePage() {
   return (
@@ -8,7 +8,7 @@ export default function HomePage() {
       <Suspense fallback={null}>
         <DemoReset />
       </Suspense>
-      <CaseCatalog />
+      <LandingHero />
     </>
   );
 }

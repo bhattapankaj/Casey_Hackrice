@@ -30,7 +30,13 @@ export function CaseCatalog() {
   return (
     <main className="relative mx-auto flex min-h-screen w-full max-w-[1100px] flex-col px-4 pb-4 sm:px-5">
       <div className="flex items-center justify-between gap-4 py-2">
-        <Wordmark />
+        <Link
+          href="/"
+          aria-label="Casey, return to the start screen"
+          className="inline-flex min-h-[36px] items-center"
+        >
+          <Wordmark />
+        </Link>
         <div className="flex items-center gap-4">
           <Link
             href="/board"

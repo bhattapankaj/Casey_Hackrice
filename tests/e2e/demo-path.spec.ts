@@ -3,6 +3,9 @@ import { PLAYER_PROFILE_STORAGE_KEY } from "@/lib/player-profile";
 
 test("Case 01 fallback path reaches the deterministic Receipt", async ({ page }) => {
   await page.goto("/");
+  await page.getByLabel("Your name").fill("Jordan");
+  await page.getByRole("button", { name: "Deal me in" }).click();
+  await expect(page).toHaveURL(/\/table$/);
   await page.getByRole("link", { name: /The Meridian Offer/ }).click();
   await expect(page).toHaveURL(/\/play\/case-01$/);
   expect(

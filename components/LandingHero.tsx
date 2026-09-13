@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { HowToPlayCards } from "@/components/HowToPlay";
 import { PlayerNameForm } from "@/components/PlayerNameForm";
@@ -9,7 +10,6 @@ import { usePlayerName } from "@/hooks/usePlayerName";
 import { getEnabledCases } from "@/lib/cases/registry";
 
 const ENABLED_CASES = getEnabledCases();
-const FIRST = ENABLED_CASES[0];
 
 export function LandingHero() {
   const router = useRouter();
@@ -19,7 +19,15 @@ export function LandingHero() {
     <main className="mx-auto flex min-h-screen w-full max-w-[1100px] flex-col px-4 pb-12 sm:px-5">
       <div className="flex items-center justify-between gap-4 py-4">
         <Wordmark />
-        <SoundToggle />
+        <div className="flex items-center gap-4">
+          <Link
+            href="/board"
+            className="min-h-[36px] font-label text-[12px] tracking-[0.08em] text-cream/75 underline decoration-cream/30 underline-offset-4"
+          >
+            Board
+          </Link>
+          <SoundToggle />
+        </div>
       </div>
 
       <div className="flex flex-1 flex-col items-start gap-10 py-4 lg:flex-row lg:items-center lg:gap-12">
@@ -40,12 +48,12 @@ export function LandingHero() {
             buttonLabel="Deal me in"
             onSave={(name) => {
               player.saveName(name);
-              router.push(`/play/${FIRST.id}`);
+              router.push("/table");
             }}
           />
 
           <p className="mt-6 font-label text-[12px] tracking-[0.08em] text-cream/60">
-            Case 1 of {ENABLED_CASES.length}, {FIRST.shortTitle}
+            {ENABLED_CASES.length} cases on the table
           </p>
 
           <p className="mt-3 max-w-[46ch] text-[14px] leading-relaxed text-cream/60">

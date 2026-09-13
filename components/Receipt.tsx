@@ -333,7 +333,7 @@ export function Receipt({ receipt, playerName, tableScore, onReplay }: ReceiptPr
             Retry this case
           </button>
           <Link
-            href="/"
+            href="/table"
             className="min-h-[44px] font-sans text-[16px] font-semibold text-cream underline decoration-cream/40 underline-offset-4"
           >
             Return to the table

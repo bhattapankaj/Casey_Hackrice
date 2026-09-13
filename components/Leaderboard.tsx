@@ -163,7 +163,7 @@ export function Leaderboard() {
 
       <div className="mt-8">
         <Link
-          href="/"
+          href="/table"
           className="min-h-[44px] font-sans text-[16px] font-semibold text-cream underline decoration-cream/40 underline-offset-4"
         >
           Back to the table

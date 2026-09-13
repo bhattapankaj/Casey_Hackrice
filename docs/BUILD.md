@@ -375,13 +375,15 @@ neutral hatch marks unknown provenance. Color is always paired with icon and tex
 
 Primary content:
 
-- Casey mark and “Take the call. Build the proof.”
-- One rule: **“Before your verdict, pin the evidence you trust. A new channel is not
-  always a new source.”**
-- Catalog of three playable cases plus a Next up row
-- Stat strip of cases completed, best streak, and total score, zeros for a new player
+- Casey mark and “Take the call. Verify everything.”
+- Nameplate plus the How to play cards
+- After the player saves a table name, `/table` opens the case catalog
 
-No statistics wall, signup, leaderboard, or microphone prompt on landing.
+The catalog is a separate screen: three playable cases, a Next up row, and a stat
+strip of cases completed, best streak, and total score. `/?demo=1` still clears
+progress and opens Case 01.
+
+No microphone prompt on landing.
 
 ### Screen 2 — Briefing and consent
 
