@@ -150,6 +150,13 @@ test("shared board shows every other investigator returned by Tiger", async ({ p
   });
 
   await page.goto("/board");
+  await expect(page.getByText("Baker Street final table", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("article", { name: "Avery, rank 1, Diamonds seat" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("article", { name: "Morgan, rank 2, Spades seat" }),
+  ).toBeVisible();
   const register = page.getByRole("region", { name: "All investigators" });
   await expect(register).toBeVisible();
   await expect(page.getByText("2 players", { exact: true })).toBeVisible();

@@ -478,6 +478,11 @@ chain, and awards a cosmetic SVG deduction seal only when a real independent sou
 survives the objection. A player who correctly recognizes a claimant-only chain receives
 the learning confirmation without a false proof badge.
 
+The optional leaderboard extends the same room into a Baker Street poker final table.
+Its top three seats use bright cream playing cards and visible diamond, spade, heart, and
+club marks; the complete Tiger/local ranking remains available in a tournament register
+below the table. Suit decoration never affects rank, score, or badge eligibility.
+
 ### Motion and sound
 
 - One 400–600 ms staggered deal on case entry.
