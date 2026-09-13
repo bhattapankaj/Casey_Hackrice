@@ -53,13 +53,16 @@ Relevance. The [official event site](https://hackrice.com/) confirms the event d
 casino/card theme, and Games & Gamification track.
 
 - Enter **Games & Gamification only**; the handbook permits at most one track.
-- Submit to **Best Project Built with ElevenLabs**.
+- Submit to **Best Use of ElevenLabs**.
 - Use the card/casino metaphor coherently. Confirm the official event theme before
   making a theme-prize claim.
 - Notability is optional and counts only if the team genuinely uses it for sketches,
   playtest notes, or wireframes and can show that process.
 - Lilie Lab is Rice-only. Do not claim eligibility unless every relevant rule is met.
-- Tiger Data is not listed in this handbook; remove it from the plan.
+- [MLH's current HackRice prize page](https://www.mlh.com/events/hackrice-71/prizes)
+  confirms **Best Use of Tiger Data**. Pursue it only through privacy-minimized outcome
+  analytics that show whether players used and pinned independent evidence; a configured
+  account or empty database is not a prize claim.
 - The required Devpost video is 3–4 minutes. Live judging is 2 minutes of demo plus
   1 minute of Q&A, repeated 3–4 times.
 
@@ -607,8 +610,10 @@ Fallback is a supported mode, not a blank error state.
 - Store the required player name as validated, versioned JSON in browser `localStorage`.
   Never add it to voice dynamic variables or a server request.
 - Persist current local progress only if it costs little.
-- A leaderboard/database is P2 and may store only nickname, score, case ID, mode, and
-  timestamp. Reject or normalize unsafe nicknames.
+- Tiger Data activation is P2. Its prepared outcome row stores no nickname: only a
+  one-session UUID, case ID, mode, verdict/truth, deterministic score dimensions,
+  evidence counts, independent-route signals, pressure-card count, and bounded duration.
+- A remote leaderboard is separate P2 work and would require a reviewed nickname policy.
 - Never store raw audio or full transcripts in the Casey datastore.
 
 ## 9. Privacy, safety, and fairness
@@ -701,6 +706,8 @@ completed gate.
 - Run five-person test and fix the highest-friction issue.
 - Add Case 02 if all prior exits are green.
 - Add anonymous aggregates/leaderboard only if it cannot threaten the demo.
+- Activate the prepared Tiger Data hypertable only after its privacy boundary, migration,
+  and failure-isolation tests are green.
 - Capture screenshots and a fallback recording.
 
 **Exit:** every 9+ evidence gate in the judging audit has a real artifact or an honest gap.
@@ -812,6 +819,8 @@ Never use future-tense usage metrics as if they already happened.
 - [ ] One track selected: Games & Gamification.
 - [ ] ElevenLabs challenge use is accurately described.
 - [ ] Any other challenge claim is verified and evidenced.
+- [ ] Tiger Data is claimed only after a real deployed insert, aggregate query, and
+  privacy-safe dashboard are demonstrated.
 - [ ] 3–4 minute video uploaded before Sunday 9:00 AM CT.
 - [ ] Backup video, screenshots, and live fallback are ready.
 - [ ] Two-minute demo and one-minute Q&A are rehearsed.
