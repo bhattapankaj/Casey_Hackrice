@@ -665,6 +665,9 @@ Provider and deployment steps: [Gemini setup runbook](GEMINI.md).
 - `POST /api/board` rescores verdicts and pins with `scoreCatalogRound`. A client-sent
   total is ignored. Tiger `board_entries` or Vercel KV is used when configured; otherwise
   `/board` shows local rows and "Showing your local scores. The shared board is unavailable."
+- `/board` is wrapped in a browser-local access gate. Direct navigation returns to the
+  nameplate unless both the private player name and a valid leaderboard nickname have
+  been saved. This is a product-flow gate, not account authentication.
 - Tiger Data session-outcome telemetry remains separate from the board. Its prepared
   outcome row stores no nickname: only a one-session UUID, case ID, mode, verdict/truth,
   deterministic score dimensions, evidence counts, independent-route signals,

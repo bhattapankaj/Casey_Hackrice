@@ -21,6 +21,10 @@ test("board stays playable when the shared store is down", async ({ page, reques
 
   await page.addInitScript(() => {
     window.localStorage.setItem(
+      "casey.player.v1",
+      JSON.stringify({ version: 1, name: "Jordan" }),
+    );
+    window.localStorage.setItem(
       "casey_progress_v1",
       JSON.stringify({
         version: 1,
@@ -71,11 +75,15 @@ test("board stays playable when the shared store is down", async ({ page, reques
 test("board empty state hides the zero stat strip", async ({ page }) => {
   await page.addInitScript(() => {
     window.localStorage.setItem(
+      "casey.player.v1",
+      JSON.stringify({ version: 1, name: "Jordan" }),
+    );
+    window.localStorage.setItem(
       "casey_progress_v1",
       JSON.stringify({
         version: 1,
-        nickname: null,
-        nicknameAsked: false,
+        nickname: "Jordan-Hound-221B",
+        nicknameAsked: true,
         chips: 100,
         cases: {},
       }),
@@ -90,6 +98,23 @@ test("board empty state hides the zero stat strip", async ({ page }) => {
 });
 
 test("shared board shows every other investigator returned by Tiger", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem(
+      "casey.player.v1",
+      JSON.stringify({ version: 1, name: "Jordan" }),
+    );
+    window.localStorage.setItem(
+      "casey_progress_v1",
+      JSON.stringify({
+        version: 1,
+        nickname: "Jordan-Hound-221B",
+        nicknameAsked: true,
+        chips: 100,
+        cases: {},
+      }),
+    );
+  });
+
   await page.route("**/api/board", async (route) => {
     await route.fulfill({
       status: 200,
@@ -135,4 +160,53 @@ test("shared board shows every other investigator returned by Tiger", async ({ p
     await expect(register.getByRole("row").filter({ hasText: "Avery-B41D63" })).toBeVisible();
     await expect(register.getByRole("row").filter({ hasText: "Morgan-74BA98" })).toBeVisible();
   }
+});
+
+test("direct board access requires both a name and nickname", async ({ page }) => {
+  let boardRequests = 0;
+  await page.route("**/api/board", async (route) => {
+    boardRequests += 1;
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ok: true,
+        unavailable: false,
+        entries: [],
+        stats: { playersTonight: 0, casesPlayed: 0, case01WrongPercent: 0 },
+      }),
+    });
+  });
+
+  await page.goto("/board");
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByLabel("Your name")).toBeVisible();
+  await expect(page.getByLabel("Leaderboard nickname")).toBeVisible();
+  expect(boardRequests).toBe(0);
+
+  await page.evaluate(() => {
+    window.localStorage.setItem(
+      "casey.player.v1",
+      JSON.stringify({ version: 1, name: "Jordan" }),
+    );
+  });
+  await page.goto("/board");
+  await expect(page).toHaveURL(/\/$/);
+  expect(boardRequests).toBe(0);
+
+  await page.evaluate(() => {
+    window.localStorage.setItem(
+      "casey_progress_v1",
+      JSON.stringify({
+        version: 1,
+        nickname: "Jordan-Hound-221B",
+        nicknameAsked: true,
+        chips: 100,
+        cases: {},
+      }),
+    );
+  });
+  await page.goto("/board");
+  await expect(page.getByRole("heading", { name: "The Deduction Ledger" })).toBeVisible();
+  await expect.poll(() => boardRequests).toBeGreaterThan(0);
 });
