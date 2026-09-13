@@ -78,10 +78,13 @@ Detailed scoring strategy: [JUDGING.md](JUDGING.md).
 4. **Pin** — the player adds up to three artifacts to the Trust Chain.
 5. **Commit** — Scam, Legitimate, or Not enough evidence.
 6. **Receipt** — the game reveals source paths, pressure tactics, truth, score, a
-   documented national pattern from `sourceNote`, and the transferable action.
-   Copy result puts three plain lines on the clipboard: case, verdict plus whether
-   the chain was independent, and the case URL.
+   poker hand rank for the evidence chain, a documented national pattern from
+   `sourceNote`, and the transferable action. Copy result puts three plain lines on
+   the clipboard: case, verdict plus whether the chain was independent, and the case URL.
 7. **Replay** — a different truth state tests whether the player learned the mechanic.
+
+Table chips start at 100. Before locking a verdict the player stakes 10, 25, or 50.
+Correct adds the stake; wrong subtracts it, floored at zero. Chips never unlock content.
 
 ### Why each choice matters
 

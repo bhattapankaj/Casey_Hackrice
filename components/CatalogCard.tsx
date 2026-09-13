@@ -5,6 +5,7 @@ import { Check } from "lucide-react";
 import { MirroredCorner, PlayingCardShell } from "@/components/ArtifactCard";
 import { CATEGORY_META } from "@/lib/cases/categories";
 import type { CaseCategory, CaseRank } from "@/lib/cases/schema";
+import type { Hand } from "@/lib/engine/hand";
 
 export type CatalogStatus = "not_attempted" | "attempted" | "cleared";
 
@@ -14,6 +15,7 @@ type CatalogCardProps = {
   title: string;
   estimatedMinutes: number;
   status?: CatalogStatus;
+  bestHand?: Hand | null;
   href?: string;
   upcoming?: boolean;
   width?: string;
@@ -35,6 +37,7 @@ function CatalogFace({
   title,
   estimatedMinutes,
   status,
+  bestHand,
   upcoming,
   width,
 }: CatalogCardProps) {
@@ -73,10 +76,10 @@ function CatalogFace({
       {upcoming ? null : (
         <div className="absolute inset-x-8 bottom-7 text-center">
           <p className="flex items-center justify-center gap-1 font-sans text-[11px] text-ink/70">
-            {status === "cleared" ? (
+            {status === "cleared" && bestHand ? (
               <>
                 <Check size={12} strokeWidth={2.25} aria-hidden className="text-gold" />
-                Cleared
+                {bestHand}
               </>
             ) : status === "attempted" ? (
               "Attempted"
@@ -107,11 +110,13 @@ export function CatalogCard(props: CatalogCardProps) {
   }
 
   const statusLabel =
-    props.status === "cleared"
-      ? "Cleared"
-      : props.status === "attempted"
-        ? "Attempted"
-        : "Not attempted";
+    props.status === "cleared" && props.bestHand
+      ? props.bestHand
+      : props.status === "cleared"
+        ? "Cleared"
+        : props.status === "attempted"
+          ? "Attempted"
+          : "Not attempted";
 
   return (
     <Link

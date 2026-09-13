@@ -2,11 +2,15 @@ import { getCase } from "@/lib/cases/registry";
 import type { CaseFile, Verdict } from "@/lib/cases/schema";
 import { VERDICTS } from "@/lib/cases/schema";
 import { scoreCatalogRound } from "@/lib/engine/catalog-score";
+import { isBetterHand, type Hand } from "@/lib/engine/hand";
+import { handForRound } from "@/lib/engine/hand-from-session";
 import type { GameSession } from "@/lib/engine/types";
+import { STARTING_CHIPS } from "@/lib/engine/chips";
 
 export type CaseResultPayload = {
   verdict: Verdict;
   pinnedArtifactIds: string[];
+  firstAttempt?: boolean;
 };
 
 export type ScoredSubmission = {
@@ -15,6 +19,8 @@ export type ScoredSubmission = {
   casesCleared: number;
   casesPlayed: number;
   case01Wrong: boolean | null;
+  bestHand: Hand;
+  chips: number;
 };
 
 const NICKNAME_MAX = 20;
@@ -67,20 +73,33 @@ export function parseCaseResults(value: unknown): Record<string, CaseResultPaylo
     if (new Set(pinnedArtifactIds).size !== pinnedArtifactIds.length) {
       return null;
     }
-    results[caseId] = { verdict: record.verdict, pinnedArtifactIds };
+    results[caseId] = {
+      verdict: record.verdict,
+      pinnedArtifactIds,
+      firstAttempt: record.firstAttempt === true,
+    };
   }
   return results;
+}
+
+export function sanitizeChips(value: unknown): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return STARTING_CHIPS;
+  }
+  return Math.max(0, Math.min(99_999, Math.floor(value)));
 }
 
 export function scoreBoardSubmission(
   nickname: string,
   caseResults: Record<string, CaseResultPayload>,
   lookup: (caseId: string) => CaseFile | undefined = getCase,
+  chips: number = STARTING_CHIPS,
 ): ScoredSubmission | { error: string } {
   let score = 0;
   let casesCleared = 0;
   let casesPlayed = 0;
   let case01Wrong: boolean | null = null;
+  let bestHand: Hand = "High card";
 
   for (const [caseId, result] of Object.entries(caseResults)) {
     const caseFile = lookup(caseId);
@@ -104,6 +123,15 @@ export function scoreBoardSubmission(
       timestamps: { startedAt: "" },
     };
     const round = scoreCatalogRound(caseFile, session);
+    const ranked = handForRound(
+      caseFile,
+      session,
+      round.correct,
+      result.firstAttempt === true,
+    );
+    if (isBetterHand(ranked.hand, bestHand)) {
+      bestHand = ranked.hand;
+    }
     score += round.total;
     casesPlayed += 1;
     if (round.correct) {
@@ -118,5 +146,13 @@ export function scoreBoardSubmission(
     return { error: "No case results" };
   }
 
-  return { nickname, score, casesCleared, casesPlayed, case01Wrong };
+  return {
+    nickname,
+    score,
+    casesCleared,
+    casesPlayed,
+    case01Wrong,
+    bestHand,
+    chips: sanitizeChips(chips),
+  };
 }

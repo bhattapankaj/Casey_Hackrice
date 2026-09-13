@@ -35,7 +35,12 @@ export async function postCurrentBoard(nickname: string): Promise<"shared" | "lo
     const response = await fetch("/api/board", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ submissionId, nickname: clean, caseResults }),
+      body: JSON.stringify({
+        submissionId,
+        nickname: clean,
+        caseResults,
+        chips: progress.chips,
+      }),
     });
     if (response.ok) {
       return "shared";

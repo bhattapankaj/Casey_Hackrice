@@ -12,6 +12,8 @@ import { SiteNav } from "@/components/SiteNav";
 import { sourceClassToBand } from "@/lib/cases/public-case";
 import type { Verdict } from "@/lib/cases/schema";
 import type { ScoreExplanationKey, ScoreReceipt } from "@/lib/engine/types";
+import type { Hand } from "@/lib/engine/hand";
+import type { Stake } from "@/lib/engine/chips";
 import {
   EASE_DEAL,
   EASE_OPEN,
@@ -22,10 +24,20 @@ import {
 } from "@/lib/motion";
 import { play } from "@/lib/sound";
 
+type ReceiptSettlement = {
+  hand: Hand;
+  explanation: string;
+  stake: Stake;
+  chipsBefore: number;
+  chipsAfter: number;
+  correct: boolean;
+};
+
 type ReceiptProps = {
   receipt: ScoreReceipt;
   playerName: string;
   tableScore?: number;
+  settlement: ReceiptSettlement;
   onReplay: () => void;
 };
 
@@ -58,9 +70,16 @@ const SCORE_LINES = [
   ["Composure", "composure"],
 ] as const;
 
-export function Receipt({ receipt, playerName, tableScore, onReplay }: ReceiptProps) {
+export function Receipt({
+  receipt,
+  playerName,
+  tableScore,
+  settlement,
+  onReplay,
+}: ReceiptProps) {
   const reduce = useReducedMotion();
   const correct = receipt.truth === receipt.selectedVerdict;
+  const highConfidenceMiss = !settlement.correct && settlement.stake === 50;
 
   useEffect(() => {
     const step = reduce ? 40 : RECEIPT_STAGGER * 1000;
@@ -253,6 +272,29 @@ export function Receipt({ receipt, playerName, tableScore, onReplay }: ReceiptPr
           </section>
         ) : null}
 
+        <section className="mt-10" aria-labelledby="hand-title">
+          <h2 id="hand-title" className="font-serif text-[30px] font-semibold text-cream">
+            {settlement.hand}
+          </h2>
+          <p className="mt-2 max-w-[46ch] text-[14px] leading-relaxed text-cream/85">
+            {settlement.explanation}
+          </p>
+          <p className="mt-3 max-w-[46ch] text-[14px] leading-relaxed text-cream/85">
+            You staked {settlement.stake} and were {settlement.correct ? "right" : "wrong"}.{" "}
+            {settlement.chipsAfter} chips.
+          </p>
+          {highConfidenceMiss ? (
+            <p className="mt-2 max-w-[46ch] text-[14px] leading-relaxed text-cream/85">
+              High confidence, wrong call. That is the pattern that gets people.
+            </p>
+          ) : null}
+          {settlement.chipsAfter === 0 ? (
+            <p className="mt-2 max-w-[46ch] text-[14px] leading-relaxed text-cream/70">
+              You are out of chips. Cases still count.
+            </p>
+          ) : null}
+        </section>
+
         <h2 className="mt-10 font-serif text-[24px] font-semibold text-cream">Score breakdown</h2>
         <dl className="mt-3 max-w-[46rem]">
           {SCORE_LINES.map(([label, key]) => {
@@ -323,6 +365,26 @@ export function Receipt({ receipt, playerName, tableScore, onReplay }: ReceiptPr
             {receipt.sourceLabel}
             <ArrowRight size={20} strokeWidth={1.75} aria-hidden />
           </a>
+          {highConfidenceMiss ? (
+            <div className="mt-6 max-w-[46rem] border-t border-cream-dim/20 pt-5">
+              <p className="text-[14px] leading-relaxed text-cream/90">
+                Confidence is not accuracy. Research on phishing susceptibility finds that
+                people who rate themselves as good at spotting scams are not measurably
+                better at it, and overconfidence is associated with higher susceptibility.
+              </p>
+              <p className="mt-3 text-[12px] text-cream/60">
+                <a
+                  href="https://doi.org/10.17705/1jais.00442"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex min-h-[44px] items-center gap-1.5 underline decoration-cream/35 underline-offset-4"
+                >
+                  Journal of the Association for Information Systems, 2016
+                  <ExternalLink size={12} strokeWidth={2} aria-hidden className="text-gold" />
+                </a>
+              </p>
+            </div>
+          ) : null}
         </section>
 
         <div className="mt-10 flex flex-wrap items-center gap-5">

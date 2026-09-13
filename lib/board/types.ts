@@ -1,9 +1,13 @@
+import type { Hand } from "@/lib/engine/hand";
+
 export type BoardRow = {
   id: string;
   nickname: string;
   username: string;
   score: number;
   casesCleared: number;
+  bestHand: Hand | null;
+  chips: number;
   createdAt: string;
   you?: boolean;
 };

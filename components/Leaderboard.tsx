@@ -8,7 +8,7 @@ import {
   getOrCreateBoardSubmissionId,
   postCurrentBoard,
 } from "@/lib/board/client";
-import { localBoardPayload } from "@/lib/board/local";
+import { localBoardPayload, sortBoardRows } from "@/lib/board/local";
 import type { BoardRow, BoardStats } from "@/lib/board/types";
 import { CASE_ORDER } from "@/lib/cases/registry";
 import { readStoredProgress } from "@/lib/progress";
@@ -23,7 +23,7 @@ function MasterBadge({ size = 30 }: { size?: number }) {
   return (
     <span
       className="inline-flex shrink-0 items-center"
-      title={`Master of Deduction — cleared all ${ALL_CASES} cases`}
+      title={`Master of Deduction: cleared all ${ALL_CASES} cases`}
     >
       <Image
         src="/casey-deduction-badge.svg"
@@ -83,6 +83,8 @@ function Row({
         </div>
       </td>
       <td className="py-3 pr-4 text-[16px] text-cream/80">{row.casesCleared}</td>
+      <td className="py-3 pr-4 text-[16px] text-cream/80">{row.bestHand ?? "High card"}</td>
+      <td className="py-3 pr-4 font-serif text-[19px] font-semibold text-gold">{row.chips}</td>
       <td className="py-3 text-right font-serif text-[19px] font-semibold text-cream">{row.score}</td>
     </tr>
   );
@@ -127,8 +129,7 @@ export function Leaderboard() {
       } else if (you) {
         merged.push(you);
       }
-      merged.sort((a, b) => b.score - a.score || a.createdAt.localeCompare(b.createdAt));
-      setEntries(merged);
+      setEntries(sortBoardRows(merged));
       setStats(shared.stats);
       setYouId(submissionId);
       setLocalOnly(false);
@@ -144,9 +145,10 @@ export function Leaderboard() {
   const you = ranked.find((entry) => entry.row.id === youId || entry.row.you);
   const youOutside = Boolean(you && you.rank > 25);
   const podium = ranked.slice(0, 3);
+  const hasScores = !loading && entries.length > 0;
 
   return (
-    <div className="mx-auto flex w-full max-w-[760px] flex-col px-4 py-8 sm:px-5">
+    <div className="mx-auto flex w-full max-w-[860px] flex-col px-4 py-8 sm:px-5">
       <p className="font-label text-[11px] tracking-[0.16em] text-gold uppercase">
         Casey casebook
       </p>
@@ -164,131 +166,167 @@ export function Leaderboard() {
         </p>
       ) : null}
 
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label="Detectives tonight" value={String(stats.playersTonight)} />
-        <Stat label="Cases played" value={String(stats.casesPlayed)} />
-        <Stat
-          wide
-          label="Got case 01 wrong"
-          value={stats.case01WrongPercent === null ? "n/a" : `${stats.case01WrongPercent}%`}
-        />
-      </div>
-
-      {podium.length > 0 ? (
-        <section aria-labelledby="podium-title" className="mt-8">
-          <div className="flex items-center justify-between gap-4">
-            <h2 id="podium-title" className="font-serif text-[22px] font-semibold text-cream">
-              Leading investigators
-            </h2>
-            <div className="flex items-center gap-2 text-[12px] text-cream/65">
-              <MasterBadge size={27} />
-              <span>All cases cleared</span>
-            </div>
+      {loading ? (
+        <p className="mt-8 text-[16px] text-cream/70">Opening the case ledger…</p>
+      ) : !hasScores ? (
+        <div className="mt-16 flex flex-col items-center text-center">
+          <p className="font-serif text-[24px] font-semibold text-cream">No hands played yet</p>
+          <p className="mt-2 max-w-[36ch] text-[15px] leading-relaxed text-cream/80">
+            Finish a case and the first row is yours
+          </p>
+          <Link
+            href="/play/case-01"
+            className="surface-cream mt-6 inline-flex min-h-[44px] items-center rounded-[12px] bg-cream px-6 font-sans text-[16px] font-semibold text-ink"
+          >
+            Deal Case 01
+          </Link>
+        </div>
+      ) : (
+        <>
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Stat label="Detectives tonight" value={String(stats.playersTonight)} />
+            <Stat label="Cases played" value={String(stats.casesPlayed)} />
+            <Stat
+              wide
+              label="Fooled by case 01"
+              value={
+                stats.case01WrongPercent === null ? "n/a" : `${stats.case01WrongPercent}%`
+              }
+            />
           </div>
-          <div className="mt-3 grid gap-3 sm:grid-cols-3">
-            {podium.map(({ row, rank }) => (
-              <article
-                key={`podium-${row.id}`}
-                className={`relative overflow-hidden rounded-[14px] border p-4 ${
-                  rank === 1
-                    ? "border-gold bg-cream text-ink shadow-[0_8px_24px_rgba(20,32,24,0.28)]"
-                    : "border-cream/20 bg-felt-deep/55 text-cream"
-                }`}
-              >
-                <p
-                  className={`font-label text-[10px] tracking-[0.14em] uppercase ${
-                    rank === 1 ? "text-ink/55" : "text-cream/55"
-                  }`}
-                >
-                  Rank {rank}
-                </p>
-                <div className="mt-2 flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate font-serif text-[20px] font-semibold">{row.nickname}</p>
+
+          {podium.length > 0 ? (
+            <section aria-labelledby="podium-title" className="mt-8">
+              <div className="flex items-center justify-between gap-4">
+                <h2 id="podium-title" className="font-serif text-[22px] font-semibold text-cream">
+                  Leading investigators
+                </h2>
+                <div className="flex items-center gap-2 text-[12px] text-cream/65">
+                  <MasterBadge size={27} />
+                  <span>All cases cleared</span>
+                </div>
+              </div>
+              <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                {podium.map(({ row, rank }) => (
+                  <article
+                    key={`podium-${row.id}`}
+                    className={`relative overflow-hidden rounded-[14px] border p-4 ${
+                      rank === 1
+                        ? "border-gold bg-cream text-ink shadow-[0_8px_24px_rgba(20,32,24,0.28)]"
+                        : "border-cream/20 bg-felt-deep/55 text-cream"
+                    }`}
+                  >
                     <p
-                      className={`truncate font-label text-[10px] tracking-[0.04em] ${
-                        rank === 1 ? "text-felt-deep" : "text-gold"
+                      className={`font-label text-[10px] tracking-[0.14em] uppercase ${
+                        rank === 1 ? "text-ink/55" : "text-cream/55"
                       }`}
                     >
-                      @{row.username}
+                      Rank {rank}
                     </p>
-                  </div>
-                  {hasMasterBadge(row) ? <MasterBadge size={42} /> : null}
-                </div>
-                <p className="mt-4 font-serif text-[28px] leading-none font-semibold">{row.score}</p>
-                <p
-                  className={`mt-1 text-[11px] ${
-                    rank === 1 ? "text-ink/55" : "text-cream/55"
-                  }`}
+                    <div className="mt-2 flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate font-serif text-[20px] font-semibold">
+                          {row.nickname}
+                        </p>
+                        <p
+                          className={`truncate font-label text-[10px] tracking-[0.04em] ${
+                            rank === 1 ? "text-felt-deep" : "text-gold"
+                          }`}
+                        >
+                          @{row.username}
+                        </p>
+                      </div>
+                      {hasMasterBadge(row) ? <MasterBadge size={42} /> : null}
+                    </div>
+                    <p className="mt-4 font-serif text-[28px] leading-none font-semibold">
+                      {row.score}
+                    </p>
+                    <p
+                      className={`mt-1 text-[11px] ${
+                        rank === 1 ? "text-ink/55" : "text-cream/55"
+                      }`}
+                    >
+                      {row.casesCleared} of {ALL_CASES} cases cleared
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          <table className="mt-8 w-full border-collapse text-left">
+            <caption className="sr-only">Top 25 scores</caption>
+            <thead>
+              <tr className="border-b border-cream-dim/20">
+                <th
+                  scope="col"
+                  className="py-2 pr-4 font-label text-[11px] tracking-[0.08em] text-cream/65"
                 >
-                  {row.casesCleared} of {ALL_CASES} cases cleared
-                </p>
-              </article>
-            ))}
-          </div>
-        </section>
-      ) : null}
+                  Rank
+                </th>
+                <th
+                  scope="col"
+                  className="py-2 pr-4 font-label text-[11px] tracking-[0.08em] text-cream/65"
+                >
+                  Nickname
+                </th>
+                <th
+                  scope="col"
+                  className="py-2 pr-4 font-label text-[11px] tracking-[0.08em] text-cream/65"
+                >
+                  Cases cleared
+                </th>
+                <th
+                  scope="col"
+                  className="py-2 pr-4 font-label text-[11px] tracking-[0.08em] text-cream/65"
+                >
+                  Best hand
+                </th>
+                <th
+                  scope="col"
+                  className="py-2 pr-4 font-label text-[11px] tracking-[0.08em] text-cream/65"
+                >
+                  Chips
+                </th>
+                <th
+                  scope="col"
+                  className="py-2 text-right font-label text-[11px] tracking-[0.08em] text-cream/65"
+                >
+                  Score
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {top.map((entry) => (
+                <Row
+                  key={entry.row.id}
+                  rank={entry.rank}
+                  row={entry.row}
+                  current={entry.row.id === youId || Boolean(entry.row.you)}
+                />
+              ))}
+            </tbody>
+          </table>
 
-      <table className="mt-8 w-full border-collapse text-left">
-        <caption className="sr-only">Top 25 scores</caption>
-        <thead>
-          <tr className="border-b border-cream-dim/20">
-            <th scope="col" className="py-2 pr-4 font-label text-[11px] tracking-[0.08em] text-cream/65">
-              Rank
-            </th>
-            <th scope="col" className="py-2 pr-4 font-label text-[11px] tracking-[0.08em] text-cream/65">
-              Nickname
-            </th>
-            <th scope="col" className="py-2 pr-4 font-label text-[11px] tracking-[0.08em] text-cream/65">
-              Cases cleared
-            </th>
-            <th scope="col" className="py-2 text-right font-label text-[11px] tracking-[0.08em] text-cream/65">
-              Score
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {loading ? (
-            <tr>
-              <td colSpan={4} className="py-5 text-[16px] text-cream/70">
-                Opening the case ledger…
-              </td>
-            </tr>
-          ) : top.length === 0 ? (
-            <tr>
-              <td colSpan={4} className="py-5 text-[16px] text-cream/70">
-                No scores yet. Finish a case and the row appears here.
-              </td>
-            </tr>
-          ) : (
-            top.map((entry) => (
-              <Row
-                key={entry.row.id}
-                rank={entry.rank}
-                row={entry.row}
-                current={entry.row.id === youId || Boolean(entry.row.you)}
-              />
-            ))
-          )}
-        </tbody>
-      </table>
+          {youOutside && you ? (
+            <table className="mt-4 w-full border-collapse text-left">
+              <caption className="sr-only">Your rank outside the top 25</caption>
+              <tbody>
+                <Row rank={you.rank} row={you.row} current />
+              </tbody>
+            </table>
+          ) : null}
+        </>
+      )}
 
-      {youOutside && you ? (
-        <table className="mt-4 w-full border-collapse text-left">
-          <caption className="sr-only">Your rank outside the top 25</caption>
-          <tbody>
-            <Row rank={you.rank} row={you.row} current />
-          </tbody>
-        </table>
-      ) : null}
-
-      <div className="mt-8">
+      <div className="mt-10 flex flex-col gap-3 border-t border-cream-dim/20 pt-4">
         <Link
           href="/table"
           className="min-h-[44px] font-sans text-[16px] font-semibold text-cream underline decoration-cream/40 underline-offset-4"
         >
           Back to the table
         </Link>
+        <p className="text-[12px] text-cream/60">Scores are verified server-side.</p>
       </div>
     </div>
   );

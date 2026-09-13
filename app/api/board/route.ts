@@ -3,6 +3,7 @@ import {
   parseSubmissionId,
   sanitizeNickname,
   scoreBoardSubmission,
+  sanitizeChips,
 } from "@/lib/board/submission";
 import { emptySnapshot, getBoardStore } from "@/lib/db/board.server";
 import { createLocalRateLimiter } from "@/lib/voice/rate-limit.server";
@@ -78,7 +79,12 @@ export async function POST(request: Request): Promise<Response> {
     return json({ ok: false, error: "Invalid submission" }, 400);
   }
 
-  const scored = scoreBoardSubmission(nickname, caseResults);
+  const scored = scoreBoardSubmission(
+    nickname,
+    caseResults,
+    undefined,
+    sanitizeChips(record.chips),
+  );
   if ("error" in scored) {
     return json({ ok: false, error: scored.error }, 400);
   }
@@ -93,6 +99,8 @@ export async function POST(request: Request): Promise<Response> {
       ok: true,
       score: scored.score,
       casesCleared: scored.casesCleared,
+      bestHand: scored.bestHand,
+      chips: scored.chips,
     });
   } catch {
     return json({ ok: false, unavailable: true }, 503);

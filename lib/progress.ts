@@ -1,3 +1,6 @@
+import { isBetterHand, type Hand, HANDS } from "@/lib/engine/hand";
+import { STARTING_CHIPS, type Stake } from "@/lib/engine/chips";
+
 export const PROGRESS_STORAGE_KEY = "casey_progress_v1";
 
 export type CaseProgress = {
@@ -11,12 +14,16 @@ export type CaseProgress = {
   clearedAt: string | null;
   firstAttemptCorrect: boolean | null;
   pinnedArtifactIds: string[];
+  bestHand: Hand | null;
+  lastHand: Hand | null;
+  lastStake: Stake | null;
 };
 
 export type ProgressV1 = {
   version: 1;
   nickname: string | null;
   nicknameAsked: boolean;
+  chips: number;
   cases: Record<string, CaseProgress>;
 };
 
@@ -33,11 +40,25 @@ export type CaseResultInput = {
   correct: boolean;
   usedOutOfBand: boolean;
   pinnedArtifactIds?: string[];
+  hand: Hand;
+  stake: Stake;
   at: string;
 };
 
+function parseHand(value: unknown): Hand | null {
+  return typeof value === "string" && (HANDS as readonly string[]).includes(value)
+    ? (value as Hand)
+    : null;
+}
+
 export function emptyProgress(): ProgressV1 {
-  return { version: 1, nickname: null, nicknameAsked: false, cases: {} };
+  return {
+    version: 1,
+    nickname: null,
+    nicknameAsked: false,
+    chips: STARTING_CHIPS,
+    cases: {},
+  };
 }
 
 export function parseProgress(raw: string | null): ProgressV1 {
@@ -62,10 +83,15 @@ export function parseProgress(raw: string | null): ProgressV1 {
         }
       }
     }
+    const chips =
+      typeof record.chips === "number" && Number.isFinite(record.chips)
+        ? Math.max(0, Math.floor(record.chips))
+        : STARTING_CHIPS;
     return {
       version: 1,
       nickname: typeof record.nickname === "string" ? record.nickname : null,
       nicknameAsked: record.nicknameAsked === true || typeof record.nickname === "string",
+      chips,
       cases,
     };
   } catch {
@@ -87,6 +113,10 @@ function parseCaseProgress(value: unknown): CaseProgress | null {
   } else if (entry.attempts === 1) {
     firstAttemptCorrect = entry.cleared === true;
   }
+  const lastStake =
+    entry.lastStake === 10 || entry.lastStake === 25 || entry.lastStake === 50
+      ? entry.lastStake
+      : null;
   return {
     attempts: entry.attempts,
     bestScore: Math.max(0, entry.bestScore),
@@ -109,6 +139,9 @@ function parseCaseProgress(value: unknown): CaseProgress | null {
     pinnedArtifactIds: Array.isArray(entry.pinnedArtifactIds)
       ? entry.pinnedArtifactIds.filter((id): id is string => typeof id === "string")
       : [],
+    bestHand: parseHand(entry.bestHand),
+    lastHand: parseHand(entry.lastHand),
+    lastStake,
   };
 }
 
@@ -119,23 +152,32 @@ export function recordCaseResult(progress: ProgressV1, result: CaseResultInput):
     previous?.firstAttemptCorrect ?? (attempts === 1 ? result.correct : null);
   const cleared = (previous?.cleared ?? false) || result.correct;
   const isNewBest = !previous || result.score > previous.bestScore;
+  const nextChips = result.correct
+    ? progress.chips + result.stake
+    : Math.max(0, progress.chips - result.stake);
   return {
     ...progress,
+    chips: nextChips,
     cases: {
       ...progress.cases,
       [result.caseId]: {
         attempts,
         bestScore: Math.max(previous?.bestScore ?? 0, Math.max(0, result.score)),
-        bestVerdict: isNewBest ? result.verdict : previous.bestVerdict,
+        bestVerdict: isNewBest ? result.verdict : (previous?.bestVerdict ?? result.verdict),
         bestPinnedArtifactIds: isNewBest
           ? (result.pinnedArtifactIds ?? [])
-          : previous.bestPinnedArtifactIds,
+          : (previous?.bestPinnedArtifactIds ?? result.pinnedArtifactIds ?? []),
         cleared,
         lastVerdict: result.verdict,
         usedOutOfBand: result.usedOutOfBand,
         clearedAt: result.correct ? result.at : (previous?.clearedAt ?? null),
         firstAttemptCorrect,
         pinnedArtifactIds: result.pinnedArtifactIds ?? previous?.pinnedArtifactIds ?? [],
+        bestHand: isBetterHand(result.hand, previous?.bestHand ?? null)
+          ? result.hand
+          : (previous?.bestHand ?? result.hand),
+        lastHand: result.hand,
+        lastStake: result.stake,
       },
     },
   };
@@ -185,6 +227,16 @@ export function caseStatus(
   return entry.cleared ? "cleared" : "attempted";
 }
 
+export function bestHandAcross(progress: ProgressV1): Hand | null {
+  let best: Hand | null = null;
+  for (const entry of Object.values(progress.cases)) {
+    if (entry.bestHand && isBetterHand(entry.bestHand, best)) {
+      best = entry.bestHand;
+    }
+  }
+  return best;
+}
+
 export function readStoredProgress(): ProgressV1 {
   if (typeof window === "undefined") {
     return emptyProgress();
@@ -199,6 +251,7 @@ export function readStoredProgress(): ProgressV1 {
 export function writeStoredProgress(progress: ProgressV1): ProgressV1 {
   try {
     window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(progress));
+    window.dispatchEvent(new Event("casey-progress"));
   } catch {
     // Keep the in-memory result if storage is blocked.
   }

@@ -23,8 +23,12 @@ import { usePlayerName } from "@/hooks/usePlayerName";
 import { getEnabledCases } from "@/lib/cases/registry";
 import type { CaseFile, Verdict } from "@/lib/cases/schema";
 import { scoreCatalogRound } from "@/lib/engine/catalog-score";
+import { handForRound } from "@/lib/engine/hand-from-session";
+import { DEFAULT_STAKE, type Stake } from "@/lib/engine/chips";
 import { postCurrentBoard } from "@/lib/board/client";
-import { persistCaseResult } from "@/lib/progress";
+import { persistCaseResult, readStoredProgress } from "@/lib/progress";
+import { StakeControl } from "@/components/StakeControl";
+import type { Hand } from "@/lib/engine/hand";
 import {
   DEAL_DURATION,
   DEAL_STAGGER,
@@ -78,11 +82,20 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
   const [viewedIds, setViewedIds] = useState<string[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [choice, setChoice] = useState<Verdict | null>(null);
+  const [stake, setStake] = useState<Stake>(DEFAULT_STAKE);
   const [warning, setWarning] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
   const [announce, setAnnounce] = useState("");
   const [dealKey, setDealKey] = useState(0);
   const [pendingSubmitId, setPendingSubmitId] = useState<string | null>(null);
+  const [settlement, setSettlement] = useState<{
+    hand: Hand;
+    explanation: string;
+    stake: Stake;
+    chipsBefore: number;
+    chipsAfter: number;
+    correct: boolean;
+  } | null>(null);
   const previousCardCount = useRef(0);
   const warningRef = useRef<HTMLButtonElement>(null);
   const recordedResult = useRef<string | null>(null);
@@ -133,14 +146,38 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
 
   const confirmVerdict = useCallback(() => {
     if (!choice || committed) return;
+    const chipsBefore = readStoredProgress().chips;
+    const previous = readStoredProgress().cases[gameCase.id];
+    const firstAttempt = !previous || previous.attempts === 0;
     voice.end();
     game.commitVerdict(choice);
+    const projected = {
+      ...game.session,
+      verdict: choice,
+      timestamps: {
+        ...game.session.timestamps,
+        committedAt: new Date().toISOString(),
+      },
+    };
+    const round = scoreCatalogRound(gameCase, projected);
+    const ranked = handForRound(gameCase, projected, round.correct, firstAttempt);
+    const chipsAfter = round.correct
+      ? chipsBefore + stake
+      : Math.max(0, chipsBefore - stake);
+    setSettlement({
+      hand: ranked.hand,
+      explanation: ranked.explanation,
+      stake,
+      chipsBefore,
+      chipsAfter,
+      correct: round.correct,
+    });
     setWarning(false);
     setActiveId(null);
     play("submit");
     setAnnounce(`Verdict submitted: ${CHIP_COPY[choice].label}.`);
     window.setTimeout(() => setShowReceipt(true), reduce ? 120 : 420);
-  }, [choice, committed, game, reduce, voice]);
+  }, [choice, committed, game, gameCase, reduce, stake, voice]);
 
   const submit = useCallback(() => {
     if (!choice || committed) return;
@@ -154,8 +191,10 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
     setViewedIds([]);
     setActiveId(null);
     setChoice(null);
+    setStake(DEFAULT_STAKE);
     setWarning(false);
     setShowReceipt(false);
+    setSettlement(null);
     setAnnounce("");
     setDealKey((key) => key + 1);
     setPendingSubmitId(null);
@@ -163,7 +202,7 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
   }, [game, voice]);
 
   useEffect(() => {
-    if (!showReceipt || !game.receipt || !game.session.verdict) {
+    if (!showReceipt || !game.receipt || !game.session.verdict || !settlement) {
       return;
     }
     const key = `${game.session.timestamps.committedAt ?? ""}:${game.session.verdict}`;
@@ -179,25 +218,29 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
       correct: round.correct,
       usedOutOfBand: round.usedOutOfBand,
       pinnedArtifactIds: game.session.pinnedArtifactIds,
+      hand: settlement.hand,
+      stake: settlement.stake,
       at: game.session.timestamps.committedAt ?? new Date().toISOString(),
     });
     if (stored.nickname) {
       void postCurrentBoard(stored.nickname);
     }
-  }, [game.receipt, game.session, gameCase, showReceipt]);
+  }, [game.receipt, game.session, gameCase, settlement, showReceipt]);
 
-  if (showReceipt && game.receipt) {
+  if (showReceipt && game.receipt && settlement) {
     return (
       <Receipt
         receipt={game.receipt}
         playerName={playerName}
         tableScore={scoreCatalogRound(gameCase, game.session).total}
+        settlement={settlement}
         onReplay={replay}
       />
     );
   }
 
   const spotChip = committed ?? choice;
+  const outOfChips = readStoredProgress().chips === 0;
 
   return (
     <LayoutGroup>
@@ -416,6 +459,16 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
           <p className="mt-5 max-w-[52ch] text-center text-[16px] text-cream/75">
             Not enough evidence is a final answer, not a hint. Choose it when the evidence genuinely cannot settle the question.
           </p>
+
+          {choice && !committed ? (
+            <StakeControl value={stake} onChange={setStake} disabled={committed !== null} />
+          ) : null}
+
+          {outOfChips ? (
+            <p className="mt-4 text-center text-[13px] text-cream/70">
+              You are out of chips. Cases still count.
+            </p>
+          ) : null}
 
           <div className="mt-5 flex flex-wrap items-center justify-center gap-4">
             <button

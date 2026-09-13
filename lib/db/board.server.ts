@@ -3,6 +3,9 @@ import { getTigerDatabaseConfig } from "@/lib/db/config.server";
 import type { ScoredSubmission } from "@/lib/board/submission";
 import type { BoardRow, BoardStats } from "@/lib/board/types";
 import { boardUsername } from "@/lib/board/identity";
+import { HANDS, type Hand } from "@/lib/engine/hand";
+import { STARTING_CHIPS } from "@/lib/engine/chips";
+import { sortBoardRows } from "@/lib/board/local";
 
 export type SharedBoardSnapshot = {
   entries: BoardRow[];
@@ -38,6 +41,12 @@ function statsFrom(rows: Array<{ updatedAt: string; casesPlayed: number; case01W
   };
 }
 
+function parseHand(value: unknown): Hand | null {
+  return typeof value === "string" && (HANDS as readonly string[]).includes(value)
+    ? (value as Hand)
+    : null;
+}
+
 async function tigerPool() {
   const { getTigerPool } = await import("@/lib/db/pool.server");
   return getTigerPool();
@@ -48,6 +57,8 @@ function toBoardRow(row: {
   nickname: string;
   score: number;
   casesCleared: number;
+  bestHand: Hand | null;
+  chips: number;
   createdAt: string;
 }): BoardRow {
   return {
@@ -56,6 +67,8 @@ function toBoardRow(row: {
     username: boardUsername(row.nickname, row.id),
     score: row.score,
     casesCleared: row.casesCleared,
+    bestHand: row.bestHand,
+    chips: row.chips,
     createdAt: row.createdAt,
   };
 }
@@ -66,14 +79,16 @@ function tigerStore(executor?: BoardSqlExecutor): BoardStore {
     async write(entry) {
       await (await sql()).query(
         `INSERT INTO casey.board_entries
-          (submission_id, nickname, score, cases_cleared, cases_played, case01_wrong)
-         VALUES ($1, $2, $3, $4, $5, $6)
+          (submission_id, nickname, score, cases_cleared, cases_played, case01_wrong, best_hand, chips)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
          ON CONFLICT (submission_id) DO UPDATE SET
            nickname = EXCLUDED.nickname,
            score = EXCLUDED.score,
            cases_cleared = EXCLUDED.cases_cleared,
            cases_played = EXCLUDED.cases_played,
            case01_wrong = EXCLUDED.case01_wrong,
+           best_hand = EXCLUDED.best_hand,
+           chips = EXCLUDED.chips,
            updated_at = now()`,
         [
           entry.submissionId,
@@ -82,6 +97,8 @@ function tigerStore(executor?: BoardSqlExecutor): BoardStore {
           entry.casesCleared,
           entry.casesPlayed,
           entry.case01Wrong,
+          entry.bestHand,
+          entry.chips,
         ],
       );
     },
@@ -89,11 +106,11 @@ function tigerStore(executor?: BoardSqlExecutor): BoardStore {
       const database = await sql();
       const [result, aggregate] = await Promise.all([
         database.query(
-        `SELECT submission_id::text, nickname, score, cases_cleared, cases_played,
-                case01_wrong, created_at, updated_at
-         FROM casey.board_entries
-         ORDER BY score DESC, created_at ASC
-         LIMIT 100`,
+          `SELECT submission_id::text, nickname, score, cases_cleared, cases_played,
+                  case01_wrong, best_hand, chips, created_at, updated_at
+           FROM casey.board_entries
+           ORDER BY score DESC, created_at ASC
+           LIMIT 100`,
         ),
         database.query(
           `SELECT
@@ -111,6 +128,8 @@ function tigerStore(executor?: BoardSqlExecutor): BoardStore {
         cases_cleared: number;
         cases_played: number;
         case01_wrong: boolean | null;
+        best_hand: string | null;
+        chips: number | null;
         created_at: Date;
         updated_at: Date;
       }>;
@@ -119,6 +138,8 @@ function tigerStore(executor?: BoardSqlExecutor): BoardStore {
         nickname: row.nickname,
         score: row.score,
         casesCleared: row.cases_cleared,
+        bestHand: parseHand(row.best_hand),
+        chips: typeof row.chips === "number" ? row.chips : STARTING_CHIPS,
         createdAt: row.created_at.toISOString(),
         updatedAt: row.updated_at.toISOString(),
         casesPlayed: row.cases_played,
@@ -135,7 +156,19 @@ function tigerStore(executor?: BoardSqlExecutor): BoardStore {
       const judged = Number(counts?.case01_judged ?? 0);
       const wrong = Number(counts?.case01_wrong ?? 0);
       return {
-        entries: mapped.map(toBoardRow),
+        entries: sortBoardRows(
+          mapped.map((row) =>
+            toBoardRow({
+              id: row.id,
+              nickname: row.nickname,
+              score: row.score,
+              casesCleared: row.casesCleared,
+              bestHand: row.bestHand,
+              chips: row.chips,
+              createdAt: row.createdAt,
+            }),
+          ),
+        ),
         stats: {
           playersTonight: Number(counts?.players_tonight ?? 0),
           casesPlayed: Number(counts?.cases_played ?? 0),
@@ -181,6 +214,8 @@ function kvStore(): BoardStore {
         casesCleared: entry.casesCleared,
         casesPlayed: entry.casesPlayed,
         case01Wrong: entry.case01Wrong,
+        bestHand: entry.bestHand,
+        chips: entry.chips,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -207,12 +242,25 @@ function kvStore(): BoardStore {
           casesCleared: Number(row.casesCleared ?? 0),
           casesPlayed: Number(row.casesPlayed ?? 0),
           case01Wrong: typeof row.case01Wrong === "boolean" ? row.case01Wrong : null,
+          bestHand: parseHand(row.bestHand),
+          chips: typeof row.chips === "number" ? row.chips : STARTING_CHIPS,
           createdAt: String(row.createdAt ?? new Date().toISOString()),
           updatedAt: String(row.updatedAt ?? row.createdAt ?? new Date().toISOString()),
-        }))
-        .sort((a, b) => b.score - a.score || a.createdAt.localeCompare(b.createdAt));
+        }));
       return {
-        entries: mapped.map(toBoardRow),
+        entries: sortBoardRows(
+          mapped.map((row) =>
+            toBoardRow({
+              id: row.id,
+              nickname: row.nickname,
+              score: row.score,
+              casesCleared: row.casesCleared,
+              bestHand: row.bestHand,
+              chips: row.chips,
+              createdAt: row.createdAt,
+            }),
+          ),
+        ),
         stats: statsFrom(mapped),
       };
     },

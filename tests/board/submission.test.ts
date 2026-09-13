@@ -52,6 +52,7 @@ describe("board submission", () => {
     expect(parsed?.["case-01"]).toEqual({
       verdict: "legit",
       pinnedArtifactIds: ["offer-email", "directory-call"],
+      firstAttempt: false,
     });
     expect(scoreBoardSubmission("A", parsed!, lookup)).toMatchObject({ score: 0 });
   });
@@ -78,6 +79,21 @@ describe("board submission", () => {
         },
       }),
     ).toBeNull();
+  });
+
+  it("computes best hand from pins", () => {
+    const scored = scoreBoardSubmission(
+      "Jordan",
+      {
+        "case-01": {
+          verdict: "scam",
+          pinnedArtifactIds: ["offer-email"],
+          firstAttempt: true,
+        },
+      },
+      lookup,
+    );
+    expect(scored).toMatchObject({ bestHand: "High card", chips: 100 });
   });
 
   it("rejects unknown cases and unknown pins", () => {
