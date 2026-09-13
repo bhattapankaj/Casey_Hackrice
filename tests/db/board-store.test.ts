@@ -22,12 +22,16 @@ describe("Tiger leaderboard store", () => {
       casesCleared: 2,
       casesPlayed: 3,
       case01Wrong: false,
+      bestHand: "Pair",
+      chips: 125,
     });
 
     const [sql, values] = query.mock.calls[0]!;
     expect(sql).toContain("ON CONFLICT (submission_id) DO UPDATE");
     expect(sql).toContain("updated_at = now()");
-    expect(values).toEqual([SUBMISSION_ID, "Jordan", 875, 2, 3, false]);
+    expect(sql).toContain("best_hand");
+    expect(sql).toContain("chips");
+    expect(values).toEqual([SUBMISSION_ID, "Jordan", 875, 2, 3, false, "Pair", 125]);
   });
 
   it("reads ranked rows and computes totals across the whole table", async () => {
@@ -43,6 +47,8 @@ describe("Tiger leaderboard store", () => {
               cases_cleared: 2,
               cases_played: 3,
               case01_wrong: false,
+              best_hand: "Pair",
+              chips: 125,
               created_at: now,
               updated_at: now,
             },
@@ -70,6 +76,8 @@ describe("Tiger leaderboard store", () => {
           username: "Jordan-019946",
           score: 875,
           casesCleared: 2,
+          bestHand: "Pair",
+          chips: 125,
           createdAt: now.toISOString(),
         },
       ],
