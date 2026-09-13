@@ -106,10 +106,13 @@ export function useCaseyVoice({
 
   const enterFallback = useCallback(
     (message?: string) => {
+      clearTimers();
+      limitStarted.current = false;
+      setElapsedSeconds(0);
+      setEndedByTimer(false);
       setErrorMessage(message ?? null);
       setPhase("text_fallback");
       selectMode("text_fallback");
-      startHardLimit();
       setFallbackIndex((current) => {
         if (current >= 0 || fallbackBeats.length === 0) {
           return current;
@@ -122,7 +125,7 @@ export function useCaseyVoice({
         return 0;
       });
     },
-    [dealPressureCard, fallbackBeats, selectMode, startHardLimit],
+    [clearTimers, dealPressureCard, fallbackBeats, selectMode],
   );
 
   const conversation = useConversation({

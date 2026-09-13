@@ -20,7 +20,6 @@ const CALL_IN_PROGRESS = new Set<VoiceController["phase"]>([
   "connecting",
   "listening",
   "speaking",
-  "text_fallback",
 ]);
 
 function formatClock(seconds: number) {
@@ -158,7 +157,14 @@ export function CallPanel({
 }: CallPanelProps) {
   const incoming = voice.phase === "consent";
   const live = CALL_IN_PROGRESS.has(voice.phase);
+  const textFallback = voice.phase === "text_fallback";
   const connected = voice.phase === "listening" || voice.phase === "speaking";
+  const transcriptLabel =
+    voice.phase === "ended"
+      ? "Call transcript"
+      : textFallback
+        ? "Text transcript"
+        : "Live transcript";
   const initial = characterName.charAt(0);
   const listEnd = useRef<HTMLLIElement | null>(null);
 
@@ -194,6 +200,10 @@ export function CallPanel({
                   <p className="flex items-center justify-center gap-1.5 font-label text-[11px] font-medium tracking-[0.07em] text-red">
                     <span className="call-pulse size-[6px] rounded-full bg-red" aria-hidden />
                     Incoming
+                  </p>
+                ) : textFallback ? (
+                  <p className="font-label text-[11px] font-medium tracking-[0.07em] text-ink/60">
+                    Call declined
                   </p>
                 ) : (
                   <p className="font-serif text-[17px] leading-none text-ink tabular-nums">
@@ -272,14 +282,14 @@ export function CallPanel({
 
         <div className="flex w-full max-w-[320px] flex-col">
           <PlayCard
-            label={voice.phase === "ended" ? "Call transcript" : "Live transcript"}
+            label={transcriptLabel}
             index="T"
             icon={MessageSquareText}
             iconClass="text-ink"
           >
             <div className="absolute inset-[22px] flex flex-col pt-6">
               <h2 className="shrink-0 text-center font-label text-[11px] font-medium tracking-[0.08em] text-ink/70 uppercase">
-                {voice.phase === "ended" ? "Call transcript" : "Live transcript"}
+                {transcriptLabel}
               </h2>
               <ol
                 className="transcript-page mt-2 min-h-0 flex-1 overflow-y-auto"

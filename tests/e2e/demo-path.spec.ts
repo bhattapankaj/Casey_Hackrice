@@ -68,11 +68,15 @@ test("Case 01 fallback path reaches the deterministic Receipt", async ({ page })
   await expect(page.getByText("Meridian claimant", { exact: true })).toHaveCount(0);
 
   await page.getByRole("button", { name: "Decline", exact: true }).click();
+  await expect(page.getByText("Call declined", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "End call", exact: true })).toHaveCount(0);
+  await expect(page.getByText("Text transcript", { exact: true })).toBeVisible();
   await expect(page.getByLabel("Call transcript")).toContainText("Morgan Vale");
 
   await page.locator("#card-offer-email").click();
-  await expect(page.getByRole("dialog").getByText("In call with Morgan Vale")).toBeVisible();
-  await expect(page.getByRole("dialog").getByRole("button", { name: "End the call" })).toBeVisible();
+  await expect(
+    page.getByRole("dialog").getByRole("button", { name: "End the call" }),
+  ).toHaveCount(0);
   await page.getByRole("button", { name: "Pin as evidence" }).click();
   await page
     .getByRole("dialog")
