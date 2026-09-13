@@ -110,7 +110,7 @@ export type CallerConfig = {
   organizationName: string;
   persona: string;
   firstMessage: string;
-  offerSummary: string;
+  scenarioSummary: string;
   allowedFacts: string[];
   forbiddenRequests: string[];
   contradiction: string;
@@ -330,7 +330,7 @@ function caller(value: unknown): CallerConfig {
     organizationName: string(candidate.organizationName, "case.caller.organizationName"),
     persona: string(candidate.persona, "case.caller.persona"),
     firstMessage: string(candidate.firstMessage, "case.caller.firstMessage"),
-    offerSummary: string(candidate.offerSummary, "case.caller.offerSummary"),
+    scenarioSummary: string(candidate.scenarioSummary, "case.caller.scenarioSummary"),
     allowedFacts: strings(candidate.allowedFacts, "case.caller.allowedFacts"),
     forbiddenRequests: strings(
       candidate.forbiddenRequests,

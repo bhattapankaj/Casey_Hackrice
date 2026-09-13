@@ -25,7 +25,7 @@ type MutableCaseFixture = {
     riskCost: unknown;
   }>;
   allowedPressureTactics: unknown[];
-  caller: { maxCallSeconds: number; offerSummary: string };
+  caller: { maxCallSeconds: number; scenarioSummary: string };
   debrief: { sourceUrl: string };
 };
 
@@ -94,7 +94,7 @@ describe("Case 01 validation", () => {
     expect(() => validateCase(unsafeUrl)).toThrow(/approved HTTPS source/);
 
     const secret = copyCase();
-    secret.caller.offerSummary = "Use ELEVENLABS_API_KEY in this prompt";
+    secret.caller.scenarioSummary = "Use ELEVENLABS_API_KEY in this prompt";
     expect(() => validateCase(secret)).toThrow(/secret or scoring\/truth instruction/);
   });
 

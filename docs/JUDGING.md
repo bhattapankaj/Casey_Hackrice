@@ -47,8 +47,10 @@ implementation evidence is still required.
    between first and later cases; display only anonymous aggregates with sample size.
 7. **Design failure as a mode.** Mic denied, API down, or Wi-Fi lost switches to a clearly
    labeled text/prerecorded call while preserving the investigation and Receipt.
-8. **Drop sponsor sprawl.** ElevenLabs is central. Notability is eligible only if the team
-   genuinely uses and documents it. The handbook does not list Tiger Data.
+8. **Keep sponsor use coherent.** ElevenLabs is central.
+   [MLH's current prize page](https://www.mlh.com/events/hackrice-71/prizes) confirms
+   Tiger Data; use it only to measure the core independent-verification behavior.
+   Notability counts only if the team genuinely uses and documents it.
 
 ## 9+ evidence gates
 
@@ -66,8 +68,9 @@ The demo must prove all of the following:
 - A network/microphone failure completes through fallback rather than an error screen.
 - A 20-second architecture explanation makes the AI/deterministic boundary obvious.
 
-**Do not add a database to look technical.** A small, deeply integrated system scores
-better than a broad set of simple, fragile integrations under the handbook wording.
+**Do not add a database merely to look technical.** Tiger Data earns its place only when
+its hypertable and aggregate make privacy-minimized learning behavior visible without
+becoming a dependency of the round.
 
 ### Originality & Creativity — target 9.3
 
@@ -142,9 +145,9 @@ better than a broad set of simple, fragile integrations under the handbook wordi
 | 4 | Complete fallback mode | High for rigor/UX | Medium / low |
 | 5 | Legitimate Case 02 | High for game depth/impact | Medium / low |
 | 6 | Five-person test and iteration | High for UX/impact credibility | Low / low |
-| 7 | Anonymous aggregate telemetry | Medium for impact | Medium / medium |
+| 7 | Tiger Data anonymous outcome aggregate | Medium-high for impact/rigor and sponsor evidence | Medium / medium |
 | 8 | Leaderboard | Low-to-medium for replay | Medium / medium |
-| 9 | Any extra sponsor API | Negative until core is finished | High / high |
+| 9 | Any unrelated sponsor API | Negative until core is finished | High / high |
 
 ## Red-team objections
 
@@ -163,6 +166,6 @@ better than a broad set of simple, fragile integrations under the handbook wordi
 - Live judging is 2 minutes of demo plus 1 minute of Q&A, repeated 3–4 times.
 - Do not repeat the old fictional line “127 people played; 61% got fooled” unless those
   values are actually measured and the sample definition is stated.
-- Do not claim Tiger Data, a domain prize, Lilie Lab eligibility, Notability use, or any
-  other challenge until it is confirmed and genuinely used.
+- Tiger Data's prize is confirmed by MLH, but do not claim Casey uses it until a real
+  service, deployed write, aggregate query, and privacy-safe result are verified.
 - Take screenshots and record the resilient demo before feature freeze.

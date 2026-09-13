@@ -57,7 +57,7 @@ function validateVoiceConfig(caseFile: CaseFile) {
     caseFile.caller.organizationName,
     caseFile.caller.persona,
     caseFile.caller.firstMessage,
-    caseFile.caller.offerSummary,
+    caseFile.caller.scenarioSummary,
     ...caseFile.caller.allowedFacts,
     ...caseFile.caller.forbiddenRequests,
     caseFile.caller.contradiction,

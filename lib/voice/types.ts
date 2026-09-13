@@ -3,7 +3,8 @@ export type VoiceDynamicVariables = {
   character_name: string;
   organization_name: string;
   persona: string;
-  offer_summary: string;
+  opening_line: string;
+  scenario_summary: string;
   allowed_facts: string;
   contradiction: string;
   crack_line: string;

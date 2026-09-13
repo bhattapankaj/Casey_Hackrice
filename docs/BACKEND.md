@@ -26,6 +26,10 @@ colors, motion, or interaction styling.
   unverified manual gates.
 - Automated Phase 6 checks pass locally. The five-person playtest has not been run and no
   participant results are claimed.
+- Tiger Data readiness is scaffolded but inactive: server-only configuration, a lazy
+  Postgres pool, a parameterized anonymous-outcome writer, a hypertable migration, and
+  aggregate queries exist. No service connection, migration, deployed write, or frontend
+  network call has been verified.
 
 ## Outcome
 
@@ -47,8 +51,8 @@ The smallest demo-relevant acceptance path is:
 
 ## Backend boundary
 
-Casey does not need a conventional database-backed application server for the hackathon.
-Its backend consists of:
+Casey does not need a conventional database-backed application server to complete the
+demo. Its must-demo backend consists of:
 
 - validated, authored case fixtures;
 - a pure deterministic game engine;
@@ -57,6 +61,11 @@ Its backend consists of:
 - one server-only route that exchanges the ElevenLabs API key for a short-lived WebRTC
   conversation token; and
 - a strict pressure-card allowlist shared with the frontend adapter.
+
+An optional P2 Tiger Data boundary under `lib/db/**` can persist one anonymous completed
+outcome and power aggregate learning signals. It is not imported by the frontend and
+must never block the game, Receipt, or localStorage path. Setup and rollout are defined
+in [TIGER_DATA.md](TIGER_DATA.md).
 
 Use the existing top-level `lib/` directory as the dedicated backend/domain area. This
 keeps all meaningful logic outside `app/` and `components/`, while preserving Casey's
@@ -104,6 +113,11 @@ lib/
     rate-limit.server.ts      # Bounded local limiter adapter
   session/
     storage.ts                # Optional, versioned local-session persistence
+  db/
+    config.server.ts          # Optional server-only Tiger Data environment
+    pool.server.ts            # Lazy bounded Postgres connection pool
+    session-outcome.ts        # Deterministic privacy-minimized row builder
+    outcomes.server.ts        # Parameterized insert adapter
 hooks/
   useGameSession.ts           # React adapter over the pure reducer
   useCaseyVoice.ts            # React/ElevenLabs lifecycle adapter
@@ -113,6 +127,7 @@ app/
       route.ts                # Thin POST adapter only
 tests/
   cases/
+  db/
   engine/
   voice/
   e2e/
@@ -329,7 +344,8 @@ It returns on success:
     "character_name": "Morgan Vale",
     "organization_name": "Meridian Research Group",
     "persona": "...",
-    "offer_summary": "...",
+    "opening_line": "...",
+    "scenario_summary": "...",
     "allowed_facts": "...",
     "contradiction": "...",
     "crack_line": "...",
