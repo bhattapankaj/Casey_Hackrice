@@ -2,6 +2,7 @@ import type {
   Channel,
   PressureTactic,
   SourceClass,
+  SourceNote,
   Verdict,
 } from "@/lib/cases/schema";
 
@@ -123,4 +124,5 @@ export type ScoreReceipt = {
   realWorldAction: string;
   sourceUrl: string;
   sourceLabel: string;
+  sourceNote: SourceNote;
 };

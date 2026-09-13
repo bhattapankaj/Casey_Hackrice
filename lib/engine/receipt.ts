@@ -11,7 +11,7 @@ function summaryFor(score: ScoreBreakdown, receipt: Omit<ScoreReceipt, "summary"
     return "You left their channel and found a source they did not control.";
   }
   if (receipt.truth === "legit" && score.verdict.earned === 400) {
-    return "Trust was earned through an independent route—not assumed from polish.";
+    return "Trust was earned through an independent route, not assumed from polish.";
   }
   if (receipt.truth === "not_enough_evidence" && score.verdict.earned === 400) {
     return "Stopping is a valid verdict when proof is missing.";
@@ -90,6 +90,7 @@ export function buildReceipt(
     realWorldAction: caseFile.debrief.realWorldAction,
     sourceUrl: caseFile.debrief.sourceUrl,
     sourceLabel: caseFile.debrief.sourceLabel,
+    sourceNote: caseFile.sourceNote,
   };
   return deepFreeze({
     ...receiptWithoutSummary,

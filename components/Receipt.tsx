@@ -3,8 +3,9 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Check, Link2, X } from "lucide-react";
+import { ArrowRight, Check, ExternalLink, Link2, X } from "lucide-react";
 import { ArtifactCard } from "@/components/ArtifactCard";
+import { NicknamePrompt } from "@/components/NicknamePrompt";
 import { ChipFace } from "@/components/VerdictChip";
 import { SiteNav } from "@/components/SiteNav";
 import { sourceClassToBand } from "@/lib/cases/public-case";
@@ -23,6 +24,7 @@ import { play } from "@/lib/sound";
 type ReceiptProps = {
   receipt: ScoreReceipt;
   playerName: string;
+  tableScore?: number;
   onReplay: () => void;
 };
 
@@ -55,7 +57,7 @@ const SCORE_LINES = [
   ["Composure", "composure"],
 ] as const;
 
-export function Receipt({ receipt, playerName, onReplay }: ReceiptProps) {
+export function Receipt({ receipt, playerName, tableScore, onReplay }: ReceiptProps) {
   const reduce = useReducedMotion();
   const correct = receipt.truth === receipt.selectedVerdict;
 
@@ -112,8 +114,13 @@ export function Receipt({ receipt, playerName, onReplay }: ReceiptProps) {
             <dd className="mt-2 font-serif text-[30px] leading-none font-semibold">
               {receipt.score.total} / 1,000
             </dd>
+            {tableScore !== undefined ? (
+              <p className="mt-2 font-sans text-[13px] text-ink/60">Table points {tableScore}</p>
+            ) : null}
           </div>
         </dl>
+
+        <NicknamePrompt />
 
         <h2 className="mt-10 font-serif text-[24px] font-semibold text-cream">
           Where your pinned evidence came from
@@ -269,6 +276,34 @@ export function Receipt({ receipt, playerName, onReplay }: ReceiptProps) {
           </div>
         </dl>
 
+        <section className="mt-10" aria-labelledby="pattern-title">
+          <h2
+            id="pattern-title"
+            className="font-label text-[11px] tracking-[0.14em] text-cream/70"
+          >
+            Based on a documented pattern
+          </h2>
+          <p className="mt-3 max-w-[62ch] text-[14px] leading-relaxed text-cream/90">
+            {receipt.sourceNote.pattern}
+          </p>
+          <p className="mt-3 text-[12px] text-cream/60">
+            <a
+              href={receipt.sourceNote.url}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-h-[44px] items-center gap-1.5 underline decoration-cream/35 underline-offset-4"
+            >
+              {receipt.sourceNote.source}, {receipt.sourceNote.year}
+              <ExternalLink size={12} strokeWidth={2} aria-hidden className="text-gold" />
+            </a>
+          </p>
+          <hr className="mt-4 max-w-[46rem] border-0 border-t border-cream-dim/20" />
+          <p className="mt-3 max-w-[62ch] text-[12px] leading-relaxed text-cream/70 italic">
+            Names, amounts and organisations in this case are fictional. The figures
+            above are reported national totals.
+          </p>
+        </section>
+
         <section className="mt-10" aria-labelledby="truth-title">
           <h2 id="truth-title" className="font-serif text-[24px] font-semibold text-cream">
             Truth: {VERDICT_LABELS[receipt.truth]}
@@ -302,6 +337,12 @@ export function Receipt({ receipt, playerName, onReplay }: ReceiptProps) {
             className="min-h-[44px] font-sans text-[16px] font-semibold text-cream underline decoration-cream/40 underline-offset-4"
           >
             Return to the table
+          </Link>
+          <Link
+            href="/board"
+            className="min-h-[44px] font-sans text-[16px] font-semibold text-cream underline decoration-cream/40 underline-offset-4"
+          >
+            Open the board
           </Link>
         </div>
       </main>

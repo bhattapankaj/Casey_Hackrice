@@ -157,8 +157,8 @@ backend implementation must resolve these contract gaps without changing the des
   call card's presentation but wire its controls and status to the voice adapter.
 - `components/Receipt.tsx` currently builds the score during render and updates storage
   in an effect. It must receive one already-built, immutable `ScoreReceipt`.
-- The seeded leaderboard is not real telemetry. It must not be represented as player
-  data; database-backed leaderboard work remains P2.
+- `/board` is server-rescored. If Tiger or KV is down or unset, keep localStorage and
+  show the local-fallback line. Never invent player counts.
 
 After imports are migrated, remove the duplicate root `lib/cases.ts`, `lib/scoring.ts`,
 and old session behavior rather than keeping two sources of truth.

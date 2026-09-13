@@ -28,6 +28,15 @@ export type ArtifactCardProps = {
   className?: string;
 };
 
+/** Rotate the corner block, never the letter glyph itself. */
+export function MirroredCorner({ children }: { children: ReactNode }) {
+  return (
+    <div className="absolute right-0 bottom-0" style={{ transform: "rotate(180deg)" }} aria-hidden>
+      {children}
+    </div>
+  );
+}
+
 /** Shared cream court-card chrome. How-to cards and evidence cards use this. */
 export function PlayingCardShell({
   width = "w-[190px]",
@@ -108,9 +117,9 @@ export function ArtifactCard({
             <div className="absolute top-0 left-0">
               <CornerIndex channel={channel} band={band} />
             </div>
-            <div className="absolute right-0 bottom-0 rotate-180">
+            <MirroredCorner>
               <CornerIndex channel={channel} band={band} />
-            </div>
+            </MirroredCorner>
           </div>
 
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-4 text-center">

@@ -4,6 +4,18 @@ export const CASE_01 = {
   id: "case-01",
   title: "The Meridian Offer",
   shortTitle: "The Meridian Offer",
+  category: "jobs",
+  difficulty: 1,
+  rank: "3",
+  neutralTitle: "The Meridian Offer",
+  estimatedMinutes: 2,
+  sourceNote: {
+    pattern:
+      "Reports of job scams to the FTC tripled between 2020 and 2024, and reported losses rose from $90 million to $501 million. The campus-looking offer is a common way in.",
+    source: "Federal Trade Commission",
+    year: 2025,
+    url: "https://www.ftc.gov/news-events/news/press-releases/2025/03/new-ftc-data-show-big-jump-reported-losses-fraud-125-billion-2024",
+  },
   truth: "scam",
   claimantSourceRoot: "meridian-claimant",
   briefing: [

@@ -12,14 +12,19 @@ import { Pin, TriangleAlert } from "lucide-react";
 import { ArtifactCard } from "@/components/ArtifactCard";
 import { ArtifactViewer } from "@/components/ArtifactViewer";
 import { CallPanel, CompactCallControls } from "@/components/CallPanel";
-import { PlayerNameForm } from "@/components/PlayerNameForm";
+import { IdFormConfirm } from "@/components/IdFormConfirm";
+import { InfoTip } from "@/components/InfoTip";
 import { Receipt } from "@/components/Receipt";
 import { SiteNav } from "@/components/SiteNav";
 import { CHIP_COPY, VERDICT_ORDER, VerdictChip } from "@/components/VerdictChip";
 import { useCaseyVoice } from "@/hooks/useCaseyVoice";
 import { useGameSession } from "@/hooks/useGameSession";
 import { usePlayerName } from "@/hooks/usePlayerName";
+import { getEnabledCases } from "@/lib/cases/registry";
 import type { CaseFile, Verdict } from "@/lib/cases/schema";
+import { scoreCatalogRound } from "@/lib/engine/catalog-score";
+import { postCurrentBoard } from "@/lib/board/client";
+import { persistCaseResult } from "@/lib/progress";
 import {
   DEAL_DURATION,
   DEAL_STAGGER,
@@ -54,25 +59,9 @@ export function CardTable({ gameCase }: CardTableProps) {
     );
   }
 
-  if (!player.name) {
-    return (
-      <>
-        <SiteNav />
-        <main className="mx-auto min-h-screen w-full max-w-[680px] px-4 py-16 text-cream sm:px-5">
-          <p className="font-label text-[12px] tracking-[0.08em] text-cream/70">CASE INTAKE</p>
-          <h1 className="mt-2 font-serif text-[34px] font-semibold">Sign the table before the deal</h1>
-          <p className="mt-3 max-w-[48ch] text-[16px] leading-relaxed text-cream/85">
-            The caller never sees this. It only labels your captions and receipt.
-          </p>
-          <PlayerNameForm buttonLabel="Enter the case" onSave={player.saveName} />
-        </main>
-      </>
-    );
-  }
-
   return (
     <ConversationProvider>
-      <CardTableGame gameCase={gameCase} playerName={player.name} />
+      <CardTableGame gameCase={gameCase} playerName={player.name ?? "You"} />
     </ConversationProvider>
   );
 }
@@ -93,8 +82,10 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
   const [showReceipt, setShowReceipt] = useState(false);
   const [announce, setAnnounce] = useState("");
   const [dealKey, setDealKey] = useState(0);
+  const [pendingSubmitId, setPendingSubmitId] = useState<string | null>(null);
   const previousCardCount = useRef(0);
   const warningRef = useRef<HTMLButtonElement>(null);
+  const recordedResult = useRef<string | null>(null);
 
   useEffect(() => {
     if (showReceipt) return;
@@ -167,10 +158,43 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
     setShowReceipt(false);
     setAnnounce("");
     setDealKey((key) => key + 1);
+    setPendingSubmitId(null);
+    recordedResult.current = null;
   }, [game, voice]);
 
+  useEffect(() => {
+    if (!showReceipt || !game.receipt || !game.session.verdict) {
+      return;
+    }
+    const key = `${game.session.timestamps.committedAt ?? ""}:${game.session.verdict}`;
+    if (recordedResult.current === key) {
+      return;
+    }
+    recordedResult.current = key;
+    const round = scoreCatalogRound(gameCase, game.session);
+    const stored = persistCaseResult({
+      caseId: gameCase.id,
+      verdict: game.session.verdict,
+      score: round.total,
+      correct: round.correct,
+      usedOutOfBand: round.usedOutOfBand,
+      pinnedArtifactIds: game.session.pinnedArtifactIds,
+      at: game.session.timestamps.committedAt ?? new Date().toISOString(),
+    });
+    if (stored.nickname) {
+      void postCurrentBoard(stored.nickname);
+    }
+  }, [game.receipt, game.session, gameCase, showReceipt]);
+
   if (showReceipt && game.receipt) {
-    return <Receipt receipt={game.receipt} playerName={playerName} onReplay={replay} />;
+    return (
+      <Receipt
+        receipt={game.receipt}
+        playerName={playerName}
+        tableScore={scoreCatalogRound(gameCase, game.session).total}
+        onReplay={replay}
+      />
+    );
   }
 
   const spotChip = committed ?? choice;
@@ -185,7 +209,10 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
 
         <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 border-b border-cream/15 pb-4">
           <div className="min-w-0">
-            <p className="font-label text-[12px] tracking-[0.08em] text-cream/70">Case 1 of 1</p>
+            <p className="font-label text-[12px] tracking-[0.08em] text-cream/70">
+              Case {getEnabledCases().findIndex((entry) => entry.id === gameCase.id) + 1} of{" "}
+              {getEnabledCases().length}
+            </p>
             <h1 className="mt-1 font-serif text-[26px] leading-tight font-semibold text-cream sm:text-[30px]">
               {gameCase.title}
             </h1>
@@ -199,7 +226,12 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
               </dd>
             </div>
             <div>
-              <dt className="font-label text-[12px] tracking-[0.08em] text-cream/70">Trust Chain</dt>
+              <dt className="flex items-center gap-1.5 font-label text-[12px] tracking-[0.08em] text-cream/70">
+                Pinned
+                <InfoTip label="pinned evidence" align="end">
+                  Pinned evidence is what your verdict is scored on. Opening a card is free.
+                </InfoTip>
+              </dt>
               <dd className="mt-1 font-serif text-[24px] leading-none font-semibold text-cream">
                 {game.pinnedArtifacts.length}
                 <span className="text-cream/60"> of 3</span>
@@ -211,7 +243,7 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
         <div className="mt-4 max-w-[60ch] text-[16px] leading-relaxed text-cream/90">
           {gameCase.briefing.map((line, index) => (
             <p key={line}>
-              {index === 0 && line.startsWith("You ")
+              {index === 0 && playerName !== "You" && line.startsWith("You ")
                 ? `${playerName}, you ${line.slice(4)}`
                 : line}
             </p>
@@ -238,16 +270,34 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
                   type="button"
                   key={action.id}
                   onClick={() => {
+                    if (action.type === "submit") {
+                      setPendingSubmitId(action.id);
+                      return;
+                    }
                     game.takeAction(action.id);
                     setAnnounce(`${action.label} completed.`);
                   }}
-                  className="min-h-[44px] rounded-[10px] border border-cream/25 px-4 py-2 text-left font-sans text-[14px] font-semibold text-cream transition-colors duration-150 hover:bg-cream/10"
+                  className={`min-h-[44px] rounded-[10px] border px-4 py-2 text-left font-sans text-[14px] font-semibold text-cream transition-colors duration-150 hover:bg-cream/10 ${
+                    pendingSubmitId === action.id
+                      ? "border-cream/55 bg-cream/10"
+                      : "border-cream/25"
+                  }`}
                 >
                   {action.label}
                 </button>
               ))
             )}
           </div>
+          {pendingSubmitId ? (
+            <IdFormConfirm
+              onConfirm={() => {
+                game.takeAction(pendingSubmitId);
+                setAnnounce("Fictional ID form sent.");
+                setPendingSubmitId(null);
+              }}
+              onCancel={() => setPendingSubmitId(null)}
+            />
+          ) : null}
         </section>
 
         <h2 className="mt-8 font-label text-[12px] tracking-[0.08em] text-cream/70">The evidence</h2>
@@ -297,8 +347,7 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
         >
           <h2 id="pinned-heading" className="flex items-center gap-2 font-label text-[12px] tracking-[0.08em] text-cream/70">
             <Pin size={14} strokeWidth={2} aria-hidden />
-            Trust Chain
-            <span className="text-cream/50">({game.pinnedArtifacts.length}/3)</span>
+            Pinned {game.pinnedArtifacts.length} of 3
           </h2>
           {game.pinnedArtifacts.length === 0 ? (
             <p className="mt-2 max-w-[60ch] text-[16px] text-cream/80">
@@ -404,7 +453,7 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
               </h3>
               <p id="warn-body" className="mt-2 text-[16px] leading-relaxed text-ink/80">
                 {game.pinnedArtifacts.length === 0
-                  ? "You opened evidence but pinned none. A correct guess can score verdict points, but it is not a defensible Trust Chain."
+                  ? "You opened evidence but pinned none. A correct guess can score verdict points, but only pinned evidence is scored."
                   : `${game.pinnedArtifacts.length} of 3 evidence slots are pinned. This decision cannot be changed.`}
               </p>
               <div className="mt-4 flex flex-wrap gap-4">

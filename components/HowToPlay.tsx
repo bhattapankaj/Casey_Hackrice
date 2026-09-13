@@ -1,8 +1,8 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { Building2, CircleCheck, Mail, Pin, Search, type LucideIcon } from "lucide-react";
-import { PlayingCardShell } from "@/components/ArtifactCard";
+import { CircleCheck, Pin, Search, type LucideIcon } from "lucide-react";
+import { MirroredCorner, PlayingCardShell } from "@/components/ArtifactCard";
 import { EASE_DEAL } from "@/lib/motion";
 
 const ROTATIONS = [-6, 0, 6] as const;
@@ -74,14 +74,20 @@ function RuleCard({
         reduce ? { duration: 0 } : { duration: 0.42, delay: 0.12 + index * 0.09, ease: EASE_DEAL }
       }
     >
-      <PlayingCardShell width="w-[200px]">
+      <PlayingCardShell
+        width={
+          stacked
+            ? "w-[186px] sm:w-[200px]"
+            : "w-[164px] min-[720px]:w-[186px] min-[1100px]:w-[200px]"
+        }
+      >
         <div className="pointer-events-none absolute inset-[14px]" aria-hidden>
           <div className="absolute top-0 left-0">
             <CornerIndex step={step} />
           </div>
-          <div className="absolute right-0 bottom-0 rotate-180">
+          <MirroredCorner>
             <CornerIndex step={step} />
-          </div>
+          </MirroredCorner>
         </div>
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-7 text-center">
           <Icon size={28} strokeWidth={1.75} aria-hidden className="text-ink" />
@@ -95,6 +101,17 @@ function RuleCard({
   );
 }
 
+function SourceLegend() {
+  return (
+    <p className="mx-auto max-w-[36ch] text-center text-[13px] leading-relaxed text-cream/70 lg:mx-0 lg:max-w-[40ch] lg:text-left">
+      A card they handed you is marked{" "}
+      <span className="font-semibold text-red">red</span>, and a card you found
+      yourself is marked <span className="font-semibold text-gold">gold</span>.
+      Both can be pinned, but only gold earns the independence points.
+    </p>
+  );
+}
+
 /** Three-card explainer dealt beside the nameplate on the start screen. */
 export function HowToPlayCards() {
   const reduce = Boolean(useReducedMotion());
@@ -103,38 +120,28 @@ export function HowToPlayCards() {
     <section aria-labelledby="how-to-play-title" className="w-full">
       <h2
         id="how-to-play-title"
-        className="font-label text-[12px] tracking-[0.08em] text-cream/70 uppercase"
+        className="text-center font-label text-[12px] tracking-[0.08em] text-cream/70 uppercase lg:text-left"
       >
         How to play
       </h2>
 
-      <ul className="mt-4 flex flex-col items-center gap-4 min-[560px]:hidden">
+      <ul className="mt-4 flex flex-col items-center gap-3 min-[560px]:hidden">
         {STEPS.map((step, index) => (
           <RuleCard key={step.mark} step={step} index={index} reduce={reduce} stacked />
         ))}
       </ul>
 
-      {/* Scaling leaves layout slack under the hand, so pull the legend back up. */}
-      <div className="hidden justify-center min-[560px]:-mb-14 min-[560px]:flex min-[720px]:-mb-7 lg:-mb-8 lg:justify-start min-[1040px]:mb-0">
-        <ul className="mt-4 flex origin-top items-end min-[560px]:scale-[0.78] min-[720px]:scale-90 lg:origin-top-left lg:scale-[0.88] min-[1040px]:scale-100">
+      <div className="hidden min-[560px]:block">
+        <ul className="mt-4 flex items-end justify-center lg:justify-start">
           {STEPS.map((step, index) => (
             <RuleCard key={step.mark} step={step} index={index} reduce={reduce} />
           ))}
         </ul>
       </div>
 
-      <p className="mt-5 max-w-[44ch] text-[13px] leading-relaxed text-cream/70 min-[560px]:mt-3 min-[1040px]:mt-7">
-        A card they handed you is marked red
-        <Mail size={12} strokeWidth={2} aria-hidden className="mx-1 inline align-[-1px] text-red" />
-        and a card you found yourself is marked gold
-        <Building2
-          size={12}
-          strokeWidth={2}
-          aria-hidden
-          className="mx-1 inline align-[-1px] text-gold"
-        />
-        . Both can be pinned, but only gold earns the independence points.
-      </p>
+      <div className="mt-5 min-[560px]:mt-6">
+        <SourceLegend />
+      </div>
     </section>
   );
 }

@@ -77,8 +77,8 @@ Detailed scoring strategy: [JUDGING.md](JUDGING.md).
 3. **Investigate** — actions reveal artifacts with different channels and source roots.
 4. **Pin** — the player adds up to three artifacts to the Trust Chain.
 5. **Commit** — Scam, Legitimate, or Not enough evidence.
-6. **Receipt** — the game reveals source paths, pressure tactics, truth, score, and the
-   transferable action.
+6. **Receipt** — the game reveals source paths, pressure tactics, truth, score, a
+   documented national pattern from `sourceNote`, and the transferable action.
 7. **Replay** — a different truth state tests whether the player learned the mechanic.
 
 ### Why each choice matters
@@ -157,39 +157,50 @@ Caller boundaries:
 - If confronted with the authored directory contradiction, use the fixed crack line and
   end the call.
 
-### Case 02 — The Awkward Refund
+### Case 02 — A caller from your bank
+
+**Truth:** Scam
+**Catalog:** bank, rank J, about 3 minutes
+
+**Briefing:** A fraud alert claims a $2,400 Harborline transfer. Drew Kael wants the
+player to stay on the line. The hold page and the callback number are the same source.
+
+Independent evidence: Harborline's published member line says there is no hold and no
+outbound fraud call.
+
+Difficulty comes from conflicting claimant artifacts and fewer prompts, not from a
+shorter timer.
+
+### Case 03 — The desk shift follow-up
 
 **Truth:** Legitimate
+**Catalog:** jobs, rank 5, about 2 minutes
 
-**Purpose:** prove calibrated trust and replay value
+**Briefing:** Len Ortiz from Student Employment follows up about a Thursday Hale Hall
+desk shift. The caller is awkward and the email is late. An independently found campus
+listing confirms Len and the shift.
 
-**Briefing:** A fictional bursar email says a duplicate campus fee will be returned. The
-wording is awkward, but the message contains no payment link and asks the student to
-verify through the official portal.
+A player who presses Scam on every case loses here. Tolls, rentals, and investment
+appear on the catalog as a non-playable Next up row.
 
-Independent evidence:
+The catalog score, stored in `casey_progress_v1`, is separate and smaller:
 
-- the fictional campus portal shows the same credit;
-- the directory-listed bursar number confirms the reference number;
-- the caller refuses to collect bank details and directs the player back to the portal.
+| Result | Points |
+|---|---:|
+| Correct verdict | +100 |
+| At least one pinned independent (`out`) artifact | +50 |
+| Scam or legitimate, pinned only claimant (`in`) artifacts | -25 |
+| Wrong verdict | 0 |
 
-The case should contain superficial red flags but a clean independent chain. A player who
-learned “suspicious-looking means scam” should lose; a player who learned verification
-should win.
+Unresolvable cases score +100 for Not enough evidence and 0 otherwise. The in-band
+penalty never applies to a correct unresolvable call. A case score never goes below
+zero. Replaying can raise `bestScore` but never lower it. `/?demo=1` clears progress
+and opens Case 01.
 
-### Case 03 — The Sublet
-
-**Truth:** Not enough evidence
-
-**Priority:** P2
-
-**Purpose:** reward restraint
-
-**Briefing:** A plausible sublet offer has inconsistent details. The available evidence
-neither independently confirms ownership nor proves deception.
-
-No decisive artifact exists. The highest possible defensible outcome is Not enough
-evidence plus the debrief action: verify ownership and tour before sending money.
+`POST /api/board` accepts a nickname plus per-case verdicts and pinned artifact ids,
+then rescores with `scoreCatalogRound`. A client-sent total is ignored. If Tiger Data
+or Vercel KV is not configured, the board renders local rows and the line "Showing
+your local scores. The shared board is unavailable."
 
 ## 5. Scoring
 
@@ -367,11 +378,8 @@ Primary content:
 - Casey mark and “Take the call. Build the proof.”
 - One rule: **“Before your verdict, pin the evidence you trust. A new channel is not
   always a new source.”**
-- Required player-name field. Validate it, store it as versioned JSON in browser
-  `localStorage`, and use it only in local briefing, caption labels, and Receipt copy.
-- Primary button: **Deal the case**
-- **How to play** is always visible beside the nameplate: three dealt cards covering
-  investigate, pin, and call it, plus the red/gold source legend.
+- Catalog of three playable cases plus a Next up row
+- Stat strip of cases completed, best streak, and total score, zeros for a new player
 
 No statistics wall, signup, leaderboard, or microphone prompt on landing.
 
@@ -396,7 +404,7 @@ Desktop zones:
 │  Artifact hand             Live call / pressure pile          │
 │  [email] [web] [dir]       [caller state] [face-down cards]   │
 │                                                               │
-│  Trust Chain: [pin 1] → [pin 2] → [pin 3]                    │
+│  Pinned 0 of 3: [pin 1] → [pin 2] → [pin 3]                  │
 │  Actions: [supplied number] [find directory] [official call]  │
 │                                     [Choose verdict]          │
 └───────────────────────────────────────────────────────────────┘
@@ -608,13 +616,16 @@ Fallback is a supported mode, not a blank error state.
 
 - Use a reducer or small store with serializable events.
 - Do not make network calls inside the pure engine.
-- Store the required player name as validated, versioned JSON in browser `localStorage`.
-  Never add it to voice dynamic variables or a server request.
-- Persist current local progress only if it costs little.
-- Tiger Data activation is P2. Its prepared outcome row stores no nickname: only a
-  one-session UUID, case ID, mode, verdict/truth, deterministic score dimensions,
-  evidence counts, independent-route signals, pressure-card count, and bounded duration.
-- A remote leaderboard is separate P2 work and would require a reviewed nickname policy.
+- Persist local progress in `casey_progress_v1`. An optional board nickname is collected
+  after the first Receipt, never before play. Sanitize to `[A-Za-z0-9 _-]`, max 20.
+  Skip stays local and anonymous. Never add a nickname to voice dynamic variables.
+- `POST /api/board` rescores verdicts and pins with `scoreCatalogRound`. A client-sent
+  total is ignored. Tiger `board_entries` or Vercel KV is used when configured; otherwise
+  `/board` shows local rows and "Showing your local scores. The shared board is unavailable."
+- Tiger Data session-outcome telemetry remains separate from the board. Its prepared
+  outcome row stores no nickname: only a one-session UUID, case ID, mode, verdict/truth,
+  deterministic score dimensions, evidence counts, independent-route signals,
+  pressure-card count, and bounded duration.
 - Never store raw audio or full transcripts in the Casey datastore.
 
 ## 9. Privacy, safety, and fairness

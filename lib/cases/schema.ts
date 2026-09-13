@@ -10,6 +10,9 @@ export const PRESSURE_TACTICS = [
 export const EVIDENCE_WEIGHTS = [0, 25, 50, 75, 100] as const;
 export const RISK_COSTS = [0, 25, 50, 100] as const;
 export const ACTION_TYPES = ["open", "call", "lookup", "submit"] as const;
+export const CASE_CATEGORIES = ["jobs", "bank", "tolls", "rentals", "investment"] as const;
+export const CASE_RANKS = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"] as const;
+export const CASE_DIFFICULTIES = [1, 2, 3] as const;
 
 export type Verdict = (typeof VERDICTS)[number];
 export type Channel = (typeof CHANNELS)[number];
@@ -18,6 +21,16 @@ export type PressureTactic = (typeof PRESSURE_TACTICS)[number];
 export type EvidenceWeight = (typeof EVIDENCE_WEIGHTS)[number];
 export type RiskCost = (typeof RISK_COSTS)[number];
 export type ActionType = (typeof ACTION_TYPES)[number];
+export type CaseCategory = (typeof CASE_CATEGORIES)[number];
+export type CaseRank = (typeof CASE_RANKS)[number];
+export type CaseDifficulty = (typeof CASE_DIFFICULTIES)[number];
+
+export type SourceNote = {
+  pattern: string;
+  source: string;
+  year: number;
+  url: string;
+};
 
 export type EmailContent = {
   kind: "email";
@@ -122,6 +135,12 @@ export type CaseFile = {
   id: string;
   title: string;
   shortTitle: string;
+  category: CaseCategory;
+  difficulty: CaseDifficulty;
+  rank: CaseRank;
+  neutralTitle: string;
+  estimatedMinutes: number;
+  sourceNote: SourceNote;
   truth: Verdict;
   claimantSourceRoot: string;
   briefing: [string, string];
@@ -319,6 +338,20 @@ function action(value: unknown, index: number): Action {
   };
 }
 
+function sourceNote(value: unknown, path: string): SourceNote {
+  const candidate = record(value, path);
+  const year = candidate.year;
+  if (!Number.isInteger(year) || (year as number) < 2000) {
+    throw new CaseSchemaError(`${path}.year must be a four-digit year`);
+  }
+  return {
+    pattern: string(candidate.pattern, `${path}.pattern`),
+    source: string(candidate.source, `${path}.source`),
+    year: year as number,
+    url: string(candidate.url, `${path}.url`),
+  };
+}
+
 function caller(value: unknown): CallerConfig {
   const candidate = record(value, "case.caller");
   const maxCallSeconds = candidate.maxCallSeconds;
@@ -349,11 +382,21 @@ export function parseCaseFile(value: unknown): CaseFile {
     throw new CaseSchemaError("case.briefing must contain exactly two lines");
   }
   const debrief = record(candidate.debrief, "case.debrief");
+  const estimatedMinutes = candidate.estimatedMinutes;
+  if (!Number.isInteger(estimatedMinutes) || (estimatedMinutes as number) <= 0) {
+    throw new CaseSchemaError("case.estimatedMinutes must be a positive integer");
+  }
 
   return {
     id: string(candidate.id, "case.id"),
     title: string(candidate.title, "case.title"),
     shortTitle: string(candidate.shortTitle, "case.shortTitle"),
+    category: enumValue(candidate.category, CASE_CATEGORIES, "case.category"),
+    difficulty: enumValue(candidate.difficulty, CASE_DIFFICULTIES, "case.difficulty"),
+    rank: enumValue(candidate.rank, CASE_RANKS, "case.rank"),
+    neutralTitle: string(candidate.neutralTitle, "case.neutralTitle"),
+    estimatedMinutes: estimatedMinutes as number,
+    sourceNote: sourceNote(candidate.sourceNote, "case.sourceNote"),
     truth: enumValue(candidate.truth, VERDICTS, "case.truth"),
     claimantSourceRoot: string(candidate.claimantSourceRoot, "case.claimantSourceRoot"),
     briefing: [briefing[0], briefing[1]],

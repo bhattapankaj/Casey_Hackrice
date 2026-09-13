@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Info, MessageSquareText, Phone, type LucideIcon } from "lucide-react";
+import { MirroredCorner } from "@/components/ArtifactCard";
 import type { useCaseyVoice } from "@/hooks/useCaseyVoice";
 
 type VoiceController = ReturnType<typeof useCaseyVoice>;
@@ -71,9 +72,9 @@ function PlayCard({
         <div className="absolute top-0 left-0">
           <CourtIndex letter={index} icon={icon} iconClass={iconClass} />
         </div>
-        <div className="absolute right-0 bottom-0" style={{ transform: "rotate(180deg)" }}>
+        <MirroredCorner>
           <CourtIndex letter={index} icon={icon} iconClass={iconClass} />
-        </div>
+        </MirroredCorner>
       </div>
       {children}
     </article>
@@ -271,14 +272,14 @@ export function CallPanel({
 
         <div className="flex w-full max-w-[320px] flex-col">
           <PlayCard
-            label="Live transcript"
+            label={voice.phase === "ended" ? "Call transcript" : "Live transcript"}
             index="T"
             icon={MessageSquareText}
             iconClass="text-ink"
           >
             <div className="absolute inset-[22px] flex flex-col pt-6">
               <h2 className="shrink-0 text-center font-label text-[11px] font-medium tracking-[0.08em] text-ink/70 uppercase">
-                Live transcript
+                {voice.phase === "ended" ? "Call transcript" : "Live transcript"}
               </h2>
               <ol
                 className="transcript-page mt-2 min-h-0 flex-1 overflow-y-auto"

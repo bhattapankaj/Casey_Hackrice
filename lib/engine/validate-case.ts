@@ -45,6 +45,27 @@ function validateDebriefUrl(sourceUrl: string) {
   }
 }
 
+function sentenceCount(text: string): number {
+  return text
+    .trim()
+    .split(/(?<=[.!?])\s+/)
+    .map((part) => part.trim())
+    .filter(Boolean).length;
+}
+
+function validateSourceNote(caseFile: CaseFile) {
+  validateDebriefUrl(caseFile.sourceNote.url);
+  if (!Number.isInteger(caseFile.sourceNote.year) || caseFile.sourceNote.year < 2000) {
+    throw new CaseValidationError("sourceNote.year must be a four-digit year");
+  }
+  if (sentenceCount(caseFile.sourceNote.pattern) !== 2) {
+    throw new CaseValidationError("sourceNote.pattern must be exactly two sentences");
+  }
+  if (/\bprevented\b|\bsaved\b/i.test(caseFile.sourceNote.pattern)) {
+    throw new CaseValidationError("sourceNote must not claim Casey prevented losses");
+  }
+}
+
 function validateVoiceConfig(caseFile: CaseFile) {
   if (!caseFile.caller) {
     return;
@@ -194,7 +215,13 @@ export function validateCase(input: unknown): CaseFile {
 
   validateVoiceConfig(caseFile);
   validateDebriefUrl(caseFile.debrief.sourceUrl);
+  validateSourceNote(caseFile);
   validateSourceRoots(caseFile);
+
+  const forbiddenTitle = /\b(scam|legitimate|fraud|fake)\b/i;
+  if (forbiddenTitle.test(caseFile.neutralTitle) || forbiddenTitle.test(caseFile.title)) {
+    throw new CaseValidationError("Catalog titles must not reveal the verdict");
+  }
 
   const reachable = reachableActionIds(caseFile);
   const reachableArtifacts = new Set(caseFile.startingArtifactIds);
@@ -250,5 +277,8 @@ export function validateCase(input: unknown): CaseFile {
 export function validateCaseRegistry(inputs: readonly unknown[]): CaseFile[] {
   const cases = inputs.map(validateCase);
   assertUnique(cases.map((caseFile) => caseFile.id), "case");
+  if (!cases.some((caseFile) => caseFile.truth === "legit")) {
+    throw new CaseValidationError("The registry must include at least one legitimate case");
+  }
   return cases;
 }

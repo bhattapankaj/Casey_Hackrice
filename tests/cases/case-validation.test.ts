@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CASE_01 } from "@/lib/cases/case-01";
+import { CASE_02 } from "@/lib/cases/case-02";
+import { CASE_03 } from "@/lib/cases/case-03";
 import { getEnabledCases } from "@/lib/cases/registry";
 import { CaseSchemaError } from "@/lib/cases/schema";
 import {
@@ -36,7 +38,18 @@ function copyCase(): MutableCaseFixture {
 describe("Case 01 validation", () => {
   it("registers only the complete Meridian Offer fixture", () => {
     expect(validateCase(CASE_01)).toEqual(CASE_01);
-    expect(getEnabledCases().map((caseFile) => caseFile.id)).toEqual(["case-01"]);
+    expect(getEnabledCases().map((caseFile) => caseFile.id)).toEqual([
+      "case-01",
+      "case-02",
+      "case-03",
+    ]);
+    expect(getEnabledCases().some((caseFile) => caseFile.truth === "legit")).toBe(true);
+  });
+
+  it("accepts the three shipped cases and rejects a scam-only registry", () => {
+    expect(validateCase(CASE_02).truth).toBe("scam");
+    expect(validateCase(CASE_03).truth).toBe("legit");
+    expect(() => validateCaseRegistry([CASE_01, CASE_02])).toThrow(/legitimate case/);
   });
 
   it("rejects duplicate case, artifact, and action IDs", () => {

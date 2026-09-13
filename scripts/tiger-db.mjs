@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import pg from "pg";
 
@@ -37,12 +37,14 @@ try {
   await client.connect();
 
   if (command === "migrate") {
-    const migrationUrl = new URL(
-      "../db/migrations/001_session_outcomes.sql",
-      import.meta.url,
-    );
-    const migration = await readFile(fileURLToPath(migrationUrl), "utf8");
-    await client.query(migration);
+    const migrationsDir = new URL("../db/migrations/", import.meta.url);
+    const files = (await readdir(fileURLToPath(migrationsDir)))
+      .filter((name) => name.endsWith(".sql"))
+      .sort();
+    for (const name of files) {
+      const migration = await readFile(new URL(name, migrationsDir), "utf8");
+      await client.query(migration);
+    }
   }
 
   const result = await client.query(`

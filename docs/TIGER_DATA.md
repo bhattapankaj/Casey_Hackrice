@@ -11,6 +11,8 @@ without a database.
   builder, and a parameterized insert adapter.
 - `db/migrations/001_session_outcomes.sql` creates an idempotency table, a TimescaleDB
   hypertable, and an hourly continuous aggregate.
+- `db/migrations/002_board_entries.sql` creates the optional scored-board table. That
+  table is not analytics telemetry.
 - `db/queries/demo-dashboard.sql` contains judge-safe queries that keep the sample size
   beside every rate.
 - Nothing imports the insert adapter from the frontend or an API route yet, so local
@@ -21,7 +23,7 @@ without a database.
 Tiger Data may receive only a completed, anonymous outcome produced from canonical Casey
 state. It must never receive:
 
-- the player name or leaderboard nickname;
+- the player name or leaderboard nickname in `session_outcomes`;
 - audio, captions, or a transcript;
 - IP address, user agent, or a persistent device identifier;
 - artifact text, caller/model text, or arbitrary client metadata.
