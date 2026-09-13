@@ -367,7 +367,8 @@ Primary content:
 - Required player-name field. Validate it, store it as versioned JSON in browser
   `localStorage`, and use it only in local briefing, caption labels, and Receipt copy.
 - Primary button: **Deal the case**
-- Secondary: **How to play** opens a three-card, dismissible explanation.
+- **How to play** is always visible beside the nameplate: three dealt cards covering
+  investigate, pin, and call it, plus the red/gold source legend.
 
 No statistics wall, signup, leaderboard, or microphone prompt on landing.
 

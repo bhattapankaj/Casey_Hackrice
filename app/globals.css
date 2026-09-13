@@ -73,7 +73,7 @@ body {
 }
 
 .call-pulse {
-  animation: call-pulse 1.2s ease-in-out infinite;
+  animation: call-pulse 1.4s ease-in-out infinite;
 }
 
 @keyframes call-pulse {
@@ -86,30 +86,37 @@ body {
   }
 }
 
-.voice-bar {
-  opacity: 0.38;
-  transform: scaleY(0.45);
-  transition: opacity 180ms ease;
+.court-bar {
+  height: 10px;
   transform-origin: center;
+  transform: scaleY(0.45);
 }
 
-.voice-bars-active .voice-bar {
-  animation: voice-bar 860ms ease-in-out infinite alternate;
-  opacity: 0.9;
+.court-bars .court-bar {
+  animation: court-bar 860ms ease-in-out infinite alternate;
 }
 
-@keyframes voice-bar {
+@keyframes court-bar {
   from {
-    transform: scaleY(0.35);
+    transform: scaleY(0.4);
   }
   to {
-    transform: scaleY(1);
+    transform: scaleY(1.15);
   }
+}
+
+.transcript-page {
+  background-image: repeating-linear-gradient(
+    transparent 0,
+    transparent 23px,
+    #e8e0ce 23px,
+    #e8e0ce 24px
+  );
 }
 
 @media (prefers-reduced-motion: reduce) {
   .call-pulse,
-  .voice-bars-active .voice-bar {
+  .court-bars .court-bar {
     animation: none;
   }
 }

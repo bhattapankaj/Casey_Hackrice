@@ -27,6 +27,7 @@ import {
   HOVER_DURATION,
 } from "@/lib/motion";
 import { seededRotation } from "@/lib/seededRotation";
+import { sourceClassToBand } from "@/lib/cases/public-case";
 import { play } from "@/lib/sound";
 
 type CardTableProps = {
@@ -59,9 +60,9 @@ export function CardTable({ gameCase }: CardTableProps) {
         <SiteNav />
         <main className="mx-auto min-h-screen w-full max-w-[680px] px-4 py-16 text-cream sm:px-5">
           <p className="font-label text-[12px] tracking-[0.08em] text-cream/70">CASE INTAKE</p>
-          <h1 className="mt-2 font-serif text-[34px] font-semibold">Who received this call?</h1>
+          <h1 className="mt-2 font-serif text-[34px] font-semibold">Sign the table before the deal</h1>
           <p className="mt-3 max-w-[48ch] text-[16px] leading-relaxed text-cream/85">
-            Enter your name before the case begins.
+            The caller never sees this. It only labels your captions and receipt.
           </p>
           <PlayerNameForm buttonLabel="Enter the case" onSave={player.saveName} />
         </main>
@@ -145,7 +146,7 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
     game.commitVerdict(choice);
     setWarning(false);
     setActiveId(null);
-    play("pot");
+    play("submit");
     setAnnounce(`Verdict submitted: ${CHIP_COPY[choice].label}.`);
     window.setTimeout(() => setShowReceipt(true), reduce ? 120 : 420);
   }, [choice, committed, game, reduce, voice]);
@@ -222,7 +223,6 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
           organizationName={gameCase.caller?.organizationName ?? "Unknown caller"}
           playerName={playerName}
           voice={voice}
-          pressureTactics={game.session.pressureTactics}
         />
 
         <section className="mt-8" aria-labelledby="investigate-heading">
@@ -278,7 +278,7 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
                   <ArtifactCard
                     id={`card-${artifact.id}`}
                     channel={artifact.channel}
-                    band="unknown"
+                    band={sourceClassToBand(artifact.sourceClass)}
                     label={artifact.title}
                     state={viewed ? "viewed" : "unopened"}
                     width={CARD_WIDTH}
@@ -380,6 +380,7 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
             <button
               type="button"
               onClick={() => {
+                play("investigate");
                 setChoice(null);
                 setWarning(false);
               }}
@@ -417,7 +418,10 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setWarning(false)}
+                  onClick={() => {
+                    play("investigate");
+                    setWarning(false);
+                  }}
                   className="min-h-[44px] font-sans text-[16px] font-semibold text-ink underline decoration-ink/40 underline-offset-4"
                 >
                   Keep investigating

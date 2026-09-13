@@ -4,9 +4,12 @@ Source of truth is images/casey-card.png, which is never modified. The artwork i
 tilted ~9.8 degrees and carries a soft drop shadow, so it is levelled and the
 shadow is removed before any icon is cut.
 
-At 16px the two mirrored handsets and the corner indices collapse into noise, so
-that one size gets a simplified variant: the same cream card and gold rule with a
-single handset lifted from the artwork.
+At 16 and 32px the two mirrored handsets and the corner indices collapse into
+noise, so those sizes get a simplified variant: the same cream card and gold rule
+with a single handset lifted from the artwork.
+
+Every favicon size sits on a rounded felt plate. A cream card on transparency
+vanishes against a light tab strip, which is the whole job of a favicon.
 """
 
 import struct
@@ -79,22 +82,40 @@ def largest_handset(card: Image.Image) -> Image.Image:
     return glyph
 
 
-def full_icon(card: Image.Image, px: int, plate=None) -> Image.Image:
-    canvas = Image.new("RGBA", (px, px), plate or (0, 0, 0, 0))
-    h = round(px * CARD_FRACTION)
+def felt_tile(px: int) -> Image.Image:
+    """Rounded felt plate. A bare cream card disappears on a light tab strip."""
+    scale = 8
+    big = px * scale
+    tile = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+    ImageDraw.Draw(tile).rounded_rectangle(
+        [0, 0, big - 1, big - 1], radius=round(big * 0.22), fill=FELT
+    )
+    return tile.resize((px, px), Image.LANCZOS)
+
+
+def full_icon(card: Image.Image, px: int, plate=None, fraction: float = CARD_FRACTION) -> Image.Image:
+    if plate is None:
+        canvas = Image.new("RGBA", (px, px), (0, 0, 0, 0))
+    elif isinstance(plate, Image.Image):
+        canvas = plate.copy()
+    else:
+        canvas = Image.new("RGBA", (px, px), plate)
+    h = round(px * fraction)
     w = round(card.width / card.height * h)
     canvas.alpha_composite(card.resize((w, h), Image.LANCZOS), ((px - w) // 2, (px - h) // 2))
     return canvas
 
 
-def simple_icon(handset: Image.Image, px: int, plate=None) -> Image.Image:
+def simple_icon(
+    handset: Image.Image, px: int, plate=None, fraction: float = CARD_FRACTION
+) -> Image.Image:
     """Simplified small variant, drawn at 8x then downsampled for clean edges."""
     scale = 8
     big = px * scale
     canvas = Image.new("RGBA", (big, big), (0, 0, 0, 0))
     draw = ImageDraw.Draw(canvas)
 
-    ch = round(big * CARD_FRACTION)
+    ch = round(big * fraction)
     cw = round(ch * 0.70)
     x0 = (big - cw) // 2
     y0 = (big - ch) // 2
@@ -120,11 +141,11 @@ def simple_icon(handset: Image.Image, px: int, plate=None) -> Image.Image:
     )
 
     out = canvas.resize((px, px), Image.LANCZOS)
-    if plate:
-        base = Image.new("RGBA", (px, px), plate)
-        base.alpha_composite(out)
-        return base
-    return out
+    if plate is None:
+        return out
+    base = plate.copy() if isinstance(plate, Image.Image) else Image.new("RGBA", (px, px), plate)
+    base.alpha_composite(out)
+    return base
 
 
 def write_ico(path: Path, images: list[Image.Image]) -> None:
@@ -156,9 +177,9 @@ def main() -> None:
     handset = largest_handset(card)
     print(f"upright card {card.size}  handset {handset.size}")
 
-    ico16 = simple_icon(handset, 16)
-    ico32 = full_icon(card, 32)
-    ico48 = full_icon(card, 48)
+    ico16 = simple_icon(handset, 16, plate=felt_tile(16), fraction=0.84)
+    ico32 = simple_icon(handset, 32, plate=felt_tile(32), fraction=0.82)
+    ico48 = full_icon(card, 48, plate=felt_tile(48), fraction=0.80)
 
     ico16.save(PUBLIC / "favicon-16x16.png")
     ico32.save(PUBLIC / "favicon-32x32.png")

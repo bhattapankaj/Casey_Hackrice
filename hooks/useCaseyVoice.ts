@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useConversation } from "@elevenlabs/react";
 import type { PressureTactic } from "@/lib/cases/schema";
 import type { GameMode } from "@/lib/engine/types";
+import { play } from "@/lib/sound";
 import { getFallbackBeats } from "@/lib/voice/fallback";
 import { parsePressureToolPayload } from "@/lib/voice/pressure-tactics";
 import type { VoiceSessionSuccess } from "@/lib/voice/types";
@@ -55,18 +56,60 @@ export function useCaseyVoice({
   const [captions, setCaptions] = useState<Caption[]>([]);
   const [fallbackIndex, setFallbackIndex] = useState(-1);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [endedByTimer, setEndedByTimer] = useState(false);
   const endedIntentionally = useRef(false);
-  const connectedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const limitStarted = useRef(false);
+  const connectedTimer = useRef<number | null>(null);
+  const tickTimer = useRef<number | null>(null);
   const requestController = useRef<AbortController | null>(null);
   const startAttempt = useRef(0);
   const endSessionRef = useRef<() => void>(() => undefined);
   const fallbackBeats = getFallbackBeats(caseId);
+
+  const clearTimers = useCallback(() => {
+    if (connectedTimer.current) {
+      clearTimeout(connectedTimer.current);
+      connectedTimer.current = null;
+    }
+    if (tickTimer.current) {
+      clearInterval(tickTimer.current);
+      tickTimer.current = null;
+    }
+  }, []);
+
+  const startHardLimit = useCallback(() => {
+    if (limitStarted.current) {
+      return;
+    }
+    limitStarted.current = true;
+    setElapsedSeconds(0);
+    setEndedByTimer(false);
+    const startedAt = Date.now();
+    tickTimer.current = window.setInterval(() => {
+      setElapsedSeconds(Math.min(maxCallSeconds, Math.floor((Date.now() - startedAt) / 1000)));
+    }, 250);
+    connectedTimer.current = window.setTimeout(() => {
+      endedIntentionally.current = true;
+      setEndedByTimer(true);
+      setElapsedSeconds(maxCallSeconds);
+      if (tickTimer.current) {
+        clearInterval(tickTimer.current);
+        tickTimer.current = null;
+      }
+      connectedTimer.current = null;
+      endSessionRef.current();
+      setPhase("ended");
+      play("hangup");
+    }, maxCallSeconds * 1000);
+  }, [maxCallSeconds]);
 
   const enterFallback = useCallback(
     (message?: string) => {
       setErrorMessage(message ?? null);
       setPhase("text_fallback");
       selectMode("text_fallback");
+      startHardLimit();
       setFallbackIndex((current) => {
         if (current >= 0 || fallbackBeats.length === 0) {
           return current;
@@ -79,24 +122,17 @@ export function useCaseyVoice({
         return 0;
       });
     },
-    [dealPressureCard, fallbackBeats, selectMode],
+    [dealPressureCard, fallbackBeats, selectMode, startHardLimit],
   );
 
   const conversation = useConversation({
     onConnect: () => {
       setPhase("listening");
-      connectedTimer.current = setTimeout(() => {
-        endedIntentionally.current = true;
-        endSessionRef.current();
-        setPhase("ended");
-      }, maxCallSeconds * 1000);
+      startHardLimit();
     },
     onDisconnect: (details) => {
-      if (connectedTimer.current) {
-        clearTimeout(connectedTimer.current);
-        connectedTimer.current = null;
-      }
       if (endedIntentionally.current || details.reason === "user" || details.reason === "agent") {
+        clearTimers();
         setPhase("ended");
       } else {
         enterFallback("The live call disconnected. Your investigation was preserved.");
@@ -114,7 +150,7 @@ export function useCaseyVoice({
       if (typeof message !== "string" || (role !== "user" && role !== "agent")) {
         return;
       }
-      setCaptions((current) => [...current.slice(-7), { role, text: message }]);
+      setCaptions((current) => [...current.slice(-19), { role, text: message }]);
     },
     clientTools: {
       dealPressureCard: (payload: unknown) => {
@@ -138,13 +174,10 @@ export function useCaseyVoice({
     requestController.current?.abort();
     requestController.current = null;
     endedIntentionally.current = true;
-    if (connectedTimer.current) {
-      clearTimeout(connectedTimer.current);
-      connectedTimer.current = null;
-    }
+    clearTimers();
     void endSession();
     setPhase("ended");
-  }, [endSession]);
+  }, [clearTimers, endSession]);
 
   const startLive = useCallback(async () => {
     if (phase !== "consent") {
@@ -243,16 +276,16 @@ export function useCaseyVoice({
     requestController.current?.abort();
     requestController.current = null;
     endedIntentionally.current = true;
+    limitStarted.current = false;
     void endSession();
-    if (connectedTimer.current) {
-      clearTimeout(connectedTimer.current);
-      connectedTimer.current = null;
-    }
+    clearTimers();
     setPhase("consent");
     setCaptions([]);
     setFallbackIndex(-1);
     setErrorMessage(null);
-  }, [endSession]);
+    setElapsedSeconds(0);
+    setEndedByTimer(false);
+  }, [clearTimers, endSession]);
 
   useEffect(
     () => () => {
@@ -260,18 +293,20 @@ export function useCaseyVoice({
       requestController.current?.abort();
       requestController.current = null;
       endedIntentionally.current = true;
-      if (connectedTimer.current) {
-        clearTimeout(connectedTimer.current);
-      }
+      clearTimers();
       void endSession();
     },
-    [caseId, endSession],
+    [caseId, clearTimers, endSession],
   );
 
   return {
     phase,
     captions,
     errorMessage,
+    elapsedSeconds,
+    remainingSeconds: Math.max(0, maxCallSeconds - elapsedSeconds),
+    maxCallSeconds,
+    endedByTimer,
     isMuted,
     setMuted,
     startLive,

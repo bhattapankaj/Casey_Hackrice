@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { motion } from "framer-motion";
 import { Pip } from "@/components/Pip";
 import {
@@ -26,6 +27,36 @@ export type ArtifactCardProps = {
   width?: string;
   className?: string;
 };
+
+/** Shared cream court-card chrome. How-to cards and evidence cards use this. */
+export function PlayingCardShell({
+  width = "w-[190px]",
+  className,
+  children,
+}: {
+  width?: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className={[
+        "surface-cream relative aspect-[3/4] overflow-hidden rounded-[12px] bg-cream",
+        width,
+        "shadow-[0_2px_8px_rgba(37,33,33,0.22)]",
+        className ?? "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-[6px] rounded-[6px] border-[1.5px] border-gold"
+      />
+      {children}
+    </div>
+  );
+}
 
 function CornerIndex({ channel, band }: { channel: Channel; band: Band }) {
   return (
@@ -57,10 +88,7 @@ export function ArtifactCard({
   const action = CHANNEL_OPEN_LABEL[channel];
   const phrase = BAND_PHRASE[band];
   const tone = band === "in" ? "text-red" : band === "out" ? "text-gold" : "text-ink/60";
-  const classes = [
-    "surface-cream relative aspect-[3/4] overflow-hidden rounded-[12px] bg-cream",
-    width,
-    "shadow-[0_2px_8px_rgba(37,33,33,0.22)]",
+  const shellClass = [
     "transition-shadow duration-150 ease-in-out",
     className ?? "",
   ]
@@ -69,11 +97,6 @@ export function ArtifactCard({
 
   const face = (
     <>
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-[6px] rounded-[6px] border-[1.5px] border-gold"
-      />
-
       {facedown ? (
         <div
           aria-hidden
@@ -117,10 +140,11 @@ export function ArtifactCard({
     return (
       <motion.div
         layoutId={layoutId}
-        className={classes}
         aria-label={facedown ? "Facedown evidence card" : `${label}, ${phrase}.`}
       >
-        {face}
+        <PlayingCardShell width={width} className={shellClass}>
+          {face}
+        </PlayingCardShell>
       </motion.div>
     );
   }
@@ -133,9 +157,14 @@ export function ArtifactCard({
       layoutId={layoutId}
       onClick={onOpen}
       aria-label={`${action}. ${phrase}. ${viewed ? "Already viewed." : "Not yet opened."}`}
-      className={`${classes} cursor-pointer text-center hover:shadow-[0_6px_14px_rgba(37,33,33,0.28)]`}
+      className="cursor-pointer text-center"
     >
-      {face}
+      <PlayingCardShell
+        width={width}
+        className={`${shellClass} hover:shadow-[0_6px_14px_rgba(37,33,33,0.28)]`}
+      >
+        {face}
+      </PlayingCardShell>
     </motion.button>
   );
 }

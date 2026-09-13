@@ -3,7 +3,16 @@
  * Every cue is a short filtered noise burst shaped like a real card or clay chip.
  */
 
-export type Cue = "deal" | "open" | "close" | "chip" | "pot" | "reveal";
+export type Cue =
+  | "deal"
+  | "open"
+  | "close"
+  | "chip"
+  | "pot"
+  | "reveal"
+  | "submit"
+  | "investigate"
+  | "hangup";
 
 const STORAGE_KEY = "casey-sound";
 
@@ -128,6 +137,44 @@ function burst(ctx: AudioContext, options: BurstOptions) {
   source.stop(options.at + options.duration + 0.02);
 }
 
+type ToneOptions = {
+  at: number;
+  duration: number;
+  frequency: number;
+  gain: number;
+  type?: OscillatorType;
+  sweepTo?: number;
+};
+
+function tone(ctx: AudioContext, options: ToneOptions) {
+  if (!master) {
+    return;
+  }
+
+  const oscillator = ctx.createOscillator();
+  oscillator.type = options.type ?? "sine";
+  oscillator.frequency.setValueAtTime(options.frequency, options.at);
+  if (options.sweepTo) {
+    oscillator.frequency.exponentialRampToValueAtTime(
+      options.sweepTo,
+      options.at + options.duration,
+    );
+  }
+
+  const envelope = ctx.createGain();
+  envelope.gain.setValueAtTime(0.0001, options.at);
+  envelope.gain.exponentialRampToValueAtTime(options.gain, options.at + 0.018);
+  envelope.gain.exponentialRampToValueAtTime(
+    0.0001,
+    options.at + options.duration,
+  );
+
+  oscillator.connect(envelope);
+  envelope.connect(master);
+  oscillator.start(options.at);
+  oscillator.stop(options.at + options.duration + 0.02);
+}
+
 export function play(cue: Cue) {
   load();
   if (!enabled) {
@@ -213,6 +260,86 @@ export function play(cue: Cue) {
     // One card turning over in the showdown.
     case "reveal":
       burst(ctx, { at: now, duration: 0.045, frequency: 3200, q: 2, gain: 0.32 });
+      break;
+
+    // A short original reveal sting. Not a licensed game sample.
+    case "submit":
+      tone(ctx, {
+        at: now,
+        duration: 0.22,
+        frequency: 62,
+        type: "sine",
+        gain: 0.42,
+      });
+      tone(ctx, {
+        at: now + 0.04,
+        duration: 0.48,
+        frequency: 196,
+        sweepTo: 523,
+        type: "triangle",
+        gain: 0.2,
+      });
+      burst(ctx, {
+        at: now + 0.08,
+        duration: 0.16,
+        frequency: 1400,
+        sweepTo: 420,
+        q: 1.4,
+        gain: 0.28,
+      });
+      tone(ctx, {
+        at: now + 0.38,
+        duration: 0.28,
+        frequency: 311,
+        sweepTo: 196,
+        type: "sine",
+        gain: 0.22,
+      });
+      break;
+
+    // Soft two-note pass. The chip goes back. The case stays open.
+    case "investigate":
+      tone(ctx, {
+        at: now,
+        duration: 0.12,
+        frequency: 392,
+        type: "triangle",
+        gain: 0.18,
+      });
+      tone(ctx, {
+        at: now + 0.11,
+        duration: 0.16,
+        frequency: 311,
+        type: "triangle",
+        gain: 0.16,
+      });
+      burst(ctx, {
+        at: now + 0.04,
+        duration: 0.05,
+        frequency: 2100,
+        q: 4.2,
+        gain: 0.22,
+      });
+      break;
+
+    // The line dropping. Used when the 75-second limit ends the call.
+    case "hangup":
+      burst(ctx, {
+        at: now,
+        duration: 0.07,
+        frequency: 1800,
+        sweepTo: 500,
+        q: 1.2,
+        gain: 0.28,
+      });
+      tone(ctx, {
+        at: now + 0.03,
+        duration: 0.2,
+        frequency: 440,
+        sweepTo: 140,
+        type: "sine",
+        gain: 0.2,
+      });
       break;
   }
 }
