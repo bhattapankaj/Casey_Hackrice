@@ -8,7 +8,11 @@ const SUBMISSION_ID = "01994677-4a80-7a55-8dc2-0242ac120002";
 
 describe("Tiger leaderboard store", () => {
   it("upserts one row per browser submission identity", async () => {
-    const query = vi.fn(async (_sql: string, _values?: unknown[]) => ({ rows: [] }));
+    const query = vi.fn(async (sql: string, values?: unknown[]) => {
+      void sql;
+      void values;
+      return { rows: [] };
+    });
     const store = createTigerBoardStore({ query });
 
     await store.write({

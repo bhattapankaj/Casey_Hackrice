@@ -2,6 +2,14 @@ import { readdir, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import pg from "pg";
 
+if (!process.env.TIGER_DATABASE_URL) {
+  try {
+    process.loadEnvFile(".env.local");
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+  }
+}
+
 const { Client } = pg;
 const command = process.argv[2] ?? "verify";
 const connectionString = process.env.TIGER_DATABASE_URL?.trim();

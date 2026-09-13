@@ -6,7 +6,10 @@ test("Case 01 fallback path reaches the deterministic Receipt", async ({ page })
   await page.getByLabel("Your name").fill("Jordan");
   await page.getByRole("button", { name: "Deal me in" }).click();
   await expect(page).toHaveURL(/\/table$/);
-  await page.getByRole("link", { name: /The Meridian Offer/ }).click();
+  const meridian = page.getByRole("link", { name: /The Meridian Offer/ });
+  await expect(meridian).toHaveAttribute("href", "/play/case-01");
+  await meridian.focus();
+  await meridian.press("Enter");
   await expect(page).toHaveURL(/\/play\/case-01$/);
   expect(
     await page.evaluate((key) => window.localStorage.getItem(key), PLAYER_PROFILE_STORAGE_KEY),
@@ -16,16 +19,17 @@ test("Case 01 fallback path reaches the deterministic Receipt", async ({ page })
 
   await expect(page.getByRole("heading", { name: /The Meridian Offer/ })).toBeVisible();
   await expect(page.getByText("Jordan, you received a research assistant offer this morning.")).toBeVisible();
-  await expect(page.getByText("INCOMING CALL", { exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Answer with microphone" })).toBeVisible();
+  await expect(page.getByText("Incoming", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Answer", exact: true })).toBeVisible();
+  await expect(page.getByText("Answering uses your microphone. Nothing is recorded.")).toBeVisible();
+  await page.getByRole("button", { name: "Show microphone details" }).click();
   await expect(page.getByText(/microphone audio to ElevenLabs/)).toBeVisible();
   await expect(page.getByText("Claimant route", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Independent route", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Meridian claimant", { exact: true })).toHaveCount(0);
 
-  await page.getByRole("button", { name: "Use text instead" }).click();
-  await expect(page.getByRole("status")).toContainText("Text call active");
-  await expect(page.getByLabel("1 pressure cards dealt")).toBeVisible();
+  await page.getByRole("button", { name: "Decline", exact: true }).click();
+  await expect(page.getByLabel("Call transcript")).toContainText("Morgan Vale");
 
   await page.locator("#card-offer-email").click();
   await expect(page.getByRole("dialog").getByText("In call with Morgan Vale")).toBeVisible();

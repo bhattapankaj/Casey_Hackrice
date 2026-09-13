@@ -49,5 +49,5 @@ test("board stays playable when the shared store is down", async ({ page, reques
   ).toBeVisible();
   await expect(page.getByRole("cell", { name: /Jordan/ })).toBeVisible();
   await expect(page.getByText(/@Jordan-[A-F0-9]{6}/).first()).toBeVisible();
-  await expect(page.getByText("You")).toBeVisible();
+  await expect(page.getByText("You", { exact: true })).toBeVisible();
 });

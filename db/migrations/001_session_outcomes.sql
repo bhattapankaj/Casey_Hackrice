@@ -67,7 +67,9 @@ COMMENT ON TABLE casey.session_outcomes IS
   'Privacy-minimized Casey outcomes: no names, audio, transcripts, IPs, or evidence content.';
 COMMENT ON TABLE casey.outcome_submissions IS
   'Server-generated one-session UUIDs used only to reject duplicate outcome writes.';
-COMMENT ON MATERIALIZED VIEW casey.outcomes_hourly IS
+-- TimescaleDB exposes the continuous aggregate's user-facing relation as a view even
+-- though it is created with CREATE MATERIALIZED VIEW syntax.
+COMMENT ON VIEW casey.outcomes_hourly IS
   'Hourly anonymous learning and reliability signals for the Casey demo.';
 
 COMMIT;
