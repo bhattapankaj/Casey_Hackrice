@@ -6,6 +6,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Check, ExternalLink, Link2, X } from "lucide-react";
 import { ArtifactCard } from "@/components/ArtifactCard";
 import { NicknamePrompt } from "@/components/NicknamePrompt";
+import { ShareResult } from "@/components/ShareResult";
 import { ChipFace } from "@/components/VerdictChip";
 import { SiteNav } from "@/components/SiteNav";
 import { sourceClassToBand } from "@/lib/cases/public-case";
@@ -344,6 +345,7 @@ export function Receipt({ receipt, playerName, tableScore, onReplay }: ReceiptPr
           >
             Open the board
           </Link>
+          <ShareResult receipt={receipt} />
         </div>
       </main>
     </>

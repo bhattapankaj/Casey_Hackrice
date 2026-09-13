@@ -79,6 +79,8 @@ Detailed scoring strategy: [JUDGING.md](JUDGING.md).
 5. **Commit** — Scam, Legitimate, or Not enough evidence.
 6. **Receipt** — the game reveals source paths, pressure tactics, truth, score, a
    documented national pattern from `sourceNote`, and the transferable action.
+   Copy result puts three plain lines on the clipboard: case, verdict plus whether
+   the chain was independent, and the case URL.
 7. **Replay** — a different truth state tests whether the player learned the mechanic.
 
 ### Why each choice matters
