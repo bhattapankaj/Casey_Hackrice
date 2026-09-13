@@ -18,6 +18,14 @@ export type ScoredSubmission = {
 };
 
 const NICKNAME_MAX = 20;
+const SUBMISSION_ID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
+
+export function parseSubmissionId(value: unknown): string | null {
+  return typeof value === "string" && SUBMISSION_ID_PATTERN.test(value)
+    ? value.toLowerCase()
+    : null;
+}
 
 export function sanitizeNickname(value: unknown): string | null {
   if (typeof value !== "string") {
@@ -47,9 +55,18 @@ export function parseCaseResults(value: unknown): Record<string, CaseResultPaylo
     if (!isVerdict(record.verdict) || !Array.isArray(record.pinnedArtifactIds)) {
       return null;
     }
-    const pinnedArtifactIds = record.pinnedArtifactIds.filter(
-      (id): id is string => typeof id === "string" && id.length > 0,
-    );
+    if (
+      record.pinnedArtifactIds.length > 3 ||
+      record.pinnedArtifactIds.some(
+        (id) => typeof id !== "string" || id.length === 0 || id.length > 80,
+      )
+    ) {
+      return null;
+    }
+    const pinnedArtifactIds = record.pinnedArtifactIds as string[];
+    if (new Set(pinnedArtifactIds).size !== pinnedArtifactIds.length) {
+      return null;
+    }
     results[caseId] = { verdict: record.verdict, pinnedArtifactIds };
   }
   return results;

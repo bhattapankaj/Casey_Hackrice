@@ -1,4 +1,5 @@
-import type { ScoreReceipt, Verdict } from "@/lib/engine/types";
+import type { Verdict } from "@/lib/cases/schema";
+import type { ScoreReceipt } from "@/lib/engine/types";
 
 const VERDICT_LABELS: Record<Verdict, string> = {
   scam: "Scam",

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title desc">
+  <title id="title">Casey Master of Deduction badge</title>
+  <desc id="desc">A circular gold seal with a magnifying glass, linked sources, and a check mark.</desc>
+  <defs>
+    <radialGradient id="field" cx="42%" cy="35%" r="70%">
+      <stop offset="0" stop-color="#47795f"/>
+      <stop offset="1" stop-color="#244a38"/>
+    </radialGradient>
+  </defs>
+  <circle cx="80" cy="80" r="75" fill="#f5efe0" stroke="#cf9c2d" stroke-width="6"/>
+  <circle cx="80" cy="80" r="64" fill="url(#field)" stroke="#252121" stroke-width="3"/>
+  <circle cx="80" cy="80" r="56" fill="none" stroke="#cf9c2d" stroke-width="2" stroke-dasharray="2 7" stroke-linecap="round"/>
+  <path d="M40 99c7 15 20 25 36 28M120 99c-7 15-20 25-36 28" fill="none" stroke="#cf9c2d" stroke-width="3" stroke-linecap="round"/>
+  <path d="M47 102l-9 1 5 7M55 112l-8 4 7 5M113 102l9 1-5 7M105 112l8 4-7 5" fill="none" stroke="#cf9c2d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M54 59l24-12 23 13M78 47v24" fill="none" stroke="#f5efe0" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="54" cy="59" r="6" fill="#cf9c2d" stroke="#f5efe0" stroke-width="2"/>
+  <circle cx="78" cy="47" r="6" fill="#cf9c2d" stroke="#f5efe0" stroke-width="2"/>
+  <circle cx="101" cy="60" r="6" fill="#cf9c2d" stroke="#f5efe0" stroke-width="2"/>
+  <circle cx="77" cy="78" r="22" fill="none" stroke="#f5efe0" stroke-width="6"/>
+  <path d="M92 94l20 20" stroke="#f5efe0" stroke-width="8" stroke-linecap="round"/>
+  <path d="M66 79l8 8 16-19" fill="none" stroke="#cf9c2d" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

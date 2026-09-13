@@ -1,7 +1,24 @@
 import { caseResultsFromProgress } from "@/lib/board/local";
-import { sanitizeNickname } from "@/lib/board/submission";
+import { parseSubmissionId, sanitizeNickname } from "@/lib/board/submission";
 import type { BoardRow, BoardStats } from "@/lib/board/types";
 import { persistNickname } from "@/lib/progress";
+
+export const BOARD_SUBMISSION_ID_KEY = "casey_board_submission_id_v1";
+
+export function getOrCreateBoardSubmissionId(): string {
+  try {
+    const existing = window.localStorage.getItem(BOARD_SUBMISSION_ID_KEY);
+    const parsed = parseSubmissionId(existing);
+    if (parsed) {
+      return parsed;
+    }
+    const created = crypto.randomUUID();
+    window.localStorage.setItem(BOARD_SUBMISSION_ID_KEY, created);
+    return created;
+  } catch {
+    return crypto.randomUUID();
+  }
+}
 
 export async function postCurrentBoard(nickname: string): Promise<"shared" | "local"> {
   const clean = sanitizeNickname(nickname);
@@ -13,11 +30,12 @@ export async function postCurrentBoard(nickname: string): Promise<"shared" | "lo
   if (Object.keys(caseResults).length === 0) {
     return "local";
   }
+  const submissionId = getOrCreateBoardSubmissionId();
   try {
     const response = await fetch("/api/board", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nickname: clean, caseResults }),
+      body: JSON.stringify({ submissionId, nickname: clean, caseResults }),
     });
     if (response.ok) {
       return "shared";

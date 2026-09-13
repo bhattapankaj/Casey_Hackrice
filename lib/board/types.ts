@@ -1,6 +1,7 @@
 export type BoardRow = {
   id: string;
   nickname: string;
+  username: string;
   score: number;
   casesCleared: number;
   createdAt: string;

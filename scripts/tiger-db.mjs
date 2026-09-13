@@ -56,13 +56,26 @@ try {
           AND hypertable_name = 'session_outcomes'
       ) AS hypertable_ready,
       to_regclass('casey.outcomes_hourly') IS NOT NULL AS aggregate_ready
+      ,to_regclass('casey.board_entries') IS NOT NULL AS board_ready
+      ,EXISTS (
+        SELECT 1
+        FROM pg_indexes
+        WHERE schemaname = 'casey'
+          AND tablename = 'board_entries'
+          AND indexname = 'board_entries_submission_id_idx'
+      ) AS board_idempotency_ready
   `);
   const readiness = result.rows[0];
-  if (!readiness?.hypertable_ready || !readiness?.aggregate_ready) {
+  if (
+    !readiness?.hypertable_ready ||
+    !readiness?.aggregate_ready ||
+    !readiness?.board_ready ||
+    !readiness?.board_idempotency_ready
+  ) {
     throw new Error("Tiger Data schema is incomplete; run npm run db:migrate");
   }
 
-  console.log("Tiger Data schema is ready.");
+  console.log("Tiger Data outcome and leaderboard schema is ready.");
 } finally {
   await client.end();
 }

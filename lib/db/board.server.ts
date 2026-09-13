@@ -2,6 +2,7 @@ import "server-only";
 import { getTigerDatabaseConfig } from "@/lib/db/config.server";
 import type { ScoredSubmission } from "@/lib/board/submission";
 import type { BoardRow, BoardStats } from "@/lib/board/types";
+import { boardUsername } from "@/lib/board/identity";
 
 export type SharedBoardSnapshot = {
   entries: BoardRow[];
@@ -9,8 +10,15 @@ export type SharedBoardSnapshot = {
 };
 
 type BoardStore = {
-  write(entry: ScoredSubmission): Promise<void>;
+  write(entry: ScoredSubmission & { submissionId: string }): Promise<void>;
   read(): Promise<SharedBoardSnapshot>;
+};
+
+type BoardSqlExecutor = {
+  query: <T extends Record<string, unknown> = Record<string, unknown>>(
+    text: string,
+    values?: unknown[],
+  ) => Promise<{ rows: T[] }>;
 };
 
 function emptySnapshot(): SharedBoardSnapshot {
@@ -20,9 +28,9 @@ function emptySnapshot(): SharedBoardSnapshot {
   };
 }
 
-function statsFrom(rows: Array<{ createdAt: string; casesPlayed: number; case01Wrong: boolean | null }>): BoardStats {
+function statsFrom(rows: Array<{ updatedAt: string; casesPlayed: number; case01Wrong: boolean | null }>): BoardStats {
   const nightStart = Date.now() - 18 * 60 * 60 * 1000;
-  const tonight = rows.filter((row) => Date.parse(row.createdAt) >= nightStart);
+  const tonight = rows.filter((row) => Date.parse(row.updatedAt) >= nightStart);
   const judged = rows.filter((row) => row.case01Wrong !== null);
   const wrong = judged.filter((row) => row.case01Wrong).length;
   return {
@@ -48,51 +56,91 @@ function toBoardRow(row: {
   return {
     id: row.id,
     nickname: row.nickname,
+    username: boardUsername(row.nickname, row.id),
     score: row.score,
     casesCleared: row.casesCleared,
     createdAt: row.createdAt,
   };
 }
 
-function tigerStore(): BoardStore {
+function tigerStore(executor?: BoardSqlExecutor): BoardStore {
+  const sql = async () => executor ?? (await tigerPool());
   return {
     async write(entry) {
-      await (await tigerPool()).query(
+      await (await sql()).query(
         `INSERT INTO casey.board_entries
-          (nickname, score, cases_cleared, cases_played, case01_wrong)
-         VALUES ($1, $2, $3, $4, $5)`,
-        [entry.nickname, entry.score, entry.casesCleared, entry.casesPlayed, entry.case01Wrong],
+          (submission_id, nickname, score, cases_cleared, cases_played, case01_wrong)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         ON CONFLICT (submission_id) DO UPDATE SET
+           nickname = EXCLUDED.nickname,
+           score = EXCLUDED.score,
+           cases_cleared = EXCLUDED.cases_cleared,
+           cases_played = EXCLUDED.cases_played,
+           case01_wrong = EXCLUDED.case01_wrong,
+           updated_at = now()`,
+        [
+          entry.submissionId,
+          entry.nickname,
+          entry.score,
+          entry.casesCleared,
+          entry.casesPlayed,
+          entry.case01Wrong,
+        ],
       );
     },
     async read() {
-      const result = await (
-        await tigerPool()
-      ).query<{
-        id: string;
+      const database = await sql();
+      const [result, aggregate] = await Promise.all([
+        database.query<{
+        submission_id: string;
         nickname: string;
         score: number;
         cases_cleared: number;
         cases_played: number;
         case01_wrong: boolean | null;
         created_at: Date;
+        updated_at: Date;
       }>(
-        `SELECT id::text, nickname, score, cases_cleared, cases_played, case01_wrong, created_at
+        `SELECT submission_id::text, nickname, score, cases_cleared, cases_played,
+                case01_wrong, created_at, updated_at
          FROM casey.board_entries
          ORDER BY score DESC, created_at ASC
          LIMIT 100`,
-      );
+        ),
+        database.query<{
+          players_tonight: string | number;
+          cases_played: string | number;
+          case01_judged: string | number;
+          case01_wrong: string | number;
+        }>(
+          `SELECT
+             COUNT(*) FILTER (WHERE updated_at >= now() - INTERVAL '18 hours') AS players_tonight,
+             COALESCE(SUM(cases_played), 0) AS cases_played,
+             COUNT(*) FILTER (WHERE case01_wrong IS NOT NULL) AS case01_judged,
+             COUNT(*) FILTER (WHERE case01_wrong = TRUE) AS case01_wrong
+           FROM casey.board_entries`,
+        ),
+      ]);
       const mapped = result.rows.map((row) => ({
-        id: row.id,
+        id: row.submission_id,
         nickname: row.nickname,
         score: row.score,
         casesCleared: row.cases_cleared,
         createdAt: row.created_at.toISOString(),
+        updatedAt: row.updated_at.toISOString(),
         casesPlayed: row.cases_played,
         case01Wrong: row.case01_wrong,
       }));
+      const counts = aggregate.rows[0];
+      const judged = Number(counts?.case01_judged ?? 0);
+      const wrong = Number(counts?.case01_wrong ?? 0);
       return {
         entries: mapped.map(toBoardRow),
-        stats: statsFrom(mapped),
+        stats: {
+          playersTonight: Number(counts?.players_tonight ?? 0),
+          casesPlayed: Number(counts?.cases_played ?? 0),
+          case01WrongPercent: judged === 0 ? null : Math.round((wrong / judged) * 100),
+        },
       };
     },
   };
@@ -127,17 +175,24 @@ function kvStore(): BoardStore {
   return {
     async write(entry) {
       const row = {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        id: entry.submissionId,
         nickname: entry.nickname,
         score: entry.score,
         casesCleared: entry.casesCleared,
         casesPlayed: entry.casesPlayed,
         case01Wrong: entry.case01Wrong,
         createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
       const raw = await command<string | null>("GET", key);
-      const current = raw ? (JSON.parse(raw) as unknown[]) : [];
-      current.push(row);
+      const current = raw ? (JSON.parse(raw) as Array<Record<string, unknown>>) : [];
+      const existing = current.findIndex((candidate) => candidate.id === entry.submissionId);
+      if (existing >= 0) {
+        row.createdAt = String(current[existing]?.createdAt ?? row.createdAt);
+        current[existing] = row;
+      } else {
+        current.push(row);
+      }
       await command("SET", key, JSON.stringify(current));
     },
     async read() {
@@ -153,6 +208,7 @@ function kvStore(): BoardStore {
           casesPlayed: Number(row.casesPlayed ?? 0),
           case01Wrong: typeof row.case01Wrong === "boolean" ? row.case01Wrong : null,
           createdAt: String(row.createdAt ?? new Date().toISOString()),
+          updatedAt: String(row.updatedAt ?? row.createdAt ?? new Date().toISOString()),
         }))
         .sort((a, b) => b.score - a.score || a.createdAt.localeCompare(b.createdAt));
       return {
@@ -178,3 +234,4 @@ export function getBoardStore(): BoardStore | null {
 }
 
 export { emptySnapshot };
+export { tigerStore as createTigerBoardStore };
