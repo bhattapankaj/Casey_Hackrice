@@ -79,7 +79,7 @@ function RuleCard({
         width={
           stacked
             ? "w-[186px] sm:w-[200px]"
-            : "w-[164px] min-[720px]:w-[186px] min-[1100px]:w-[200px]"
+            : "w-[164px] min-[720px]:w-[180px] min-[1100px]:w-[186px]"
         }
       >
         <div className="pointer-events-none absolute inset-[14px]" aria-hidden>
