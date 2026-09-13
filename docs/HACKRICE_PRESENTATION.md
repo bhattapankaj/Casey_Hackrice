@@ -18,11 +18,9 @@ game-design theory to make everyday challenges engaging. It lists hacking ending
 Sunday, September 13, 2026.^2 Devpost also records the submission deadline as 9:00 AM
 CDT.^1
 
-No public HackRice 16 handbook PDF was discoverable through the official site, Devpost
-Resources, Devpost Rules, or web search. The **2-minute live demo plus 1-minute Q&A**
-format comes from the team's attendee-handbook notes in [PROJECT.md](PROJECT.md) and
-[JUDGING.md](JUDGING.md). Confirm that timing once more in the attendee handbook or
-HackRice Discord before judging.
+The team-provided HackRice 16 Submission Guidelines and Live Judging Rules confirm that
+live judging runs from 9:30 AM to 12:00 PM, each team presents three or four times, and
+each judging round contains a **2-minute demo plus 1-minute Q&A**.^9
 
 ### Locked submission choices
 
@@ -675,4 +673,4 @@ Replace this before judging:
 6. ElevenLabs. [Client tools](https://elevenlabs.io/docs/eleven-agents/customization/tools/client-tools). Accessed September 13, 2026.
 7. Google AI for Developers. [Gemini API structured outputs](https://ai.google.dev/gemini-api/docs/structured-output). Accessed September 13, 2026.
 8. Tiger Data. [Monitor Tiger Cloud services](https://docs.tigerdata.com/use-timescale/latest/metrics-logging/service-logs/). Accessed September 13, 2026.
-
+9. HackRice 16. “Submission Guidelines and Live Judging Rules.” Attendee-handbook excerpt supplied by the team, September 13, 2026.
