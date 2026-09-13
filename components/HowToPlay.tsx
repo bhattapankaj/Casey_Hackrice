@@ -1,7 +1,8 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { CircleCheck, Pin, Search, type LucideIcon } from "lucide-react";
+import { CircleCheck, Club, Diamond, Pin, Search, Spade, type LucideIcon } from "lucide-react";
 import { MirroredCorner, PlayingCardShell } from "@/components/ArtifactCard";
 import { EASE_DEAL } from "@/lib/motion";
 
@@ -101,14 +102,95 @@ function RuleCard({
   );
 }
 
+function SuitPip({
+  icon: Icon,
+  label,
+  className,
+}: {
+  icon: LucideIcon;
+  label: string;
+  className: string;
+}) {
+  return (
+    <Icon
+      size={16}
+      fill="currentColor"
+      stroke="currentColor"
+      strokeWidth={1.2}
+      aria-label={label}
+      className={className}
+    />
+  );
+}
+
+function SuitKey({
+  icon,
+  suit,
+  meaning,
+  pipClass,
+  labelClass,
+}: {
+  icon: LucideIcon;
+  suit: string;
+  meaning: string;
+  pipClass: string;
+  labelClass: string;
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      <SuitPip icon={icon} label={suit} className={pipClass} />
+      <div>
+        <p className={`font-label text-[11px] tracking-[0.12em] uppercase ${labelClass}`}>{suit}</p>
+        <p className="mt-0.5 text-[13px] leading-snug text-cream/75">{meaning}</p>
+      </div>
+    </div>
+  );
+}
+
+function ClubLine({ children }: { children: ReactNode }) {
+  return (
+    <li className="flex items-start gap-2.5">
+      <Club
+        size={13}
+        fill="currentColor"
+        stroke="currentColor"
+        strokeWidth={1.2}
+        aria-hidden
+        className="mt-0.5 shrink-0 text-cream"
+      />
+      <p className="text-[13px] leading-relaxed text-cream/80">{children}</p>
+    </li>
+  );
+}
+
 function SourceLegend() {
   return (
-    <p className="mx-auto max-w-[36ch] text-center text-[13px] leading-relaxed text-cream/70 lg:mx-0 lg:max-w-[40ch] lg:text-left">
-      A card they handed you is marked{" "}
-      <span className="font-semibold text-red">red</span>, and a card you found
-      yourself is marked <span className="font-semibold text-gold">gold</span>.
-      Both can be pinned, but only gold earns the independence points.
-    </p>
+    <div className="mx-auto w-full max-w-[26rem] lg:mx-0">
+      <div className="flex items-start justify-between gap-6">
+        <SuitKey
+          icon={Diamond}
+          suit="Diamond"
+          meaning="They handed you"
+          pipClass="text-red"
+          labelClass="text-red"
+        />
+        <SuitKey
+          icon={Spade}
+          suit="Spade"
+          meaning="You found it"
+          pipClass="text-gold"
+          labelClass="text-gold"
+        />
+      </div>
+      <ul className="mt-4 flex list-none flex-col gap-2 p-0">
+        {STEPS.map((step) => (
+          <ClubLine key={step.mark}>
+            <span className="font-semibold text-cream">{step.title}.</span> {step.body}
+          </ClubLine>
+        ))}
+        <ClubLine>Both pin. Only the spade scores independence.</ClubLine>
+      </ul>
+    </div>
   );
 }
 
