@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Info, MessageSquareText, Phone, type LucideIcon } from "lucide-react";
 import { MirroredCorner } from "@/components/ArtifactCard";
 import type { useCaseyVoice } from "@/hooks/useCaseyVoice";
+import { startIncomingRing, subscribeToSound } from "@/lib/sound";
 
 type VoiceController = ReturnType<typeof useCaseyVoice>;
 
@@ -171,6 +172,23 @@ export function CallPanel({
   useEffect(() => {
     listEnd.current?.scrollIntoView({ block: "end" });
   }, [voice.captions.length]);
+
+  useEffect(() => {
+    if (!incoming) {
+      return;
+    }
+
+    let stopRing = startIncomingRing();
+    const unsubscribe = subscribeToSound((soundOn) => {
+      stopRing();
+      stopRing = soundOn ? startIncomingRing() : () => undefined;
+    });
+
+    return () => {
+      unsubscribe();
+      stopRing();
+    };
+  }, [incoming]);
 
   return (
     <section className="mt-8 flex justify-center" aria-label="Caller and transcript">

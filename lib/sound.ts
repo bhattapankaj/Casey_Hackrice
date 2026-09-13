@@ -21,6 +21,11 @@ let master: GainNode | null = null;
 let noise: AudioBuffer | null = null;
 let enabled = true;
 let loaded = false;
+let incomingRing: {
+  intervalId: number | null;
+  bus: GainNode;
+  sources: Set<OscillatorNode>;
+} | null = null;
 
 type SoundListener = (on: boolean) => void;
 const listeners = new Set<SoundListener>();
@@ -49,6 +54,9 @@ export function setSoundEnabled(on: boolean) {
   load();
   enabled = on;
   window.localStorage.setItem(STORAGE_KEY, on ? "on" : "off");
+  if (!on) {
+    stopIncomingRing();
+  }
   listeners.forEach((listener) => listener(on));
   if (on) {
     play("chip");
@@ -173,6 +181,111 @@ function tone(ctx: AudioContext, options: ToneOptions) {
   envelope.connect(master);
   oscillator.start(options.at);
   oscillator.stop(options.at + options.duration + 0.02);
+}
+
+function ringTone(
+  ctx: AudioContext,
+  ring: NonNullable<typeof incomingRing>,
+  at: number,
+  frequency: number,
+  type: OscillatorType,
+) {
+  const oscillator = ctx.createOscillator();
+  oscillator.type = type;
+  oscillator.frequency.setValueAtTime(frequency, at);
+
+  const envelope = ctx.createGain();
+  envelope.gain.setValueAtTime(0.0001, at);
+  envelope.gain.exponentialRampToValueAtTime(0.18, at + 0.025);
+  envelope.gain.setValueAtTime(0.16, at + 0.36);
+  envelope.gain.exponentialRampToValueAtTime(0.0001, at + 0.44);
+
+  oscillator.connect(envelope);
+  envelope.connect(ring.bus);
+  ring.sources.add(oscillator);
+  oscillator.onended = () => {
+    ring.sources.delete(oscillator);
+    oscillator.disconnect();
+    envelope.disconnect();
+  };
+  oscillator.start(at);
+  oscillator.stop(at + 0.46);
+}
+
+function scheduleIncomingRing(ctx: AudioContext, ring: NonNullable<typeof incomingRing>) {
+  if (incomingRing !== ring) {
+    return;
+  }
+  const start = ctx.currentTime + 0.02;
+  for (const offset of [0, 0.64]) {
+    ringTone(ctx, ring, start + offset, 520, "sine");
+    ringTone(ctx, ring, start + offset, 660, "triangle");
+  }
+}
+
+/** Start a medium-volume double ring until the returned cleanup function is called. */
+export function startIncomingRing(): () => void {
+  load();
+  if (!enabled) {
+    return () => undefined;
+  }
+
+  const ctx = ensureContext();
+  if (!ctx || !master) {
+    return () => undefined;
+  }
+
+  stopIncomingRing();
+  const bus = ctx.createGain();
+  bus.gain.value = 0.7;
+  bus.connect(master);
+  const ring: NonNullable<typeof incomingRing> = {
+    intervalId: null,
+    bus,
+    sources: new Set<OscillatorNode>(),
+  };
+  incomingRing = ring;
+  const begin = () => {
+    if (incomingRing !== ring || ring.intervalId !== null) {
+      return;
+    }
+    scheduleIncomingRing(ctx, ring);
+    ring.intervalId = window.setInterval(() => scheduleIncomingRing(ctx, ring), 2_600);
+  };
+  if (ctx.state === "running") {
+    begin();
+  } else {
+    void ctx.resume().then(begin).catch(() => undefined);
+  }
+
+  return () => {
+    if (incomingRing === ring) {
+      stopIncomingRing();
+    }
+  };
+}
+
+export function stopIncomingRing() {
+  const ring = incomingRing;
+  if (!ring) {
+    return;
+  }
+  incomingRing = null;
+  if (ring.intervalId !== null) {
+    window.clearInterval(ring.intervalId);
+  }
+  const at = context?.currentTime ?? 0;
+  ring.bus.gain.cancelScheduledValues(at);
+  ring.bus.gain.setValueAtTime(0, at);
+  for (const source of ring.sources) {
+    try {
+      source.stop(at);
+    } catch {
+      // The source may already have ended between the set snapshot and cleanup.
+    }
+  }
+  ring.sources.clear();
+  ring.bus.disconnect();
 }
 
 export function play(cue: Cue) {

@@ -484,6 +484,9 @@ the learning confirmation without a false proof badge.
 - Pressure card appears only when the caller/tool acts.
 - Receipt reveal may use one short sequence under 1.2 seconds.
 - `prefers-reduced-motion` replaces transforms with immediate opacity/state changes.
+- After the player's first browser interaction, the incoming caller uses a synthesized,
+  medium-volume double ring. It stops on answer, decline, navigation, or replay and
+  follows the existing sound toggle.
 - No autoplay before user interaction; no essential information in sound alone.
 
 ## 8. Technical design
