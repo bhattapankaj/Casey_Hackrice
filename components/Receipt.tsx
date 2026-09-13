@@ -11,6 +11,7 @@ import { ShareResult } from "@/components/ShareResult";
 import { ChipFace } from "@/components/VerdictChip";
 import { SiteNav } from "@/components/SiteNav";
 import { sourceClassToBand } from "@/lib/cases/public-case";
+import { nextCaseId } from "@/lib/cases/registry";
 import type { Verdict } from "@/lib/cases/schema";
 import type { ScoreExplanationKey, ScoreReceipt } from "@/lib/engine/types";
 import type { Hand } from "@/lib/engine/hand";
@@ -25,13 +26,15 @@ import {
 } from "@/lib/motion";
 import { play } from "@/lib/sound";
 
-type ReceiptSettlement = {
+export type ReceiptSettlement = {
   hand: Hand;
   explanation: string;
-  stake: Stake;
+  stake: Stake | null;
   chipsBefore: number;
   chipsAfter: number;
   correct: boolean;
+  ranked: boolean;
+  reserveGranted: boolean;
 };
 
 type ReceiptProps = {
@@ -81,6 +84,7 @@ export function Receipt({
   const reduce = useReducedMotion();
   const correct = receipt.truth === receipt.selectedVerdict;
   const highConfidenceMiss = !settlement.correct && settlement.stake === 50;
+  const nextId = nextCaseId(receipt.caseId);
 
   useEffect(() => {
     const step = reduce ? 40 : RECEIPT_STAGGER * 1000;
@@ -136,7 +140,10 @@ export function Receipt({
               {receipt.score.total} / 1,000
             </dd>
             {tableScore !== undefined ? (
-              <p className="mt-2 font-sans text-[13px] text-ink/60">Table points {tableScore}</p>
+              <p className="mt-2 font-sans text-[13px] text-ink/60">
+                {settlement.ranked ? "Ranked table points" : "Practice points"} {tableScore}
+                {settlement.ranked ? "" : " · not recorded"}
+              </p>
             ) : null}
           </div>
         </dl>
@@ -281,15 +288,23 @@ export function Receipt({
             {settlement.explanation}
           </p>
           <p className="mt-3 max-w-[46ch] text-[14px] leading-relaxed text-cream/85">
-            You staked {settlement.stake} and were {settlement.correct ? "right" : "wrong"}.{" "}
-            {settlement.chipsAfter} chips.
+            {settlement.ranked && settlement.stake !== null
+              ? settlement.correct
+                ? `Your ${settlement.stake}-chip stake returned with ${settlement.stake} chips in winnings. Bankroll: ${settlement.chipsAfter} chips.`
+                : `Your ${settlement.stake}-chip stake was lost. Bankroll: ${settlement.chipsAfter} chips.`
+              : `Practice result. Your chips and ranked table score remain unchanged at ${settlement.chipsAfter} chips.`}
           </p>
+          {settlement.ranked && settlement.reserveGranted ? (
+            <p className="mt-2 max-w-[46ch] text-[14px] leading-relaxed text-cream/75">
+              The table reserve topped your bankroll up to 10 chips before this hand.
+            </p>
+          ) : null}
           {highConfidenceMiss ? (
             <p className="mt-2 max-w-[46ch] text-[14px] leading-relaxed text-cream/85">
               High confidence, wrong call. That is the pattern that gets people.
             </p>
           ) : null}
-          {settlement.chipsAfter === 0 ? (
+          {settlement.ranked && settlement.chipsAfter === 0 ? (
             <p className="mt-2 max-w-[46ch] text-[14px] leading-relaxed text-cream/70">
               You are out of chips. Cases still count.
             </p>
@@ -391,19 +406,28 @@ export function Receipt({
         <MoriartyChallenge receipt={receipt} />
 
         <div className="mt-10 flex flex-wrap items-center gap-5">
+          <Link
+            href={nextId ? `/play/${nextId}` : "/table"}
+            className="surface-cream inline-flex min-h-[44px] items-center gap-2 rounded-[12px] bg-cream px-6 font-sans text-[16px] font-semibold text-ink"
+          >
+            {nextId ? "Next case" : "Return to the table"}
+            <ArrowRight size={18} strokeWidth={1.8} aria-hidden />
+          </Link>
           <button
             type="button"
             onClick={onReplay}
-            className="surface-cream inline-flex min-h-[44px] items-center gap-2 rounded-[12px] bg-cream px-6 font-sans text-[16px] font-semibold text-ink"
-          >
-            Retry this case
-          </button>
-          <Link
-            href="/table"
             className="min-h-[44px] font-sans text-[16px] font-semibold text-cream underline decoration-cream/40 underline-offset-4"
           >
-            Return to the table
-          </Link>
+            Replay for practice
+          </button>
+          {nextId ? (
+            <Link
+              href="/table"
+              className="min-h-[44px] font-sans text-[16px] font-semibold text-cream underline decoration-cream/40 underline-offset-4"
+            >
+              Return to the table
+            </Link>
+          ) : null}
           <Link
             href="/board"
             className="min-h-[44px] font-sans text-[16px] font-semibold text-cream underline decoration-cream/40 underline-offset-4"

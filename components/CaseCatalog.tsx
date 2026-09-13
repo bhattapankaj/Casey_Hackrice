@@ -130,7 +130,7 @@ export function CaseCatalog() {
             <div className="relative mx-auto mt-5 flex w-fit items-center gap-3 rounded-full border border-cream/20 bg-ink/75 px-5 py-2 shadow-[0_7px_18px_rgba(17,28,22,0.35)]">
               <span className="size-2 rounded-full bg-gold" aria-hidden />
               <p className="font-label text-[9px] tracking-[0.14em] text-cream/70 uppercase">
-                Open a file to take your seat
+                New files rank once. Closed files replay for practice
               </p>
               <span className="size-2 rounded-full bg-gold" aria-hidden />
             </div>

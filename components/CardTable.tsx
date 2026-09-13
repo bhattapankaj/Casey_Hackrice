@@ -14,7 +14,7 @@ import { ArtifactViewer } from "@/components/ArtifactViewer";
 import { CallPanel, CompactCallControls } from "@/components/CallPanel";
 import { IdFormConfirm } from "@/components/IdFormConfirm";
 import { InfoTip } from "@/components/InfoTip";
-import { Receipt } from "@/components/Receipt";
+import { Receipt, type ReceiptSettlement } from "@/components/Receipt";
 import { SiteNav } from "@/components/SiteNav";
 import { CHIP_COPY, VERDICT_ORDER, VerdictChip } from "@/components/VerdictChip";
 import { useCaseyVoice } from "@/hooks/useCaseyVoice";
@@ -24,11 +24,21 @@ import { getEnabledCases } from "@/lib/cases/registry";
 import type { CaseFile, Verdict } from "@/lib/cases/schema";
 import { scoreCatalogRound } from "@/lib/engine/catalog-score";
 import { handForRound } from "@/lib/engine/hand-from-session";
-import { DEFAULT_STAKE, type Stake } from "@/lib/engine/chips";
+import {
+  canAffordStake,
+  defaultStakeForChips,
+  resolveStake,
+  type Stake,
+} from "@/lib/engine/chips";
 import { postCurrentBoard } from "@/lib/board/client";
-import { persistCaseResult, readStoredProgress } from "@/lib/progress";
+import {
+  persistCaseResult,
+  prepareCaseRun,
+  readStoredProgress,
+  writeStoredProgress,
+  type PreparedCaseRun,
+} from "@/lib/progress";
 import { StakeControl } from "@/components/StakeControl";
-import type { Hand } from "@/lib/engine/hand";
 import {
   DEAL_DURATION,
   DEAL_STAGGER,
@@ -45,14 +55,25 @@ type CardTableProps = {
 
 type CardTableGameProps = CardTableProps & {
   playerName: string;
+  preparedRun: PreparedCaseRun;
 };
 
 const CARD_WIDTH = "w-[158px] min-[430px]:w-[170px] min-[780px]:w-[190px]";
 
 export function CardTable({ gameCase }: CardTableProps) {
   const player = usePlayerName();
+  const [preparedRun, setPreparedRun] = useState<PreparedCaseRun | null>(null);
 
-  if (!player.ready) {
+  useEffect(() => {
+    const current = readStoredProgress();
+    const prepared = prepareCaseRun(current, gameCase.id);
+    if (prepared.progress !== current) {
+      writeStoredProgress(prepared.progress);
+    }
+    setPreparedRun(prepared);
+  }, [gameCase.id]);
+
+  if (!player.ready || !preparedRun || preparedRun.caseId !== gameCase.id) {
     return (
       <>
         <SiteNav />
@@ -65,12 +86,17 @@ export function CardTable({ gameCase }: CardTableProps) {
 
   return (
     <ConversationProvider>
-      <CardTableGame gameCase={gameCase} playerName={player.name ?? "You"} />
+      <CardTableGame
+        key={gameCase.id}
+        gameCase={gameCase}
+        playerName={player.name ?? "You"}
+        preparedRun={preparedRun}
+      />
     </ConversationProvider>
   );
 }
 
-function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
+function CardTableGame({ gameCase, playerName, preparedRun }: CardTableGameProps) {
   const reduce = useReducedMotion();
   const game = useGameSession(gameCase);
   const voice = useCaseyVoice({
@@ -82,20 +108,16 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
   const [viewedIds, setViewedIds] = useState<string[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [choice, setChoice] = useState<Verdict | null>(null);
-  const [stake, setStake] = useState<Stake>(DEFAULT_STAKE);
+  const [stake, setStake] = useState<Stake>(() =>
+    defaultStakeForChips(preparedRun.progress.chips),
+  );
+  const [practiceMode, setPracticeMode] = useState(preparedRun.mode === "practice");
   const [warning, setWarning] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
   const [announce, setAnnounce] = useState("");
   const [dealKey, setDealKey] = useState(0);
   const [pendingSubmitId, setPendingSubmitId] = useState<string | null>(null);
-  const [settlement, setSettlement] = useState<{
-    hand: Hand;
-    explanation: string;
-    stake: Stake;
-    chipsBefore: number;
-    chipsAfter: number;
-    correct: boolean;
-  } | null>(null);
+  const [settlement, setSettlement] = useState<ReceiptSettlement | null>(null);
   const previousCardCount = useRef(0);
   const warningRef = useRef<HTMLButtonElement>(null);
   const recordedResult = useRef<string | null>(null);
@@ -147,8 +169,7 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
   const confirmVerdict = useCallback(() => {
     if (!choice || committed) return;
     const chipsBefore = readStoredProgress().chips;
-    const previous = readStoredProgress().cases[gameCase.id];
-    const firstAttempt = !previous || previous.attempts === 0;
+    if (!practiceMode && !canAffordStake(chipsBefore, stake)) return;
     voice.end();
     game.commitVerdict(choice);
     const projected = {
@@ -160,24 +181,26 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
       },
     };
     const round = scoreCatalogRound(gameCase, projected);
-    const ranked = handForRound(gameCase, projected, round.correct, firstAttempt);
-    const chipsAfter = round.correct
-      ? chipsBefore + stake
-      : Math.max(0, chipsBefore - stake);
+    const ranked = handForRound(gameCase, projected, round.correct, !practiceMode);
+    const chipsAfter = practiceMode
+      ? chipsBefore
+      : resolveStake(chipsBefore, stake, round.correct);
     setSettlement({
       hand: ranked.hand,
       explanation: ranked.explanation,
-      stake,
+      stake: practiceMode ? null : stake,
       chipsBefore,
       chipsAfter,
       correct: round.correct,
+      ranked: !practiceMode,
+      reserveGranted: !practiceMode && preparedRun.reserveGranted,
     });
     setWarning(false);
     setActiveId(null);
     play("submit");
     setAnnounce(`Verdict submitted: ${CHIP_COPY[choice].label}.`);
     window.setTimeout(() => setShowReceipt(true), reduce ? 120 : 420);
-  }, [choice, committed, game, gameCase, reduce, stake, voice]);
+  }, [choice, committed, game, gameCase, practiceMode, preparedRun.reserveGranted, reduce, stake, voice]);
 
   const submit = useCallback(() => {
     if (!choice || committed) return;
@@ -191,7 +214,8 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
     setViewedIds([]);
     setActiveId(null);
     setChoice(null);
-    setStake(DEFAULT_STAKE);
+    setStake(defaultStakeForChips(readStoredProgress().chips));
+    setPracticeMode(true);
     setWarning(false);
     setShowReceipt(false);
     setSettlement(null);
@@ -210,6 +234,9 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
       return;
     }
     recordedResult.current = key;
+    if (practiceMode || settlement.stake === null) {
+      return;
+    }
     const round = scoreCatalogRound(gameCase, game.session);
     const stored = persistCaseResult({
       caseId: gameCase.id,
@@ -225,7 +252,7 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
     if (stored.nickname) {
       void postCurrentBoard(stored.nickname);
     }
-  }, [game.receipt, game.session, gameCase, settlement, showReceipt]);
+  }, [game.receipt, game.session, gameCase, practiceMode, settlement, showReceipt]);
 
   if (showReceipt && game.receipt && settlement) {
     return (
@@ -240,7 +267,7 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
   }
 
   const spotChip = committed ?? choice;
-  const outOfChips = readStoredProgress().chips === 0;
+  const availableChips = preparedRun.progress.chips;
 
   return (
     <LayoutGroup>
@@ -292,6 +319,25 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
             </p>
           ))}
         </div>
+
+        {practiceMode ? (
+          <div
+            role="status"
+            className="mt-4 rounded-[10px] border border-gold/45 bg-ink/55 px-4 py-3 text-[14px] leading-relaxed text-cream/85"
+          >
+            <span className="font-semibold text-gold">Practice replay.</span> This case is
+            closed for ranked play. Chips, table points, streak, and the shared board will
+            not change.
+          </div>
+        ) : preparedRun.reserveGranted ? (
+          <div
+            role="status"
+            className="mt-4 rounded-[10px] border border-gold/45 bg-ink/55 px-4 py-3 text-[14px] leading-relaxed text-cream/85"
+          >
+            <span className="font-semibold text-gold">Table reserve.</span> Your bankroll
+            was topped up to 10 chips for this new ranked case.
+          </div>
+        ) : null}
 
         <CallPanel
           characterName={gameCase.caller?.characterName ?? "Caller"}
@@ -460,13 +506,18 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
             Not enough evidence is a final answer, not a hint. Choose it when the evidence genuinely cannot settle the question.
           </p>
 
-          {choice && !committed ? (
-            <StakeControl value={stake} onChange={setStake} disabled={committed !== null} />
+          {choice && !committed && !practiceMode ? (
+            <StakeControl
+              value={stake}
+              onChange={setStake}
+              availableChips={availableChips}
+              disabled={committed !== null}
+            />
           ) : null}
 
-          {outOfChips ? (
+          {choice && !committed && practiceMode ? (
             <p className="mt-4 text-center text-[13px] text-cream/70">
-              You are out of chips. Cases still count.
+              Practice verdict. No stake is required and no ranked result will change.
             </p>
           ) : null}
 
@@ -505,9 +556,11 @@ function CardTableGame({ gameCase, playerName }: CardTableGameProps) {
                 Lock this verdict?
               </h3>
               <p id="warn-body" className="mt-2 text-[16px] leading-relaxed text-ink/80">
-                {game.pinnedArtifacts.length === 0
-                  ? "You opened evidence but pinned none. A correct guess can score verdict points, but only pinned evidence is scored."
-                  : `${game.pinnedArtifacts.length} of 3 evidence slots are pinned. This decision cannot be changed.`}
+                {practiceMode
+                  ? `${game.pinnedArtifacts.length} of 3 evidence slots are pinned. This practice result will not change your ranked record.`
+                  : game.pinnedArtifacts.length === 0
+                    ? "You opened evidence but pinned none. A correct guess can score verdict points, but only pinned evidence is scored."
+                    : `${game.pinnedArtifacts.length} of 3 evidence slots are pinned. This ranked decision cannot be changed.`}
               </p>
               <div className="mt-4 flex flex-wrap gap-4">
                 <button

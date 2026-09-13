@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   catalogStats,
   emptyProgress,
+  prepareCaseRun,
   recordCaseResult,
   resetProgress,
 } from "@/lib/progress";
@@ -16,7 +17,7 @@ const baseResult = {
 };
 
 describe("progress recording", () => {
-  it("keeps the higher score when a case is replayed and adjusts chips", () => {
+  it("settles a case once and ignores later practice results", () => {
     let progress = recordCaseResult(emptyProgress(), {
       caseId: "case-01",
       verdict: "scam",
@@ -26,7 +27,8 @@ describe("progress recording", () => {
       ...baseResult,
     });
     expect(progress.chips).toBe(STARTING_CHIPS + 25);
-    progress = recordCaseResult(progress, {
+    const settled = progress;
+    progress = recordCaseResult(settled, {
       caseId: "case-01",
       verdict: "scam",
       score: 150,
@@ -37,12 +39,13 @@ describe("progress recording", () => {
       stake: 50,
       at: "2026-09-13T00:01:00.000Z",
     });
-    expect(progress.cases["case-01"]?.bestScore).toBe(150);
-    expect(progress.cases["case-01"]?.bestHand).toBe("Pair");
-    expect(progress.cases["case-01"]?.attempts).toBe(2);
+    expect(progress).toBe(settled);
+    expect(progress.cases["case-01"]?.bestScore).toBe(75);
+    expect(progress.cases["case-01"]?.bestHand).toBe("High card");
+    expect(progress.cases["case-01"]?.attempts).toBe(1);
     expect(progress.cases["case-01"]?.bestVerdict).toBe("scam");
-    expect(progress.cases["case-01"]?.bestPinnedArtifactIds).toEqual(["directory-call"]);
-    expect(progress.chips).toBe(STARTING_CHIPS + 25 + 50);
+    expect(progress.cases["case-01"]?.bestPinnedArtifactIds).toEqual([]);
+    expect(progress.chips).toBe(STARTING_CHIPS + 25);
 
     progress = recordCaseResult(progress, {
       caseId: "case-01",
@@ -55,11 +58,40 @@ describe("progress recording", () => {
       stake: 50,
       at: "2026-09-13T00:02:00.000Z",
     });
-    expect(progress.cases["case-01"]?.bestScore).toBe(150);
+    expect(progress).toBe(settled);
+    expect(progress.cases["case-01"]?.bestScore).toBe(75);
     expect(progress.cases["case-01"]?.cleared).toBe(true);
     expect(progress.cases["case-01"]?.bestVerdict).toBe("scam");
-    expect(progress.cases["case-01"]?.bestPinnedArtifactIds).toEqual(["directory-call"]);
-    expect(progress.chips).toBe(STARTING_CHIPS + 25 + 50 - 50);
+    expect(progress.cases["case-01"]?.bestPinnedArtifactIds).toEqual([]);
+    expect(progress.chips).toBe(STARTING_CHIPS + 25);
+  });
+
+  it("tops up an unplayed case to the 10-chip table reserve", () => {
+    const prepared = prepareCaseRun({ ...emptyProgress(), chips: 3 }, "case-01");
+    expect(prepared).toMatchObject({ caseId: "case-01", mode: "ranked", reserveGranted: true });
+    expect(prepared.progress.chips).toBe(10);
+    expect(prepareCaseRun(prepared.progress, "case-01")).toMatchObject({
+      mode: "ranked",
+      reserveGranted: false,
+    });
+  });
+
+  it("opens any previously submitted case as practice without another reserve", () => {
+    const settled = recordCaseResult({ ...emptyProgress(), chips: 10 }, {
+      caseId: "case-01",
+      verdict: "legit",
+      score: 0,
+      correct: false,
+      at: "2026-09-13T00:00:00.000Z",
+      ...baseResult,
+    });
+    expect(settled.chips).toBe(0);
+    expect(prepareCaseRun(settled, "case-01")).toEqual({
+      caseId: "case-01",
+      mode: "practice",
+      progress: settled,
+      reserveGranted: false,
+    });
   });
 
   it("counts the longest run of correct first-attempt verdicts", () => {

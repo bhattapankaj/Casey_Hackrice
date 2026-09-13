@@ -46,6 +46,7 @@ control.
 - Source-provenance visualization that separates channel from ownership
 - Deterministic 1,000-point scoring that never uses model output
 - Casino chip confidence stakes and persistent browser-local progress
+- One ranked settlement per case, with consequence-free practice replays
 - Gemini-powered Moriarty cross-examination after the Receipt
 - Tiger Data shared leaderboard with server-side rescoring and local fallback
 - Sherlock and casino-inspired responsive UI for desktop and 390 px mobile screens

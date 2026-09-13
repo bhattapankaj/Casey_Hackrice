@@ -152,6 +152,12 @@ test("Case 01 fallback path reaches the deterministic Receipt", async ({ page })
   await expect(page.getByText("CHAIN HELD")).toBeVisible();
   await expect(page.getByRole("img", { name: "Moriarty-Proof deduction badge" })).toBeVisible();
   await expect(page.getByText("1000 / 1,000", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText(/stake returned with 25 chips in winnings/)).toBeVisible();
+  await expect(page.getByRole("link", { name: "Next case" })).toHaveAttribute(
+    "href",
+    "/play/case-02",
+  );
+  await expect(page.getByRole("button", { name: "Replay for practice" })).toBeVisible();
   await expect.poll(() => boardSubmissions.length).toBe(1);
   expect(boardSubmissions[0]).toMatchObject({
     nickname: "Jordan-Hound-221B",
@@ -163,6 +169,77 @@ test("Case 01 fallback path reaches the deterministic Receipt", async ({ page })
       },
     },
   });
+
+  const rankedProgress = await page.evaluate(() =>
+    window.localStorage.getItem("casey_progress_v1"),
+  );
+  await page.reload();
+  await expect(page.getByText("Practice replay.", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Call it legitimate" }).click();
+  await expect(page.getByRole("button", { name: /^Stake / })).toHaveCount(0);
+  await page.getByRole("button", { name: "Submit verdict" }).click();
+  await page.getByRole("button", { name: "Lock verdict" }).click();
+  await expect(page.getByText(/Practice result.*ranked table score remain unchanged/)).toBeVisible();
+  await expect(page.getByText("Practice points 0 · not recorded", { exact: true })).toBeVisible();
+  await expect.poll(() => boardSubmissions.length).toBe(1);
+  expect(
+    await page.evaluate(() => window.localStorage.getItem("casey_progress_v1")),
+  ).toBe(rankedProgress);
+
+  await page.getByRole("link", { name: "Return to the table" }).click();
+  await expect(
+    page.getByRole("link", { name: /The Meridian Offer.*Case closed.*Practice replay/ }),
+  ).toBeVisible();
+});
+
+test("an unplayed case receives a non-farmable table reserve and affordable stakes", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem(
+      "casey.player.v1",
+      JSON.stringify({ version: 1, name: "Jordan" }),
+    );
+    window.localStorage.setItem(
+      "casey_progress_v1",
+      JSON.stringify({
+        version: 1,
+        nickname: "Jordan-Hound-221B",
+        nicknameAsked: true,
+        chips: 0,
+        cases: {
+          "case-01": {
+            attempts: 1,
+            bestScore: 0,
+            bestVerdict: "legit",
+            bestPinnedArtifactIds: [],
+            cleared: false,
+            lastVerdict: "legit",
+            usedOutOfBand: false,
+            clearedAt: null,
+            firstAttemptCorrect: false,
+            pinnedArtifactIds: [],
+            bestHand: "High card",
+            lastHand: "High card",
+            lastStake: 50,
+          },
+        },
+      }),
+    );
+  });
+
+  await page.goto("/play/case-02");
+  await expect(page.getByText("Table reserve.", { exact: true })).toBeVisible();
+  await expect(page.getByTitle("Table chips")).toContainText("10");
+  await page.getByRole("button", { name: "Call it legitimate" }).click();
+  await expect(page.getByRole("button", { name: "Stake 10, selected" })).toBeEnabled();
+  await expect(
+    page.getByRole("button", { name: "Stake 25, unavailable with 10 chips" }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole("button", { name: "Stake 50, unavailable with 10 chips" }),
+  ).toBeDisabled();
+  expect(
+    await page.evaluate(() => JSON.parse(window.localStorage.getItem("casey_progress_v1") ?? "{}")),
+  ).toMatchObject({ chips: 10 });
 });
 
 test("declining an incoming call creates no transcript or fallback dialogue", async ({ page }) => {

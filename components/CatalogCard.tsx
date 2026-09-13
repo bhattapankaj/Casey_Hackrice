@@ -58,6 +58,7 @@ function CatalogFace({
   const meta = CATEGORY_META[category];
   const Icon = meta.icon;
   const theme = CASINO_SUITS[suit];
+  const settled = status === "cleared" || status === "attempted";
 
   return (
     <PlayingCardShell
@@ -91,7 +92,7 @@ function CatalogFace({
         <p className="mt-3 font-serif text-[18px] leading-tight font-semibold text-ink">
           {title}
         </p>
-        {status === "cleared" ? (
+        {settled ? (
           <span aria-hidden className="mt-2 block h-px w-12" style={{ background: theme.accent }} />
         ) : null}
         <p className="mt-2 font-label text-[10px] tracking-[0.12em] text-ink/55 uppercase">
@@ -121,7 +122,7 @@ function CatalogFace({
                 {bestHand}
               </>
             ) : status === "attempted" ? (
-              "Attempted"
+              "Case closed"
             ) : (
               "Not attempted"
             )}
@@ -131,7 +132,7 @@ function CatalogFace({
             {estimatedMinutes} min
           </p>
           <p className="mt-2 font-label text-[9px] tracking-[0.14em] text-felt-deep uppercase">
-            Open case
+            {settled ? "Practice replay" : "Open ranked case"}
           </p>
         </div>
       )}
@@ -153,12 +154,12 @@ export function CatalogCard(props: CatalogCardProps) {
 
   const statusLabel =
     props.status === "cleared" && props.bestHand
-      ? props.bestHand
+      ? `Case closed with ${props.bestHand}. Practice replay`
       : props.status === "cleared"
-        ? "Cleared"
+        ? "Case closed. Practice replay"
         : props.status === "attempted"
-          ? "Attempted"
-          : "Not attempted";
+          ? "Case closed. Practice replay"
+          : "Not attempted. Ranked play";
 
   return (
     <Link

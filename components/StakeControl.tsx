@@ -1,7 +1,7 @@
 "use client";
 
 import type { Stake } from "@/lib/engine/chips";
-import { STAKE_OPTIONS } from "@/lib/engine/chips";
+import { canAffordStake, STAKE_OPTIONS } from "@/lib/engine/chips";
 
 const STAKE_CHIP_ACCENT: Record<Stake, string> = {
   10: "var(--color-gold)",
@@ -18,10 +18,16 @@ const STAKE_CHIP_SELECTED_TEXT: Record<Stake, string> = {
 type StakeControlProps = {
   value: Stake;
   onChange: (stake: Stake) => void;
+  availableChips: number;
   disabled?: boolean;
 };
 
-export function StakeControl({ value, onChange, disabled = false }: StakeControlProps) {
+export function StakeControl({
+  value,
+  onChange,
+  availableChips,
+  disabled = false,
+}: StakeControlProps) {
   return (
     <div className="mt-6 flex w-full max-w-[28rem] flex-col items-center">
       <p className="font-serif text-[19px] font-semibold text-cream">How sure are you?</p>
@@ -29,13 +35,16 @@ export function StakeControl({ value, onChange, disabled = false }: StakeControl
         {STAKE_OPTIONS.map((stake) => {
           const selected = value === stake;
           const accent = STAKE_CHIP_ACCENT[stake];
+          const affordable = canAffordStake(availableChips, stake);
           return (
             <button
               key={stake}
               type="button"
-              disabled={disabled}
+              disabled={disabled || !affordable}
               aria-pressed={selected}
-              aria-label={`Stake ${stake}${selected ? ", selected" : ""}`}
+              aria-label={`Stake ${stake}${
+                !affordable ? `, unavailable with ${availableChips} chips` : selected ? ", selected" : ""
+              }`}
               onClick={() => onChange(stake)}
               className={`flex cursor-pointer flex-col items-center gap-2 transition-opacity duration-150 active:scale-95 disabled:cursor-default disabled:opacity-45 ${
                 selected ? "opacity-100" : "opacity-75 hover:opacity-100"
@@ -91,7 +100,8 @@ export function StakeControl({ value, onChange, disabled = false }: StakeControl
         })}
       </div>
       <p className="mt-3 max-w-[36ch] text-center text-[13px] leading-relaxed text-cream/70">
-        Win the stake if you are right. Lose it if you are wrong.
+        {availableChips} chips available. Your stake returns with equal winnings if you are
+        right. Lose only the stake if you are wrong.
       </p>
     </div>
   );

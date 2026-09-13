@@ -83,7 +83,10 @@ second case.
 
 ### Core loop
 
-`Deal → Talk → Investigate → Pin evidence → Commit verdict → Read Receipt → Replay`
+`Deal → Talk → Investigate → Pin evidence → Commit verdict → Read Receipt → Next case`
+
+Each case accepts one ranked submission. Replaying a closed case is practice only and
+cannot change chips, table points, streaks, poker hands, or the shared leaderboard.
 
 ### Deterministic score (1,000 points)
 

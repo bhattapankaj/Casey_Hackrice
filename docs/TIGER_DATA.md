@@ -20,6 +20,8 @@ Case 01 must always work without a database.
 - `/api/board` validates same-origin submissions, re-scores canonical case results on
   the server, and stores only the required board nickname plus score summary after a
   case has been completed.
+- Each browser records one ranked result per case. Practice replays do not update local
+  progress and do not trigger another Tiger Data submission.
 - Shared rows display a memorable nickname-derived username while the full browser UUID
   remains the database identity.
 - `db/queries/demo-dashboard.sql` contains judge-safe queries that keep the sample size

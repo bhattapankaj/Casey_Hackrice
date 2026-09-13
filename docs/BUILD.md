@@ -85,10 +85,19 @@ Detailed scoring strategy: [JUDGING.md](JUDGING.md).
    the clipboard: case, verdict plus whether the chain was independent, and the case URL.
 7. **Cross-examine** — optionally let Gemini's Moriarty attack one source assumption;
    Casey deterministically validates the selected defense.
-8. **Replay** — a different truth state tests whether the player learned the mechanic.
+8. **Next case** — a different truth state tests whether the player learned the mechanic.
 
 Table chips start at 100. Before locking a verdict the player stakes 10, 25, or 50.
-Correct adds the stake; wrong subtracts it, floored at zero. Chips never unlock content.
+The stake cannot exceed the current bankroll. A correct verdict returns the stake plus
+equal winnings, for a net gain equal to the stake. A wrong verdict loses only the stake.
+If a player has fewer than 10 chips before opening a new ranked case, the table tops the
+bankroll up to 10 once for that case. Chips never unlock content.
+
+Only the first submitted verdict for a case is ranked. It permanently settles that
+case's chips, table score, first-attempt streak, hand, and leaderboard result. A closed
+case remains available as a clearly labeled practice replay, but practice never mutates
+local progress or sends a board submission. Direct navigation to an already submitted
+case must enter practice mode as well.
 
 ### Why each choice matters
 
@@ -203,8 +212,8 @@ The catalog score, stored in `casey_progress_v1`, is separate and smaller:
 
 Unresolvable cases score +100 for Not enough evidence and 0 otherwise. The in-band
 penalty never applies to a correct unresolvable call. A case score never goes below
-zero. Replaying can raise `bestScore` but never lower it. `/?demo=1` clears progress
-and opens Case 01.
+zero. The first submitted score is final; practice replays are not recorded.
+`/?demo=1` clears progress and opens Case 01.
 
 `POST /api/board` accepts a nickname plus per-case verdicts and pinned artifact ids,
 then rescores with `scoreCatalogRound`. A client-sent total is ignored. If Tiger Data

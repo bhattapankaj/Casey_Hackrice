@@ -1,5 +1,10 @@
 import { isBetterHand, type Hand, HANDS } from "@/lib/engine/hand";
-import { STARTING_CHIPS, type Stake } from "@/lib/engine/chips";
+import {
+  resolveStake,
+  STARTING_CHIPS,
+  TABLE_RESERVE_CHIPS,
+  type Stake,
+} from "@/lib/engine/chips";
 
 export const PROGRESS_STORAGE_KEY = "casey_progress_v1";
 
@@ -43,6 +48,13 @@ export type CaseResultInput = {
   hand: Hand;
   stake: Stake;
   at: string;
+};
+
+export type PreparedCaseRun = {
+  caseId: string;
+  mode: "ranked" | "practice";
+  progress: ProgressV1;
+  reserveGranted: boolean;
 };
 
 function parseHand(value: unknown): Hand | null {
@@ -147,39 +159,51 @@ function parseCaseProgress(value: unknown): CaseProgress | null {
 
 export function recordCaseResult(progress: ProgressV1, result: CaseResultInput): ProgressV1 {
   const previous = progress.cases[result.caseId];
-  const attempts = (previous?.attempts ?? 0) + 1;
-  const firstAttemptCorrect =
-    previous?.firstAttemptCorrect ?? (attempts === 1 ? result.correct : null);
-  const cleared = (previous?.cleared ?? false) || result.correct;
-  const isNewBest = !previous || result.score > previous.bestScore;
-  const nextChips = result.correct
-    ? progress.chips + result.stake
-    : Math.max(0, progress.chips - result.stake);
+  if (previous && previous.attempts > 0) {
+    return progress;
+  }
+
+  const nextChips = resolveStake(progress.chips, result.stake, result.correct);
   return {
     ...progress,
     chips: nextChips,
     cases: {
       ...progress.cases,
       [result.caseId]: {
-        attempts,
-        bestScore: Math.max(previous?.bestScore ?? 0, Math.max(0, result.score)),
-        bestVerdict: isNewBest ? result.verdict : (previous?.bestVerdict ?? result.verdict),
-        bestPinnedArtifactIds: isNewBest
-          ? (result.pinnedArtifactIds ?? [])
-          : (previous?.bestPinnedArtifactIds ?? result.pinnedArtifactIds ?? []),
-        cleared,
+        attempts: 1,
+        bestScore: Math.max(0, result.score),
+        bestVerdict: result.verdict,
+        bestPinnedArtifactIds: result.pinnedArtifactIds ?? [],
+        cleared: result.correct,
         lastVerdict: result.verdict,
         usedOutOfBand: result.usedOutOfBand,
-        clearedAt: result.correct ? result.at : (previous?.clearedAt ?? null),
-        firstAttemptCorrect,
-        pinnedArtifactIds: result.pinnedArtifactIds ?? previous?.pinnedArtifactIds ?? [],
-        bestHand: isBetterHand(result.hand, previous?.bestHand ?? null)
-          ? result.hand
-          : (previous?.bestHand ?? result.hand),
+        clearedAt: result.correct ? result.at : null,
+        firstAttemptCorrect: result.correct,
+        pinnedArtifactIds: result.pinnedArtifactIds ?? [],
+        bestHand: result.hand,
         lastHand: result.hand,
         lastStake: result.stake,
       },
     },
+  };
+}
+
+export function isRankedCaseSettled(progress: ProgressV1, caseId: string): boolean {
+  return (progress.cases[caseId]?.attempts ?? 0) > 0;
+}
+
+export function prepareCaseRun(progress: ProgressV1, caseId: string): PreparedCaseRun {
+  if (isRankedCaseSettled(progress, caseId)) {
+    return { caseId, mode: "practice", progress, reserveGranted: false };
+  }
+  if (progress.chips >= TABLE_RESERVE_CHIPS) {
+    return { caseId, mode: "ranked", progress, reserveGranted: false };
+  }
+  return {
+    caseId,
+    mode: "ranked",
+    progress: { ...progress, chips: TABLE_RESERVE_CHIPS },
+    reserveGranted: true,
   };
 }
 
