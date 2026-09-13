@@ -447,6 +447,9 @@ At timeout/error:
 Include end-call, mute, volume, and captions/transcript controls. The player can continue
 investigating while the call is active.
 
+`Decline` closes the unopened line and creates no caller dialogue or transcript. The
+separate `Use text instead` control intentionally starts the authored fallback path.
+
 ### Verdict
 
 Three large labeled chips:

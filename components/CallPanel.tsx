@@ -158,14 +158,17 @@ export function CallPanel({
 }: CallPanelProps) {
   const incoming = voice.phase === "consent";
   const live = CALL_IN_PROGRESS.has(voice.phase);
+  const declined = voice.phase === "declined";
   const textFallback = voice.phase === "text_fallback";
   const connected = voice.phase === "listening" || voice.phase === "speaking";
   const transcriptLabel =
-    voice.phase === "ended"
-      ? "Call transcript"
-      : textFallback
-        ? "Text transcript"
-        : "Live transcript";
+    declined
+      ? "No transcript"
+      : voice.phase === "ended"
+        ? "Call transcript"
+        : textFallback
+          ? "Text transcript"
+          : "Live transcript";
   const initial = characterName.charAt(0);
   const listEnd = useRef<HTMLLIElement | null>(null);
 
@@ -219,9 +222,13 @@ export function CallPanel({
                     <span className="call-pulse size-[6px] rounded-full bg-red" aria-hidden />
                     Incoming
                   </p>
-                ) : textFallback ? (
+                ) : declined ? (
                   <p className="font-label text-[11px] font-medium tracking-[0.07em] text-ink/60">
                     Call declined
+                  </p>
+                ) : textFallback ? (
+                  <p className="font-label text-[11px] font-medium tracking-[0.07em] text-ink/60">
+                    Text mode
                   </p>
                 ) : (
                   <p className="font-serif text-[17px] leading-none text-ink tabular-nums">
@@ -269,12 +276,20 @@ export function CallPanel({
                 </button>
                 <button
                   type="button"
-                  onClick={voice.chooseFallback}
+                  onClick={voice.decline}
                   className="inline-flex h-[34px] flex-1 items-center justify-center rounded-full border border-cream/45 font-sans text-[13px] font-semibold text-cream"
                 >
                   Decline
                 </button>
               </div>
+              <button
+                type="button"
+                onClick={voice.chooseFallback}
+                className="mt-2 inline-flex h-[34px] w-full items-center justify-center gap-1.5 rounded-full border border-gold/55 bg-gold/[0.08] font-sans text-[13px] font-semibold text-cream"
+              >
+                <MessageSquareText size={14} strokeWidth={1.75} aria-hidden />
+                Use text instead
+              </button>
               <MicDisclosure />
               <p className="mt-1.5 text-center font-sans text-[11px] text-cream/45">
                 The line closes at 75 seconds.
@@ -316,7 +331,9 @@ export function CallPanel({
               >
                 {voice.captions.length === 0 ? (
                   <li className="font-sans text-[13px] leading-6 text-ink/45 italic">
-                    Captions appear here once the line opens.
+                    {declined
+                      ? "Call declined before connection. No transcript was created."
+                      : "Captions appear here once the line opens."}
                   </li>
                 ) : (
                   voice.captions.map((caption, index) => (

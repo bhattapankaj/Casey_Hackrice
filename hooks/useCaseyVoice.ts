@@ -16,6 +16,7 @@ export type CaseyVoicePhase =
   | "connecting"
   | "listening"
   | "speaking"
+  | "declined"
   | "ended"
   | "error"
   | "text_fallback";
@@ -255,6 +256,24 @@ export function useCaseyVoice({
     enterFallback();
   }, [enterFallback, phase]);
 
+  const decline = useCallback(() => {
+    if (phase !== "consent") {
+      return;
+    }
+    startAttempt.current += 1;
+    requestController.current?.abort();
+    requestController.current = null;
+    endedIntentionally.current = true;
+    limitStarted.current = false;
+    clearTimers();
+    setCaptions([]);
+    setFallbackIndex(-1);
+    setErrorMessage(null);
+    setElapsedSeconds(0);
+    setEndedByTimer(false);
+    setPhase("declined");
+  }, [clearTimers, phase]);
+
   const advanceFallback = useCallback(() => {
     setFallbackIndex((current) => {
       const next = current + 1;
@@ -313,6 +332,7 @@ export function useCaseyVoice({
     isMuted,
     setMuted,
     startLive,
+    decline,
     chooseFallback,
     advanceFallback,
     hasNextFallbackBeat: fallbackIndex + 1 < fallbackBeats.length,

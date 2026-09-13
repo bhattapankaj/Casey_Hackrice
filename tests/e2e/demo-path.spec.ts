@@ -67,8 +67,8 @@ test("Case 01 fallback path reaches the deterministic Receipt", async ({ page })
   await expect(page.getByText("Independent route", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Meridian claimant", { exact: true })).toHaveCount(0);
 
-  await page.getByRole("button", { name: "Decline", exact: true }).click();
-  await expect(page.getByText("Call declined", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Use text instead", exact: true }).click();
+  await expect(page.getByText("Text mode", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "End call", exact: true })).toHaveCount(0);
   await expect(page.getByText("Text transcript", { exact: true })).toBeVisible();
   await expect(page.getByLabel("Call transcript")).toContainText("Morgan Vale");
@@ -150,4 +150,36 @@ test("Case 01 fallback path reaches the deterministic Receipt", async ({ page })
       },
     },
   });
+});
+
+test("declining an incoming call creates no transcript or fallback dialogue", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem(
+      "casey.player.v1",
+      JSON.stringify({ version: 1, name: "Jordan" }),
+    );
+    window.localStorage.setItem(
+      "casey_progress_v1",
+      JSON.stringify({
+        version: 1,
+        nickname: "Jordan-Hound-221B",
+        nicknameAsked: true,
+        chips: 100,
+        cases: {},
+      }),
+    );
+  });
+
+  await page.goto("/play/case-01");
+  await expect(page.getByText("Incoming", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Decline", exact: true }).click();
+
+  await expect(page.getByText("Call declined", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "No transcript" })).toBeVisible();
+  await expect(
+    page.getByText("Call declined before connection. No transcript was created."),
+  ).toBeVisible();
+  await expect(page.getByText(/Hi, this is Morgan from Meridian/)).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Continue conversation" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "End call", exact: true })).toHaveCount(0);
 });
